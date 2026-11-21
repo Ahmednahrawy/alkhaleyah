@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useLocale } from "@/contexts/LocaleContext";
+import { publicPath } from "@/lib/publicPath";
 
 export function BrandMark() {
   const { locale } = useLocale();
@@ -32,9 +33,9 @@ export function SiteHeader() {
           </button>
         </div>
         <nav className={open ? "main-nav is-open" : "main-nav"} aria-label={ar ? "التنقل الرئيسي" : "Main navigation"}>
-          <a href="/#our-range" onClick={close}>{ar ? "منتجاتنا" : "Our range"}</a>
-          <a href="/#our-story" onClick={close}>{ar ? "قصتنا" : "Our story"}</a>
-          <a href="/#contact" className="nav-cta" onClick={close}>{ar ? "تواصل معنا" : "Get in touch"} <ArrowUpRight size={15} /></a>
+          <a href={publicPath("#our-range")} onClick={close}>{ar ? "منتجاتنا" : "Our range"}</a>
+          <a href={publicPath("#our-story")} onClick={close}>{ar ? "قصتنا" : "Our story"}</a>
+          <a href={publicPath("#contact")} className="nav-cta" onClick={close}>{ar ? "تواصل معنا" : "Get in touch"} <ArrowUpRight size={15} /></a>
         </nav>
       </div>
     </header>
@@ -52,9 +53,9 @@ export function SiteFooter() {
           <p className="footer-note">{ar ? "منتجات غذائية لمائدة كل يوم." : "Food products for the everyday table."}</p>
         </div>
         <div className="footer-links">
-          <a href="/#our-range">{ar ? "اكتشفوا المنتجات" : "Explore the range"}</a>
-          <a href="/#our-story">{ar ? "عن الخالقية" : "About Alkhaleyah"}</a>
-          <a href="/#contact">{ar ? "للاستفسارات" : "Enquiries"}</a>
+          <a href={publicPath("#our-range")}>{ar ? "اكتشفوا المنتجات" : "Explore the range"}</a>
+          <a href={publicPath("#our-story")}>{ar ? "عن الخالقية" : "About Alkhaleyah"}</a>
+          <a href={publicPath("#contact")}>{ar ? "للاستفسارات" : "Enquiries"}</a>
         </div>
       </div>
       <div className="footer-bottom">
