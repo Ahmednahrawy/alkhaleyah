@@ -96,7 +96,12 @@ export default function Home() {
                   className={`range-card range-card-${range.tone}`}
                 >
                   <div className="range-image-wrap">
-                    <img src={range.image} alt="" loading="lazy" />
+                    <img
+                      src={range.image}
+                      alt=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                    />
                     <span className="range-index">{indexLabel}</span>
                     <span className="range-arrow" aria-hidden="true">
                       <ArrowUpRight size={20} className="rtl-flip" />

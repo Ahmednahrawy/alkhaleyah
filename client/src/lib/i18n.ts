@@ -126,7 +126,7 @@ export const translations: Record<Language, CopyShape> = {
       captionCount: "01 / 04",
       captionText: "From the pantry, to the table",
       imageAria:
-        "A still life of pantry ingredients, grains, spices, dates, and olive oil",
+        "A still life of raw golden honey, dates, cured olives, and extra virgin olive oil",
       verticalLabel: "ALKHALEYAH · FOOD PRODUCTS",
     },
     introStrip: [
@@ -147,7 +147,7 @@ export const translations: Record<Language, CopyShape> = {
     },
     storySection: {
       imageAria:
-        "A close-up of carefully arranged grains, herbs, and pantry ingredients",
+        "A close-up of cold-pressed extra virgin olive oil with fresh olive branches",
       eyebrow: "The Alkhaleyah point of view",
       titleLead: "Made for the",
       titleAccent: "everyday table.",
@@ -241,7 +241,7 @@ export const translations: Record<Language, CopyShape> = {
       captionCount: "٠١ / ٠٤",
       captionText: "من المؤونة، إلى المائدة",
       imageAria:
-        "مشهد لمكوّنات المؤونة من الحبوب والتوابل والتمور وزيت الزيتون",
+        "مشهد لمكوّنات المائدة من العسل الطبيعي والتمور والزيتون وزيت الزيتون البكر",
       verticalLabel: "الخلية · منتجات غذائية",
     },
     introStrip: [
@@ -261,7 +261,7 @@ export const translations: Record<Language, CopyShape> = {
         "تُؤكَّد تفاصيل التوافر والمواصفات مباشرةً مع شركة الخلية.",
     },
     storySection: {
-      imageAria: "لقطة مقرّبة لحبوب وأعشاب ومكوّنات مؤونة مرتّبة بعناية",
+      imageAria: "لقطة مقرّبة لزيت الزيتون البكر الممتاز مع أغصان الزيتون",
       eyebrow: "رؤية الخلية",
       titleLead: "صُنع لمائدة",
       titleAccent: "كل يوم.",

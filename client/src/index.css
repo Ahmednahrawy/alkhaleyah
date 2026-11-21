@@ -72,7 +72,7 @@ img { display: block; width: 100%; }
 .text-link { display: inline-flex; align-items: center; gap: 10px; color: var(--olive); font-size: 11px; border-bottom: 1px solid rgba(36, 50, 38, .35); padding-bottom: 5px; width: fit-content; }
 .text-link:hover { color: var(--clay); border-color: var(--clay); }
 .light-link { color: #ede8da; border-color: rgba(237, 232, 218, .42); }
-.hero-image { min-height: 100%; background-image: linear-gradient(90deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('/images/alkhaleyah-hero.jpg'); background-size: cover; background-position: center; }
+.hero-image { min-height: 100%; background-image: linear-gradient(90deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('./assets/images/alkhaleyah_hero_1795293710991.jpg'); background-size: cover; background-position: center; }
 .hero-caption { margin-top: auto; padding-bottom: 26px; width: 75%; display: flex; justify-content: space-between; color: #b6bdaf; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .hero-caption span:first-child { color: #d2a480; }
 .hero-vertical-label { position: absolute; right: 2.2%; top: 43%; writing-mode: vertical-rl; color: rgba(255, 253, 247, .72); font-size: 9px; letter-spacing: .17em; }
@@ -94,9 +94,9 @@ img { display: block; width: 100%; }
 .range-image-wrap { position: relative; height: 220px; overflow: hidden; background: #e3dece; }
 .range-image-wrap img { height: 100%; object-fit: cover; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
 .range-card:hover .range-image-wrap img { transform: scale(1.04); }
-.range-card-sand .range-image-wrap img { object-position: 70% center; }
+.range-card-sand .range-image-wrap img { object-position: center; }
 .range-card-clay .range-image-wrap img { object-position: center; }
-.range-card-olive .range-image-wrap img { object-position: 82% center; }
+.range-card-olive .range-image-wrap img { object-position: center; }
 .range-index { position: absolute; left: 13px; top: 13px; color: #fffdf7; text-shadow: 0 1px 7px rgba(0,0,0,.3); font-size: 9px; letter-spacing: .14em; }
 .range-arrow { position: absolute; right: 11px; bottom: 11px; width: 35px; height: 35px; display: grid; place-items: center; background: var(--cream); color: var(--olive); transition: background .2s ease, color .2s ease; }
 .range-card:hover .range-arrow { background: var(--olive); color: #fff; }
@@ -108,7 +108,7 @@ img { display: block; width: 100%; }
 .footnote-line { display: inline-block; width: 24px; height: 1px; background: var(--clay); }
 
 .story-section { min-height: 560px; display: grid; grid-template-columns: 1.08fr .92fr; background: var(--olive-dark); color: #fcf9ef; }
-.story-image { min-height: 560px; background: url('/images/alkhaleyah-pantry.jpg') center 53%/cover; }
+.story-image { min-height: 560px; background: url('./assets/images/alkhaleyah_olive_oil_1795293711836.jpg') center center/cover; }
 .story-copy { position: relative; overflow: hidden; padding: 95px 11% 70px; }
 .story-copy h2 { margin: 16px 0 24px; font-size: clamp(49px, 5.2vw, 71px); }
 .story-body { max-width: 380px; margin: 0 0 23px; color: #c7ccbd; font-size: 12px; line-height: 1.95; }
@@ -190,7 +190,7 @@ img { display: block; width: 100%; }
   .hero-description { max-width: 350px; font-size: 12px; }
   .hero-actions { gap: 16px; }
   .hero-caption { width: 100%; margin-top: 46px; padding-bottom: 0; }
-  .hero-image { min-height: 290px; width: 100%; background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('/images/alkhaleyah-hero.jpg'); background-position: 61% center; }
+  .hero-image { min-height: 290px; width: 100%; background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('./assets/images/alkhaleyah_hero_1795293710991.jpg'); background-position: center center; }
   .hero-vertical-label { top: auto; right: 8px; bottom: 305px; writing-mode: horizontal-tb; font-size: 8px; }
   .intro-strip { min-height: 78px; padding: 18px 6%; gap: 10px; }
   .intro-strip p { max-width: 30%; font-size: 12px; line-height: 1.3; text-align: center; }
@@ -330,7 +330,7 @@ img { display: block; width: 100%; }
   font-size: 13px;
 }
 [dir="rtl"] .hero-image {
-  background-image: linear-gradient(270deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('/images/alkhaleyah-hero.jpg');
+  background-image: linear-gradient(270deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('./assets/images/alkhaleyah_hero_1795293710991.jpg');
 }
 [dir="rtl"] .hero-vertical-label {
   right: auto;
@@ -387,7 +387,7 @@ img { display: block; width: 100%; }
     padding: 45px 7% 24px;
   }
   [dir="rtl"] .hero-image {
-    background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('/images/alkhaleyah-hero.jpg');
+    background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('./assets/images/alkhaleyah_hero_1795293710991.jpg');
   }
   [dir="rtl"] .hero-vertical-label {
     right: auto;

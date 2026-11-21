@@ -74,7 +74,11 @@ export default function ProductRange() {
             <p className="detail-disclaimer">{t.productDetail.disclaimer}</p>
           </div>
           <div className="detail-image">
-            <img src={range.image} alt={copy.imageAlt} />
+            <img
+              src={range.image}
+              alt={copy.imageAlt}
+              referrerPolicy="no-referrer"
+            />
           </div>
         </div>
         <section className="more-ranges">

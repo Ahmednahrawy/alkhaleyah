@@ -1,6 +1,8 @@
 import type { Language } from "@/contexts/LanguageContext";
-
-const siteImage = (filename: string) => `${import.meta.env.BASE_URL}images/${filename}`;
+import datesImage from "@/assets/images/alkhaleyah_dates_1795293710764.jpg";
+import honeyImage from "@/assets/images/alkhaleyah_honey_1795293711325.jpg";
+import oliveOilImage from "@/assets/images/alkhaleyah_olive_oil_1795293711836.jpg";
+import olivesImage from "@/assets/images/alkhaleyah_olives_1795293711340.jpg";
 
 export type LocalizedRangeCopy = {
   title: string;
@@ -23,7 +25,7 @@ export type ProductRange = {
 export const productRanges: ProductRange[] = [
   {
     slug: "pantry-staples",
-    image: siteImage("alkhaleyah-pantry.jpg"),
+    image: honeyImage,
     tone: "sage",
     en: {
       title: "Pantry staples",
@@ -34,7 +36,7 @@ export const productRanges: ProductRange[] = [
         "A thoughtful home for the ingredients that make everyday cooking feel like home.",
       detail:
         "Explore the pantry range and find the products that fit your kitchen, table, or business. For item-level availability and specifications, please contact Alkhaleyah directly.",
-      imageAlt: "Pantry staples food ingredients arranged on a table",
+      imageAlt: "Raw golden honey in a glass jar with honeycomb and wooden dipper",
     },
     ar: {
       title: "أساسيات المؤونة",
@@ -45,12 +47,12 @@ export const productRanges: ProductRange[] = [
         "موطنٌ مدروس للمكوّنات التي تمنح طبخك اليومي دفء البيت.",
       detail:
         "استكشف تشكيلة أساسيات المؤونة واعثر على المنتجات التي تناسب مطبخك أو مائدتك أو أعمالك. للاستفسار عن توافر الأصناف ومواصفاتها، يُرجى التواصل مع شركة الخلية مباشرةً.",
-      imageAlt: "مكوّنات أساسيات المؤونة مرتّبة على مائدة",
+      imageAlt: "عسل طبيعي ذهبي في وعاء زجاجي مع قرص العسل",
     },
   },
   {
     slug: "grains-pulses",
-    image: siteImage("alkhaleyah-pantry.jpg"),
+    image: oliveOilImage,
     tone: "sand",
     en: {
       title: "Grains & pulses",
@@ -60,7 +62,7 @@ export const productRanges: ProductRange[] = [
       summary: "Familiar foundations for meals shared across the table.",
       detail:
         "Browse the grains and pulses category. Specific varieties, pack sizes, sourcing information, and availability can be added as Alkhaleyah's confirmed product list is provided.",
-      imageAlt: "Grains and pulses arranged on a table",
+      imageAlt: "Cold-pressed extra virgin olive oil with fresh olive branches",
     },
     ar: {
       title: "الحبوب والبقوليات",
@@ -70,12 +72,12 @@ export const productRanges: ProductRange[] = [
       summary: "أساسيات مألوفة لوجبات تُشارك حول المائدة.",
       detail:
         "تصفّح فئة الحبوب والبقوليات. يمكن إضافة الأصناف المحددة وأحجام العبوات ومعلومات المصدر والتوافر فور اعتماد قائمة منتجات الخلية الرسمية.",
-      imageAlt: "الحبوب والبقوليات مرتّبة على مائدة",
+      imageAlt: "زيت زيتون بكر ممتاز معصورة على البارد مع أغصان الزيتون",
     },
   },
   {
     slug: "spices-herbs",
-    image: siteImage("alkhaleyah-spices.jpg"),
+    image: olivesImage,
     tone: "clay",
     en: {
       title: "Spices & herbs",
@@ -86,7 +88,7 @@ export const productRanges: ProductRange[] = [
         "The colour and character of the spice shelf, gathered in one place.",
       detail:
         "Discover the spices and herbs category. Product names, origins, formats, and pack details are intentionally not assumed; ask Alkhaleyah for the current range.",
-      imageAlt: "Spices and herbs arranged on a table",
+      imageAlt: "Marinated green and dark olives with fresh olive leaves",
     },
     ar: {
       title: "التوابل والأعشاب",
@@ -96,12 +98,12 @@ export const productRanges: ProductRange[] = [
       summary: "ألوان رفّ التوابل وطابعه الأصيل، مجموعةٌ في مكان واحد.",
       detail:
         "اكتشف فئة التوابل والأعشاب. لم يتم افتراض أسماء الأصناف أو مناشئها أو تفاصيل التعبئة؛ تواصل مع الخلية للتعرّف على التشكيلة المتوفرة حالياً.",
-      imageAlt: "التوابل والأعشاب مرتّبة على مائدة",
+      imageAlt: "زيتون أخضر وأسود متبّل مع أوراق الزيتون الطازجة",
     },
   },
   {
     slug: "dates-dried-fruit",
-    image: siteImage("alkhaleyah-pantry.jpg"),
+    image: datesImage,
     tone: "olive",
     en: {
       title: "Dates & dried fruit",
@@ -112,7 +114,7 @@ export const productRanges: ProductRange[] = [
         "A pantry category made for snacking, sharing, and bringing to the table.",
       detail:
         "Explore dates and dried fruit as a product category. Exact varieties, grades, origin, and availability should be confirmed with Alkhaleyah before ordering.",
-      imageAlt: "Dates and dried fruit arranged on a table",
+      imageAlt: "Plump Arabian Medjool and Sukkary dates in a stoneware bowl",
     },
     ar: {
       title: "التمور والفواكه المجففة",
@@ -122,7 +124,7 @@ export const productRanges: ProductRange[] = [
       summary: "فئة مؤونة مثالية للضيافة والمشاركة والتقديم على المائدة.",
       detail:
         "استكشف فئة التمور والفواكه المجففة. يُرجى تأكيد الأصناف والدرجات والمصدر والتوافر مع شركة الخلية قبل الطلب.",
-      imageAlt: "التمور والفواكه المجففة مرتّبة على مائدة",
+      imageAlt: "تمور فاخرة مرتّبة في طبق خزفي",
     },
   },
 ];
