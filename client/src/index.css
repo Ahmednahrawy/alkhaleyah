@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -44,13 +44,15 @@ img { display: block; width: 100%; }
 .brand-symbol span:nth-child(3) { width: 14px; margin-left: 8px; }
 .brand-name { font-family: var(--serif); font-size: 23px; letter-spacing: -.045em; font-weight: 600; }
 .main-nav { display: flex; align-items: center; gap: 39px; font-size: 12px; color: #4f594f; }
-.header-actions { display: flex; align-items: center; gap: 13px; }
-.language-toggle { min-height: 36px; padding: 0 12px; border: 1px solid rgba(36, 50, 38, .25); background: transparent; color: var(--olive-dark); font-size: 11px; cursor: pointer; transition: background .2s ease, color .2s ease; }
-.language-toggle:hover { background: var(--olive); color: var(--paper); }
 .main-nav > a:not(.nav-cta):hover, .footer-links a:hover { color: var(--clay); }
 .nav-cta { min-height: 40px; padding: 0 15px; display: inline-flex; align-items: center; gap: 13px; color: var(--olive-dark); border: 1px solid rgba(36, 50, 38, .31); transition: background .2s ease, color .2s ease; }
 .nav-cta:hover { color: var(--paper); background: var(--olive); }
-.menu-toggle { display: none; border: 0; background: transparent; padding: 8px; }
+.header-controls { display: none; align-items: center; gap: 8px; }
+.mobile-lang-wrap { display: none; }
+.desktop-lang-wrap { display: inline-flex; align-items: center; }
+.lang-switch { min-height: 36px; padding: 0 12px; display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(36, 50, 38, .22); background: transparent; color: var(--olive-dark); font-size: 12px; font-weight: 500; cursor: pointer; transition: background .2s ease, color .2s ease, border-color .2s ease; }
+.lang-switch:hover { background: var(--olive-dark); color: var(--paper); border-color: var(--olive-dark); }
+.menu-toggle { display: none; border: 0; background: transparent; padding: 8px; cursor: pointer; }
 
 .hero { min-height: 592px; height: min(70vw, 720px); max-height: 720px; display: grid; grid-template-columns: .86fr 1.14fr; position: relative; background: var(--olive-dark); color: #fbf8ee; }
 .hero-copy { position: relative; z-index: 1; padding: 91px 0 0 12%; display: flex; flex-direction: column; align-items: flex-start; }
@@ -160,23 +162,6 @@ img { display: block; width: 100%; }
 .not-found h1 { color: var(--ink); font-size: 70px; }
 .not-found > p:not(.eyebrow) { color: var(--muted); margin: 0 0 25px; }
 
-html[dir="rtl"] body, html[dir="rtl"] button, html[dir="rtl"] a { font-family: "Noto Sans Arabic", "DM Sans", sans-serif; }
-html[dir="rtl"] body { text-align: right; }
-html[dir="rtl"] .eyebrow { letter-spacing: 0; }
-html[dir="rtl"] .hero-copy { padding-left: 0; padding-right: 12%; align-items: flex-start; }
-html[dir="rtl"] .hero-image { background-image: linear-gradient(270deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg'); }
-html[dir="rtl"] .hero-vertical-label { right: auto; left: 2.2%; writing-mode: vertical-rl; }
-html[dir="rtl"] .hero-caption { direction: rtl; }
-html[dir="rtl"] .range-index { left: auto; right: 13px; }
-html[dir="rtl"] .range-arrow { right: auto; left: 11px; }
-html[dir="rtl"] .story-stamp { right: auto; left: 10%; }
-html[dir="rtl"] .contact-orbit { right: auto; left: 0; }
-html[dir="rtl"] .footer-note { margin: 10px 39px 0 0; }
-html[dir="rtl"] .more-range-links a:hover { padding-left: 0; padding-right: 7px; }
-html[dir="rtl"] .value-item { direction: rtl; }
-html[dir="rtl"] .detail-breadcrumb { direction: rtl; }
-html[dir="rtl"] .hero h1, html[dir="rtl"] .story-copy h2, html[dir="rtl"] .contact-inner h2, html[dir="rtl"] .section-heading h2, html[dir="rtl"] .values-title h2, html[dir="rtl"] .more-ranges h2 { letter-spacing: 0; line-height: 1.35; }
-
 @media (max-width: 1000px) {
   .hero { min-height: 530px; grid-template-columns: .96fr 1.04fr; }
   .hero-copy { padding-left: 9%; }
@@ -190,12 +175,15 @@ html[dir="rtl"] .hero h1, html[dir="rtl"] .story-copy h2, html[dir="rtl"] .conta
   .announcement { height: 29px; font-size: 8px; letter-spacing: .09em; }
   .header-inner { height: 66px; padding: 0 6%; }
   .brand-name { font-size: 21px; }
+  .header-controls { display: inline-flex; }
+  .mobile-lang-wrap { display: inline-flex; }
+  .desktop-lang-wrap { display: none; }
+  .lang-switch { min-height: 34px; padding: 0 10px; font-size: 11px; }
   .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
   .main-nav { position: absolute; top: 65px; left: 0; right: 0; display: none; align-items: stretch; gap: 0; padding: 8px 6% 16px; background: var(--cream); border-bottom: 1px solid var(--line); box-shadow: 0 15px 20px rgba(36, 50, 38, .08); }
   .main-nav.is-open { display: flex; flex-direction: column; }
   .main-nav > a { min-height: 43px; display: flex; align-items: center; }
   .main-nav .nav-cta { width: fit-content; margin-top: 7px; padding: 0 13px; }
-  .header-actions { margin-left: auto; margin-right: 8px; }
   .hero { min-height: initial; height: auto; max-height: none; display: flex; flex-direction: column; }
   .hero-copy { padding: 45px 7% 24px; min-height: 405px; }
   .hero h1 { font-size: clamp(56px, 15vw, 76px); margin-top: 9px; }
@@ -249,16 +237,172 @@ html[dir="rtl"] .hero h1, html[dir="rtl"] .story-copy h2, html[dir="rtl"] .conta
   .more-ranges h2 { font-size: 40px; }
   .not-found { min-height: 67vh; padding: 70px 7%; }
 }
-@media (max-width: 1000px) {
-  html[dir="rtl"] .hero-copy { padding-right: 9%; }
-}
-@media (max-width: 680px) {
-  html[dir="rtl"] .hero-copy { padding: 45px 7% 24px; }
-  html[dir="rtl"] .story-stamp { right: auto; left: 8%; }
-  html[dir="rtl"] .footer-note { margin-right: 39px; }
-  html[dir="rtl"] .hero-image { background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg'); }
-  html[dir="rtl"] .hero-vertical-label { right: 8px; left: auto; }
-}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+[dir="rtl"] {
+  --serif: "Amiri", "Playfair Display", Georgia, serif;
+  font-family: "IBM Plex Sans Arabic", "DM Sans", sans-serif;
+}
+[dir="rtl"] body,
+[dir="rtl"] button,
+[dir="rtl"] a {
+  font-family: "IBM Plex Sans Arabic", "DM Sans", sans-serif;
+}
+[dir="rtl"] * {
+  letter-spacing: 0 !important;
+}
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .announcement,
+[dir="rtl"] .eyebrow,
+[dir="rtl"] .hero-caption,
+[dir="rtl"] .hero-vertical-label,
+[dir="rtl"] .range-eyebrow {
+  text-transform: none;
+}
+[dir="rtl"] .announcement {
+  font-size: 12px;
+}
+[dir="rtl"] .eyebrow {
+  font-size: 12px;
+}
+[dir="rtl"] .main-nav {
+  font-size: 14px;
+}
+[dir="rtl"] .brand-name {
+  font-size: 26px;
+}
+[dir="rtl"] .hero-copy {
+  padding: 91px 12% 0 0;
+}
+[dir="rtl"] .hero h1,
+[dir="rtl"] .story-copy h2,
+[dir="rtl"] .contact-inner h2,
+[dir="rtl"] .not-found h1,
+[dir="rtl"] .section-heading h2,
+[dir="rtl"] .values-title h2,
+[dir="rtl"] .more-ranges h2,
+[dir="rtl"] .detail-copy h1 {
+  line-height: 1.22;
+}
+[dir="rtl"] .hero h1 em,
+[dir="rtl"] .story-copy h2 em,
+[dir="rtl"] .contact-inner h2 em,
+[dir="rtl"] .not-found h1 em,
+[dir="rtl"] .section-heading h2 em,
+[dir="rtl"] .values-title h2 em,
+[dir="rtl"] .more-ranges h2 em,
+[dir="rtl"] .detail-copy h1 em,
+[dir="rtl"] .intro-strip p,
+[dir="rtl"] .handwritten-note {
+  font-style: normal;
+}
+[dir="rtl"] .hero-description,
+[dir="rtl"] .section-aside > p,
+[dir="rtl"] .story-body,
+[dir="rtl"] .detail-description,
+[dir="rtl"] .contact-aside > p:first-child {
+  font-size: 14px;
+  line-height: 1.95;
+}
+[dir="rtl"] .range-card-copy h3 {
+  font-size: 24px;
+  line-height: 1.35;
+}
+[dir="rtl"] .range-card-copy p {
+  font-size: 12px;
+  line-height: 1.75;
+}
+[dir="rtl"] .range-eyebrow {
+  font-size: 11px;
+}
+[dir="rtl"] .value-item h3 {
+  font-size: 20px;
+}
+[dir="rtl"] .value-item p {
+  font-size: 13px;
+}
+[dir="rtl"] .button,
+[dir="rtl"] .text-link {
+  font-size: 13px;
+}
+[dir="rtl"] .hero-image {
+  background-image: linear-gradient(270deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg');
+}
+[dir="rtl"] .hero-vertical-label {
+  right: auto;
+  left: 2.2%;
+  font-size: 11px;
+}
+[dir="rtl"] .range-index {
+  left: auto;
+  right: 13px;
+  font-size: 12px;
+}
+[dir="rtl"] .range-arrow {
+  right: auto;
+  left: 11px;
+}
+[dir="rtl"] .story-stamp {
+  right: auto;
+  left: 10%;
+  transform: rotate(12deg);
+}
+[dir="rtl"] .story-stamp span {
+  font-size: 12px;
+  line-height: 1.25;
+}
+[dir="rtl"] .contact-orbit {
+  right: auto;
+  left: 0;
+}
+[dir="rtl"] .footer-note {
+  margin: 10px 39px 0 0;
+  font-size: 12px;
+}
+[dir="rtl"] .footer-links {
+  font-size: 13px;
+}
+[dir="rtl"] .footer-bottom {
+  font-size: 11px;
+}
+[dir="rtl"] .more-range-links a {
+  font-size: 19px;
+}
+[dir="rtl"] .more-range-links a:hover {
+  padding-left: 0;
+  padding-right: 7px;
+}
+@media (max-width: 1000px) {
+  [dir="rtl"] .hero-copy {
+    padding-left: 0;
+    padding-right: 9%;
+  }
+}
+@media (max-width: 680px) {
+  [dir="rtl"] .hero-copy {
+    padding: 45px 7% 24px;
+  }
+  [dir="rtl"] .hero-image {
+    background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg');
+  }
+  [dir="rtl"] .hero-vertical-label {
+    right: auto;
+    left: 8px;
+  }
+  [dir="rtl"] .story-stamp {
+    right: auto;
+    left: 8%;
+  }
+  [dir="rtl"] .contact-orbit {
+    right: auto;
+    left: 0;
+  }
+  [dir="rtl"] .footer-note {
+    margin: 10px 0 0;
+  }
+}
+

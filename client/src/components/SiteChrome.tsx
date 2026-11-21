@@ -1,41 +1,83 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { ArrowUpRight, Menu, X } from "lucide-react";
-import { useLocale } from "@/contexts/LocaleContext";
-import { publicPath } from "@/lib/publicPath";
+import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/lib/i18n";
 
 export function BrandMark() {
-  const { locale } = useLocale();
+  const { lang } = useLanguage();
+  const t = translations[lang];
+
   return (
-    <Link href="/" className="brand" aria-label={locale === "ar" ? "الخالقية - الصفحة الرئيسية" : "Alkhaleyah home"}>
-      <span className="brand-symbol" aria-hidden="true"><span /><span /><span /></span>
-      <span className="brand-name">Alkhaleyah</span>
+    <Link href="/" className="brand" aria-label={t.brandHomeAria}>
+      <span className="brand-symbol" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
+      <span className="brand-name">{t.brandName}</span>
     </Link>
+  );
+}
+
+export function LanguageSwitcher() {
+  const { lang, toggleLang } = useLanguage();
+  const t = translations[lang];
+
+  return (
+    <button
+      type="button"
+      className="lang-switch"
+      onClick={toggleLang}
+      aria-label={t.nav.switchLangAria}
+      data-testid="language-switcher"
+    >
+      <Globe size={14} aria-hidden="true" />
+      <span>{t.nav.switchLangLabel}</span>
+    </button>
   );
 }
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const { locale, toggleLocale } = useLocale();
+  const { lang } = useLanguage();
+  const t = translations[lang];
   const close = () => setOpen(false);
-  const ar = locale === "ar";
 
   return (
     <header className="site-header">
       <div className="header-inner">
         <BrandMark />
-        <div className="header-actions">
-          <button type="button" className="language-toggle" onClick={toggleLocale} aria-label={ar ? "Switch language to English" : "تغيير اللغة إلى العربية"} lang={ar ? "en" : "ar"}>
-            {ar ? "English" : "العربية"}
-          </button>
-          <button type="button" className="menu-toggle" aria-label={open ? (ar ? "إغلاق القائمة" : "Close navigation") : (ar ? "فتح القائمة" : "Open navigation")} aria-expanded={open} onClick={() => setOpen(!open)}>
+        <div className="header-controls">
+          <div className="mobile-lang-wrap">
+            <LanguageSwitcher />
+          </div>
+          <button
+            type="button"
+            className="menu-toggle"
+            aria-label={open ? t.nav.closeMenuAria : t.nav.openMenuAria}
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+          >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-        <nav className={open ? "main-nav is-open" : "main-nav"} aria-label={ar ? "التنقل الرئيسي" : "Main navigation"}>
-          <a href={publicPath("#our-range")} onClick={close}>{ar ? "منتجاتنا" : "Our range"}</a>
-          <a href={publicPath("#our-story")} onClick={close}>{ar ? "قصتنا" : "Our story"}</a>
-          <a href={publicPath("#contact")} className="nav-cta" onClick={close}>{ar ? "تواصل معنا" : "Get in touch"} <ArrowUpRight size={15} /></a>
+        <nav
+          className={open ? "main-nav is-open" : "main-nav"}
+          aria-label={t.nav.mainAria}
+        >
+          <a href="/#our-range" onClick={close}>
+            {t.nav.ourRange}
+          </a>
+          <a href="/#our-story" onClick={close}>
+            {t.nav.ourStory}
+          </a>
+          <a href="/#contact" className="nav-cta" onClick={close}>
+            {t.nav.getInTouch} <ArrowUpRight size={15} className="rtl-flip" />
+          </a>
+          <div className="desktop-lang-wrap">
+            <LanguageSwitcher />
+          </div>
         </nav>
       </div>
     </header>
@@ -43,24 +85,27 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
-  const { locale } = useLocale();
-  const ar = locale === "ar";
+  const { lang } = useLanguage();
+  const t = translations[lang];
+
   return (
     <footer className="site-footer">
       <div className="footer-top">
         <div>
           <BrandMark />
-          <p className="footer-note">{ar ? "منتجات غذائية لمائدة كل يوم." : "Food products for the everyday table."}</p>
+          <p className="footer-note">{t.footer.note}</p>
         </div>
         <div className="footer-links">
-          <a href={publicPath("#our-range")}>{ar ? "اكتشفوا المنتجات" : "Explore the range"}</a>
-          <a href={publicPath("#our-story")}>{ar ? "عن الخالقية" : "About Alkhaleyah"}</a>
-          <a href={publicPath("#contact")}>{ar ? "للاستفسارات" : "Enquiries"}</a>
+          <a href="/#our-range">{t.footer.exploreRange}</a>
+          <a href="/#our-story">{t.footer.about}</a>
+          <a href="/#contact">{t.footer.enquiries}</a>
         </div>
       </div>
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} Alkhaleyah</span>
-        <span>{ar ? "منتجات غذائية · صُنعت لتُشارك" : "Food products · Made for sharing"}</span>
+        <span>
+          © {new Date().getFullYear()} {t.brandName}
+        </span>
+        <span>{t.footer.tagline}</span>
       </div>
     </footer>
   );
