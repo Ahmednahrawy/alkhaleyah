@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -44,6 +44,9 @@ img { display: block; width: 100%; }
 .brand-symbol span:nth-child(3) { width: 14px; margin-left: 8px; }
 .brand-name { font-family: var(--serif); font-size: 23px; letter-spacing: -.045em; font-weight: 600; }
 .main-nav { display: flex; align-items: center; gap: 39px; font-size: 12px; color: #4f594f; }
+.header-actions { display: flex; align-items: center; gap: 13px; }
+.language-toggle { min-height: 36px; padding: 0 12px; border: 1px solid rgba(36, 50, 38, .25); background: transparent; color: var(--olive-dark); font-size: 11px; cursor: pointer; transition: background .2s ease, color .2s ease; }
+.language-toggle:hover { background: var(--olive); color: var(--paper); }
 .main-nav > a:not(.nav-cta):hover, .footer-links a:hover { color: var(--clay); }
 .nav-cta { min-height: 40px; padding: 0 15px; display: inline-flex; align-items: center; gap: 13px; color: var(--olive-dark); border: 1px solid rgba(36, 50, 38, .31); transition: background .2s ease, color .2s ease; }
 .nav-cta:hover { color: var(--paper); background: var(--olive); }
@@ -157,6 +160,23 @@ img { display: block; width: 100%; }
 .not-found h1 { color: var(--ink); font-size: 70px; }
 .not-found > p:not(.eyebrow) { color: var(--muted); margin: 0 0 25px; }
 
+html[dir="rtl"] body, html[dir="rtl"] button, html[dir="rtl"] a { font-family: "Noto Sans Arabic", "DM Sans", sans-serif; }
+html[dir="rtl"] body { text-align: right; }
+html[dir="rtl"] .eyebrow { letter-spacing: 0; }
+html[dir="rtl"] .hero-copy { padding-left: 0; padding-right: 12%; align-items: flex-start; }
+html[dir="rtl"] .hero-image { background-image: linear-gradient(270deg, rgba(32, 51, 38, .68) 0%, rgba(32, 51, 38, .08) 28%, transparent 50%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg'); }
+html[dir="rtl"] .hero-vertical-label { right: auto; left: 2.2%; writing-mode: vertical-rl; }
+html[dir="rtl"] .hero-caption { direction: rtl; }
+html[dir="rtl"] .range-index { left: auto; right: 13px; }
+html[dir="rtl"] .range-arrow { right: auto; left: 11px; }
+html[dir="rtl"] .story-stamp { right: auto; left: 10%; }
+html[dir="rtl"] .contact-orbit { right: auto; left: 0; }
+html[dir="rtl"] .footer-note { margin: 10px 39px 0 0; }
+html[dir="rtl"] .more-range-links a:hover { padding-left: 0; padding-right: 7px; }
+html[dir="rtl"] .value-item { direction: rtl; }
+html[dir="rtl"] .detail-breadcrumb { direction: rtl; }
+html[dir="rtl"] .hero h1, html[dir="rtl"] .story-copy h2, html[dir="rtl"] .contact-inner h2, html[dir="rtl"] .section-heading h2, html[dir="rtl"] .values-title h2, html[dir="rtl"] .more-ranges h2 { letter-spacing: 0; line-height: 1.35; }
+
 @media (max-width: 1000px) {
   .hero { min-height: 530px; grid-template-columns: .96fr 1.04fr; }
   .hero-copy { padding-left: 9%; }
@@ -175,6 +195,7 @@ img { display: block; width: 100%; }
   .main-nav.is-open { display: flex; flex-direction: column; }
   .main-nav > a { min-height: 43px; display: flex; align-items: center; }
   .main-nav .nav-cta { width: fit-content; margin-top: 7px; padding: 0 13px; }
+  .header-actions { margin-left: auto; margin-right: 8px; }
   .hero { min-height: initial; height: auto; max-height: none; display: flex; flex-direction: column; }
   .hero-copy { padding: 45px 7% 24px; min-height: 405px; }
   .hero h1 { font-size: clamp(56px, 15vw, 76px); margin-top: 9px; }
@@ -227,6 +248,16 @@ img { display: block; width: 100%; }
   .more-ranges { grid-template-columns: 1fr; gap: 17px; padding: 48px 0 55px; }
   .more-ranges h2 { font-size: 40px; }
   .not-found { min-height: 67vh; padding: 70px 7%; }
+}
+@media (max-width: 1000px) {
+  html[dir="rtl"] .hero-copy { padding-right: 9%; }
+}
+@media (max-width: 680px) {
+  html[dir="rtl"] .hero-copy { padding: 45px 7% 24px; }
+  html[dir="rtl"] .story-stamp { right: auto; left: 8%; }
+  html[dir="rtl"] .footer-note { margin-right: 39px; }
+  html[dir="rtl"] .hero-image { background-image: linear-gradient(0deg, rgba(32, 51, 38, .42), transparent 42%), url('/manus-storage/alkhaleyah-hero-web_c41b05f9.jpg'); }
+  html[dir="rtl"] .hero-vertical-label { right: 8px; left: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
