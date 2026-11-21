@@ -1,5 +1,7 @@
 import type { Language } from "@/contexts/LanguageContext";
 
+const siteImage = (filename: string) => `${import.meta.env.BASE_URL}images/${filename}`;
+
 export type LocalizedRangeCopy = {
   title: string;
   titleLead: string;
@@ -21,7 +23,7 @@ export type ProductRange = {
 export const productRanges: ProductRange[] = [
   {
     slug: "pantry-staples",
-    image: "/manus-storage/alkhaleyah-pantry-web_d41c78fb.jpg",
+    image: siteImage("alkhaleyah-pantry.jpg"),
     tone: "sage",
     en: {
       title: "Pantry staples",
@@ -48,7 +50,7 @@ export const productRanges: ProductRange[] = [
   },
   {
     slug: "grains-pulses",
-    image: "/manus-storage/alkhaleyah-pantry-web_d41c78fb.jpg",
+    image: siteImage("alkhaleyah-pantry.jpg"),
     tone: "sand",
     en: {
       title: "Grains & pulses",
@@ -73,7 +75,7 @@ export const productRanges: ProductRange[] = [
   },
   {
     slug: "spices-herbs",
-    image: "/manus-storage/alkhaleyah-spices-web_08376d5d.jpg",
+    image: siteImage("alkhaleyah-spices.jpg"),
     tone: "clay",
     en: {
       title: "Spices & herbs",
@@ -99,7 +101,7 @@ export const productRanges: ProductRange[] = [
   },
   {
     slug: "dates-dried-fruit",
-    image: "/manus-storage/alkhaleyah-pantry-web_d41c78fb.jpg",
+    image: siteImage("alkhaleyah-pantry.jpg"),
     tone: "olive",
     en: {
       title: "Dates & dried fruit",
