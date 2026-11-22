@@ -2,14 +2,14 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getRangeCopy, productRanges } from "@/lib/catalog";
+import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 
 export default function ProductRange() {
   const [, params] = useRoute("/products/:slug");
   const { lang } = useLanguage();
   const t = translations[lang];
-  const range = productRanges.find((item) => item.slug === params?.slug);
+  const range = findProductRange(params?.slug);
 
   if (!range) {
     return (

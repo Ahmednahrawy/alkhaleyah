@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/lib/i18n";
@@ -38,6 +38,34 @@ export function LanguageSwitcher() {
   );
 }
 
+function SectionLink({
+  hash,
+  className,
+  onNavigate,
+  children,
+}: {
+  hash: string;
+  className?: string;
+  onNavigate?: () => void;
+  children: React.ReactNode;
+}) {
+  const [location] = useLocation();
+
+  if (location === "/") {
+    return (
+      <a href={`#${hash}`} className={className} onClick={onNavigate}>
+        {children}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={`/#${hash}`} className={className} onClick={onNavigate}>
+      {children}
+    </Link>
+  );
+}
+
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const { lang } = useLanguage();
@@ -66,15 +94,15 @@ export function SiteHeader() {
           className={open ? "main-nav is-open" : "main-nav"}
           aria-label={t.nav.mainAria}
         >
-          <a href="/#our-range" onClick={close}>
+          <SectionLink hash="our-range" onNavigate={close}>
             {t.nav.ourRange}
-          </a>
-          <a href="/#our-story" onClick={close}>
+          </SectionLink>
+          <SectionLink hash="our-story" onNavigate={close}>
             {t.nav.ourStory}
-          </a>
-          <a href="/#contact" className="nav-cta" onClick={close}>
+          </SectionLink>
+          <SectionLink hash="contact" className="nav-cta" onNavigate={close}>
             {t.nav.getInTouch} <ArrowUpRight size={15} className="rtl-flip" />
-          </a>
+          </SectionLink>
           <div className="desktop-lang-wrap">
             <LanguageSwitcher />
           </div>
@@ -96,9 +124,9 @@ export function SiteFooter() {
           <p className="footer-note">{t.footer.note}</p>
         </div>
         <div className="footer-links">
-          <a href="/#our-range">{t.footer.exploreRange}</a>
-          <a href="/#our-story">{t.footer.about}</a>
-          <a href="/#contact">{t.footer.enquiries}</a>
+          <SectionLink hash="our-range">{t.footer.exploreRange}</SectionLink>
+          <SectionLink hash="our-story">{t.footer.about}</SectionLink>
+          <SectionLink hash="contact">{t.footer.enquiries}</SectionLink>
         </div>
       </div>
       <div className="footer-bottom">

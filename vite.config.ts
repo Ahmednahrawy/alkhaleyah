@@ -77,9 +77,10 @@ function writeToLogFile(source: LogSource, entries: unknown[]) {
 function vitePluginManusDebugCollector(): Plugin {
   return {
     name: "manus-debug-collector",
+    apply: "serve",
 
-    transformIndexHtml(html) {
-      if (process.env.NODE_ENV === "production") {
+    transformIndexHtml(html, ctx) {
+      if (!ctx.server || process.env.NODE_ENV === "production") {
         return html;
       }
       return {
@@ -156,11 +157,13 @@ function vitePluginPublicPlatformConfig(): Plugin {
   return {
     name: "manus-public-platform-config",
     configureServer(server) {
-      server.middlewares.use("/api/platform/config.js", (_req, res) => {
+      const sendConfig = (_req: unknown, res: any) => {
         res.setHeader("Content-Type", "application/javascript");
         res.setHeader("Cache-Control", "no-store");
         res.end(publicPlatformScript());
-      });
+      };
+      server.middlewares.use("/api/platform/config.js", sendConfig);
+      server.middlewares.use("/alkhaleyah/api/platform/config.js", sendConfig);
     },
     generateBundle() {
       this.emitFile({ type: "asset", fileName: "api/platform/config.js", source: publicPlatformScript() });
@@ -168,7 +171,29 @@ function vitePluginPublicPlatformConfig(): Plugin {
   };
 }
 
-const plugins = [vitePluginPublicPlatformConfig(), react(), tailwindcss(), jsxLocPlugin(), vitePluginManusDebugCollector()];
+function vitePluginGitHubPagesSpaFallback(): Plugin {
+  return {
+    name: "github-pages-spa-fallback",
+    apply: "build",
+    closeBundle() {
+      const outDir = path.resolve(import.meta.dirname, "dist/public");
+      const indexFile = path.join(outDir, "index.html");
+      const fallbackFile = path.join(outDir, "404.html");
+      if (fs.existsSync(indexFile)) {
+        fs.copyFileSync(indexFile, fallbackFile);
+      }
+    },
+  };
+}
+
+const plugins = [
+  vitePluginPublicPlatformConfig(),
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusDebugCollector(),
+  vitePluginGitHubPagesSpaFallback(),
+];
 
 export default defineConfig({
   plugins,

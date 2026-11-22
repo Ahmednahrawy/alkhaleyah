@@ -24,110 +24,127 @@ export type ProductRange = {
 
 export const productRanges: ProductRange[] = [
   {
-    slug: "pantry-staples",
+    slug: "honey",
     image: honeyImage,
     tone: "sage",
     en: {
-      title: "Pantry staples",
-      titleLead: "Pantry",
-      titleAccent: "staples",
-      eyebrow: "Everyday essentials",
+      title: "Natural honey",
+      titleLead: "Natural",
+      titleAccent: "honey",
+      eyebrow: "From the hive",
       summary:
-        "A thoughtful home for the ingredients that make everyday cooking feel like home.",
+        "Raw golden honey gathered for morning tables, tea rituals, and everyday kitchens.",
       detail:
-        "Explore the pantry range and find the products that fit your kitchen, table, or business. For item-level availability and specifications, please contact Alkhaleyah directly.",
+        "Explore Alkhaleyah's honey range and find the varieties and pack sizes that suit your home or business. For harvest details, availability, and wholesale supply, please contact us directly.",
       imageAlt: "Raw golden honey in a glass jar with honeycomb and wooden dipper",
     },
     ar: {
-      title: "أساسيات المؤونة",
-      titleLead: "أساسيات",
-      titleAccent: "المؤونة",
-      eyebrow: "ضرورات كل يوم",
+      title: "العسل الطبيعي",
+      titleLead: "العسل",
+      titleAccent: "الطبيعي",
+      eyebrow: "من الخلية مباشرة",
       summary:
-        "موطنٌ مدروس للمكوّنات التي تمنح طبخك اليومي دفء البيت.",
+        "عسل ذهبي صافٍ لمائدة الصباح، ولحظات الضيافة، والاستخدام اليومي في المطبخ.",
       detail:
-        "استكشف تشكيلة أساسيات المؤونة واعثر على المنتجات التي تناسب مطبخك أو مائدتك أو أعمالك. للاستفسار عن توافر الأصناف ومواصفاتها، يُرجى التواصل مع شركة الخلية مباشرةً.",
+        "استكشف تشكيلة العسل لدى الخلية وتعرّف على الأصناف وأحجام العبوات المناسبة لبيتك أو أعمالك. للاستفسار عن المواسم والتوافر وطلبات الجملة، تواصل معنا مباشرةً.",
       imageAlt: "عسل طبيعي ذهبي في وعاء زجاجي مع قرص العسل",
     },
   },
   {
-    slug: "grains-pulses",
-    image: oliveOilImage,
-    tone: "sand",
+    slug: "dates",
+    image: datesImage,
+    tone: "olive",
     en: {
-      title: "Grains & pulses",
-      titleLead: "Grains &",
-      titleAccent: "pulses",
-      eyebrow: "From the pantry",
-      summary: "Familiar foundations for meals shared across the table.",
+      title: "Fine dates",
+      titleLead: "Fine",
+      titleAccent: "dates",
+      eyebrow: "Naturally sweet",
+      summary:
+        "Carefully selected dates made for hospitality, sharing, and daily nourishment.",
       detail:
-        "Browse the grains and pulses category. Specific varieties, pack sizes, sourcing information, and availability can be added as Alkhaleyah's confirmed product list is provided.",
-      imageAlt: "Cold-pressed extra virgin olive oil with fresh olive branches",
+        "Discover Alkhaleyah's dates category for households, gifting, and trade partners. Exact cultivars, grades, origins, and seasonal availability are confirmed directly with our team.",
+      imageAlt: "Plump Arabian Medjool and Sukkary dates in a stoneware bowl",
     },
     ar: {
-      title: "الحبوب والبقوليات",
-      titleLead: "الحبوب",
-      titleAccent: "والبقوليات",
-      eyebrow: "من خيرات المؤونة",
-      summary: "أساسيات مألوفة لوجبات تُشارك حول المائدة.",
+      title: "التمور الفاخرة",
+      titleLead: "التمور",
+      titleAccent: "الفاخرة",
+      eyebrow: "حلاوةٌ طبيعية",
+      summary:
+        "تمور منتقاة بعناية للضيافة والمشاركة والتغذية اليومية حول المائدة.",
       detail:
-        "تصفّح فئة الحبوب والبقوليات. يمكن إضافة الأصناف المحددة وأحجام العبوات ومعلومات المصدر والتوافر فور اعتماد قائمة منتجات الخلية الرسمية.",
-      imageAlt: "زيت زيتون بكر ممتاز معصورة على البارد مع أغصان الزيتون",
+        "تعرّف على فئة التمور من الخلية للمنازل والهدايا وشركاء التجارة. تُؤكَّد الأصناف والدرجات والمصدر والتوافر الموسمي مباشرةً مع فريقنا.",
+      imageAlt: "تمور فاخرة مرتّبة في طبق خزفي",
     },
   },
   {
-    slug: "spices-herbs",
+    slug: "olives",
     image: olivesImage,
     tone: "clay",
     en: {
-      title: "Spices & herbs",
-      titleLead: "Spices &",
-      titleAccent: "herbs",
-      eyebrow: "A little more flavour",
+      title: "Cured olives",
+      titleLead: "Cured",
+      titleAccent: "olives",
+      eyebrow: "From the grove",
       summary:
-        "The colour and character of the spice shelf, gathered in one place.",
+        "Table olives prepared to bring depth, colour, and character to every spread.",
       detail:
-        "Discover the spices and herbs category. Product names, origins, formats, and pack details are intentionally not assumed; ask Alkhaleyah for the current range.",
+        "Browse Alkhaleyah's olives range. Reach out to our team for current varieties, curing styles, jar and bulk formats, and trade availability.",
       imageAlt: "Marinated green and dark olives with fresh olive leaves",
     },
     ar: {
-      title: "التوابل والأعشاب",
-      titleLead: "التوابل",
-      titleAccent: "والأعشاب",
-      eyebrow: "نكهةٌ أعمق",
-      summary: "ألوان رفّ التوابل وطابعه الأصيل، مجموعةٌ في مكان واحد.",
+      title: "الزيتون",
+      titleLead: "أصناف",
+      titleAccent: "الزيتون",
+      eyebrow: "من بساتين الزيتون",
+      summary:
+        "زيتون مائدة مُعدّ ليمنح أطباقك وموائدك نكهةً أصيلة وحضوراً مميزاً.",
       detail:
-        "اكتشف فئة التوابل والأعشاب. لم يتم افتراض أسماء الأصناف أو مناشئها أو تفاصيل التعبئة؛ تواصل مع الخلية للتعرّف على التشكيلة المتوفرة حالياً.",
+        "تصفّح تشكيلة الزيتون لدى الخلية. تواصل مع فريقنا للتعرّف على الأصناف المتاحة وطرق التحضير وأحجام العبوات وتوافر التوريد.",
       imageAlt: "زيتون أخضر وأسود متبّل مع أوراق الزيتون الطازجة",
     },
   },
   {
-    slug: "dates-dried-fruit",
-    image: datesImage,
-    tone: "olive",
+    slug: "olive-oil",
+    image: oliveOilImage,
+    tone: "sand",
     en: {
-      title: "Dates & dried fruit",
-      titleLead: "Dates &",
-      titleAccent: "dried fruit",
-      eyebrow: "Naturally at home",
+      title: "Olive oil",
+      titleLead: "Olive",
+      titleAccent: "oil",
+      eyebrow: "Cold-pressed care",
       summary:
-        "A pantry category made for snacking, sharing, and bringing to the table.",
+        "Rich, fragrant olive oil — a cornerstone for cooking, dressing, and dipping.",
       detail:
-        "Explore dates and dried fruit as a product category. Exact varieties, grades, origin, and availability should be confirmed with Alkhaleyah before ordering.",
-      imageAlt: "Plump Arabian Medjool and Sukkary dates in a stoneware bowl",
+        "Explore Alkhaleyah's olive oil category for everyday kitchens and commercial partners. Contact us for harvest notes, bottle and tin formats, and current availability.",
+      imageAlt: "Cold-pressed extra virgin olive oil with fresh olive branches",
     },
     ar: {
-      title: "التمور والفواكه المجففة",
-      titleLead: "التمور والفواكه",
-      titleAccent: "المجففة",
-      eyebrow: "بطبيعتها في كل بيت",
-      summary: "فئة مؤونة مثالية للضيافة والمشاركة والتقديم على المائدة.",
+      title: "زيت الزيتون",
+      titleLead: "زيت",
+      titleAccent: "الزيتون",
+      eyebrow: "عصرةٌ على البارد",
+      summary:
+        "زيت زيتون غنيّ بعبيره ونكهته — أساسٌ لا غنى عنه للطبخ والتتبيل والتقديم.",
       detail:
-        "استكشف فئة التمور والفواكه المجففة. يُرجى تأكيد الأصناف والدرجات والمصدر والتوافر مع شركة الخلية قبل الطلب.",
-      imageAlt: "تمور فاخرة مرتّبة في طبق خزفي",
+        "استكشف فئة زيت الزيتون لدى الخلية للمطابخ اليومية والشركاء التجاريين. تواصل معنا لمعرفة تفاصيل القطفة وأحجام العبوات والتوافر الحالي.",
+      imageAlt: "زيت زيتون بكر ممتاز معصور على البارد مع أغصان الزيتون",
     },
   },
 ];
+
+const legacySlugAliases: Record<string, string> = {
+  "pantry-staples": "honey",
+  "dates-dried-fruit": "dates",
+  "spices-herbs": "olives",
+  "grains-pulses": "olive-oil",
+};
+
+export function findProductRange(slug?: string): ProductRange | undefined {
+  if (!slug) return undefined;
+  const resolvedSlug = legacySlugAliases[slug] ?? slug;
+  return productRanges.find((item) => item.slug === resolvedSlug);
+}
 
 export function getRangeCopy(range: ProductRange, lang: Language): LocalizedRangeCopy {
   return range[lang];
