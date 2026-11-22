@@ -165,6 +165,15 @@ function vitePluginPublicPlatformConfig(): Plugin {
       server.middlewares.use("/api/platform/config.js", sendConfig);
       server.middlewares.use("/alkhaleyah/api/platform/config.js", sendConfig);
     },
+    transformIndexHtml(html, ctx) {
+      if (ctx.server) {
+        return html;
+      }
+      return html.replace(
+        'src="/api/platform/config.js"',
+        'src="/alkhaleyah/api/platform/config.js"'
+      );
+    },
     generateBundle() {
       this.emitFile({ type: "asset", fileName: "api/platform/config.js", source: publicPlatformScript() });
     },

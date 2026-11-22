@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { ContactInquiryForm } from "@/components/ContactInquiryForm";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getRangeCopy, productRanges } from "@/lib/catalog";
@@ -207,7 +208,7 @@ export default function Home() {
 
         <section className="contact-section" id="contact">
           <div className="contact-inner">
-            <div>
+            <div className="contact-copy-col">
               <p className="eyebrow light-eyebrow">
                 <span /> {t.contactSection.eyebrow}
               </p>
@@ -216,14 +217,15 @@ export default function Home() {
                 <br />
                 <em>{t.contactSection.titleAccent}</em>
               </h2>
+              <p className="contact-lead">{t.contactSection.body}</p>
+              <p className="contact-note">{t.contactSection.note}</p>
+              <a className="text-link light-link" href="#our-range">
+                {t.contactSection.cta}{" "}
+                <ArrowRight size={15} className="rtl-flip" />
+              </a>
             </div>
             <div className="contact-aside">
-              <p>{t.contactSection.body}</p>
-              <p className="contact-note">{t.contactSection.note}</p>
-              <a className="button button-light" href="#our-range">
-                {t.contactSection.cta}{" "}
-                <ArrowRight size={17} className="rtl-flip" />
-              </a>
+              <ContactInquiryForm />
             </div>
             <span className="contact-orbit" aria-hidden="true">
               {t.contactSection.orbitChar}

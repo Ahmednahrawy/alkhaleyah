@@ -62,7 +62,7 @@ export default function ProductRange() {
             <p className="detail-lede">{copy.summary}</p>
             <p className="detail-description">{copy.detail}</p>
             <div className="detail-actions">
-              <Link className="button button-dark" href="/#contact">
+              <Link className="button button-dark" href={`/?product=${range.slug}#contact`}>
                 {t.productDetail.askCta}{" "}
                 <ArrowRight size={17} className="rtl-flip" />
               </Link>

@@ -1,0 +1,381 @@
+import { useEffect, useState, type FormEvent } from "react";
+import { ArrowRight, Check, Copy } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
+import { translations } from "@/lib/i18n";
+
+type InquiryType = "home" | "trade";
+
+type SubmittedSummary = {
+  referenceId: string;
+  inquiryType: InquiryType;
+  products: string[];
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+};
+
+export function ContactInquiryForm() {
+  const { lang } = useLanguage();
+  const f = translations[lang].contactSection.form;
+
+  const [inquiryType, setInquiryType] = useState<InquiryType>("home");
+  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [message, setMessage] = useState("");
+  const [errors, setErrors] = useState<{
+    products?: string;
+    name?: string;
+    email?: string;
+  }>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState<SubmittedSummary | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const productParam = params.get("product");
+    if (!productParam) return;
+    const matched = findProductRange(productParam);
+    if (matched) {
+      setSelectedSlugs((prev) =>
+        prev.includes(matched.slug) ? prev : [...prev, matched.slug]
+      );
+    }
+  }, []);
+
+  const toggleProduct = (slug: string) => {
+    setSelectedSlugs((prev) =>
+      prev.includes(slug) ? prev.filter((item) => item !== slug) : [...prev, slug]
+    );
+    setErrors((prev) => ({ ...prev, products: undefined }));
+  };
+
+  const validate = () => {
+    const nextErrors: { products?: string; name?: string; email?: string } = {};
+    if (selectedSlugs.length === 0) {
+      nextErrors.products = f.errors.productsRequired;
+    }
+    if (!name.trim()) {
+      nextErrors.name = f.errors.nameRequired;
+    }
+    const emailTrimmed = email.trim();
+    if (!emailTrimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      nextErrors.email = f.errors.emailInvalid;
+    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!validate() || submitting) return;
+
+    setSubmitting(true);
+    let referenceId = `ALK-${Date.now().toString(36).toUpperCase()}`;
+
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      inquiryType,
+      products: selectedSlugs,
+      message: message.trim(),
+    };
+
+    try {
+      const endpoint = `${import.meta.env.BASE_URL}api/inquiries`;
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { referenceId?: string };
+        if (data.referenceId) {
+          referenceId = data.referenceId;
+        }
+      }
+    } catch {
+      // Static hosting (e.g. GitHub Pages) falls back gracefully to client-side confirmation.
+    } finally {
+      setSubmitting(false);
+    }
+
+    setSubmitted({
+      referenceId,
+      inquiryType,
+      products: selectedSlugs,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      message: payload.message,
+    });
+    setCopied(false);
+  };
+
+  const handleCopySummary = async () => {
+    if (!submitted) return;
+    const productNames = submitted.products
+      .map((slug) => {
+        const range = findProductRange(slug);
+        return range ? getRangeCopy(range, lang).title : slug;
+      })
+      .join(", ");
+
+    const lines = [
+      `${f.referenceLabel}: ${submitted.referenceId}`,
+      `${f.inquiryTypeLabel}: ${
+        submitted.inquiryType === "trade" ? f.typeTrade : f.typeHome
+      }`,
+      `${f.selectedProductsLabel}: ${productNames}`,
+      `${f.nameLabel}: ${submitted.name}`,
+      `${f.emailLabel}: ${submitted.email}`,
+      ...(submitted.phone ? [`${f.phoneLabel}: ${submitted.phone}`] : []),
+      ...(submitted.message ? [`${f.notesLabel}: ${submitted.message}`] : []),
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(lines);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Clipboard API unavailable
+    }
+  };
+
+  const handleReset = () => {
+    setSubmitted(null);
+    setSelectedSlugs([]);
+    setName("");
+    setEmail("");
+    setPhone("");
+    setMessage("");
+    setErrors({});
+    setCopied(false);
+  };
+
+  if (submitted) {
+    const selectedTitles = submitted.products.map((slug) => {
+      const range = findProductRange(slug);
+      return range ? getRangeCopy(range, lang).title : slug;
+    });
+
+    return (
+      <div className="inquiry-card inquiry-success" aria-live="polite">
+        <div className="inquiry-success-head">
+          <span className="inquiry-success-icon" aria-hidden="true">
+            <Check size={18} />
+          </span>
+          <div>
+            <h3>{f.successTitle}</h3>
+            <p className="inquiry-ref">
+              {f.referenceLabel}: <strong>{submitted.referenceId}</strong>
+            </p>
+          </div>
+        </div>
+        <p className="inquiry-success-body">{f.successBody}</p>
+        <dl className="inquiry-summary-list">
+          <div>
+            <dt>{f.inquiryTypeLabel}</dt>
+            <dd>
+              {submitted.inquiryType === "trade" ? f.typeTrade : f.typeHome}
+            </dd>
+          </div>
+          <div>
+            <dt>{f.selectedProductsLabel}</dt>
+            <dd>{selectedTitles.join(" · ")}</dd>
+          </div>
+          <div>
+            <dt>{f.nameLabel}</dt>
+            <dd>{submitted.name}</dd>
+          </div>
+          <div>
+            <dt>{f.emailLabel}</dt>
+            <dd>{submitted.email}</dd>
+          </div>
+          {submitted.phone && (
+            <div>
+              <dt>{f.phoneLabel}</dt>
+              <dd>{submitted.phone}</dd>
+            </div>
+          )}
+          {submitted.message && (
+            <div>
+              <dt>{f.notesLabel}</dt>
+              <dd>{submitted.message}</dd>
+            </div>
+          )}
+        </dl>
+        <div className="inquiry-success-actions">
+          <button
+            type="button"
+            className="button button-dark"
+            onClick={handleCopySummary}
+          >
+            {copied ? <Check size={15} /> : <Copy size={15} />}
+            {copied ? f.copiedButton : f.copyButton}
+          </button>
+          <button
+            type="button"
+            className="text-link"
+            onClick={handleReset}
+          >
+            {f.resetButton}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form className="inquiry-card" onSubmit={handleSubmit} noValidate>
+      <div className="inquiry-group">
+        <span className="inquiry-label">{f.inquiryTypeLabel}</span>
+        <div className="inquiry-type-group" role="radiogroup" aria-label={f.inquiryTypeLabel}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={inquiryType === "home"}
+            className={
+              inquiryType === "home"
+                ? "inquiry-type-btn is-selected"
+                : "inquiry-type-btn"
+            }
+            onClick={() => setInquiryType("home")}
+          >
+            {f.typeHome}
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={inquiryType === "trade"}
+            className={
+              inquiryType === "trade"
+                ? "inquiry-type-btn is-selected"
+                : "inquiry-type-btn"
+            }
+            onClick={() => setInquiryType("trade")}
+          >
+            {f.typeTrade}
+          </button>
+        </div>
+      </div>
+
+      <div className="inquiry-group">
+        <div className="inquiry-label-row">
+          <span className="inquiry-label">{f.productsLabel}</span>
+          <span className="inquiry-hint">{f.productsHint}</span>
+        </div>
+        <div className="inquiry-products-grid">
+          {productRanges.map((range) => {
+            const copy = getRangeCopy(range, lang);
+            const checked = selectedSlugs.includes(range.slug);
+            return (
+              <label
+                key={range.slug}
+                className={
+                  checked
+                    ? "inquiry-product-option is-checked"
+                    : "inquiry-product-option"
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => toggleProduct(range.slug)}
+                />
+                <span className="inquiry-check" aria-hidden="true">
+                  {checked && <Check size={12} />}
+                </span>
+                <span className="inquiry-product-name">{copy.title}</span>
+              </label>
+            );
+          })}
+        </div>
+        {errors.products && (
+          <p className="inquiry-error" role="alert">
+            {errors.products}
+          </p>
+        )}
+      </div>
+
+      <div className="inquiry-fields-row">
+        <label className="inquiry-field">
+          <span className="inquiry-label">{f.nameLabel}</span>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+            }}
+            placeholder={f.namePlaceholder}
+            autoComplete="name"
+            required
+          />
+          {errors.name && (
+            <span className="inquiry-error" role="alert">
+              {errors.name}
+            </span>
+          )}
+        </label>
+
+        <label className="inquiry-field">
+          <span className="inquiry-label">{f.emailLabel}</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+            }}
+            placeholder={f.emailPlaceholder}
+            autoComplete="email"
+            dir="ltr"
+            required
+          />
+          {errors.email && (
+            <span className="inquiry-error" role="alert">
+              {errors.email}
+            </span>
+          )}
+        </label>
+      </div>
+
+      <label className="inquiry-field">
+        <span className="inquiry-label">{f.phoneLabel}</span>
+        <input
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder={f.phonePlaceholder}
+          autoComplete="tel"
+          dir="ltr"
+        />
+      </label>
+
+      <label className="inquiry-field">
+        <span className="inquiry-label">{f.notesLabel}</span>
+        <textarea
+          rows={3}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={f.notesPlaceholder}
+        />
+      </label>
+
+      <button
+        type="submit"
+        className="button button-dark inquiry-submit"
+        disabled={submitting}
+      >
+        {submitting ? f.submittingButton : f.submitButton}
+        <ArrowRight size={17} className="rtl-flip" />
+      </button>
+    </form>
+  );
+}

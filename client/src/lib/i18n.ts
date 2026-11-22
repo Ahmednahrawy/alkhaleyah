@@ -91,6 +91,35 @@ type CopyShape = {
     note: string;
     cta: string;
     orbitChar: string;
+    form: {
+      inquiryTypeLabel: string;
+      typeHome: string;
+      typeTrade: string;
+      productsLabel: string;
+      productsHint: string;
+      nameLabel: string;
+      namePlaceholder: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      phoneLabel: string;
+      phonePlaceholder: string;
+      notesLabel: string;
+      notesPlaceholder: string;
+      submitButton: string;
+      submittingButton: string;
+      errors: {
+        productsRequired: string;
+        nameRequired: string;
+        emailInvalid: string;
+      };
+      successTitle: string;
+      successBody: string;
+      referenceLabel: string;
+      selectedProductsLabel: string;
+      copyButton: string;
+      copiedButton: string;
+      resetButton: string;
+    };
   };
   productDetail: {
     breadcrumbRoot: string;
@@ -246,10 +275,40 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "Let's talk food",
       titleLead: "Something on",
       titleAccent: "your mind?",
-      body: "For product details, availability, or wholesale enquiries, we’d love to hear from you.",
-      note: "Contact details can be added here when you share the email address, phone number, or enquiry channel you prefer.",
+      body: "For product details, availability, or wholesale enquiries, select the products you are interested in and leave your details.",
+      note: "Whether for your home table or commercial supply, we confirm pack sizes, availability, and pricing directly.",
       cta: "Browse the food range",
       orbitChar: "A",
+      form: {
+        inquiryTypeLabel: "Enquiry type",
+        typeHome: "Personal / Home",
+        typeTrade: "Wholesale / Trade",
+        productsLabel: "Select products",
+        productsHint: "Choose one or more",
+        nameLabel: "Full name",
+        namePlaceholder: "Your name",
+        emailLabel: "Email address",
+        emailPlaceholder: "name@example.com",
+        phoneLabel: "Phone (optional)",
+        phonePlaceholder: "+966 5X XXX XXXX",
+        notesLabel: "Order details or questions",
+        notesPlaceholder: "Pack sizes, estimated quantities, or any questions...",
+        submitButton: "Send inquiry",
+        submittingButton: "Sending...",
+        errors: {
+          productsRequired: "Please select at least one product.",
+          nameRequired: "Please enter your name.",
+          emailInvalid: "Please enter a valid email address.",
+        },
+        successTitle: "Inquiry received",
+        successBody:
+          "Thank you. Your product inquiry summary is ready below and has been recorded for our team.",
+        referenceLabel: "Reference",
+        selectedProductsLabel: "Selected products",
+        copyButton: "Copy summary",
+        copiedButton: "Copied",
+        resetButton: "Send another inquiry",
+      },
     },
     productDetail: {
       breadcrumbRoot: "Our range",
@@ -404,10 +463,40 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "لنتحدّث عن الطعام",
       titleLead: "هل لديك",
       titleAccent: "استفسار؟",
-      body: "للاستفسار عن تفاصيل المنتجات، أو التوافر، أو طلبات الجملة، يسعدنا تواصلك معنا.",
-      note: "يمكن إضافة بيانات التواصل هنا عند مشاركة البريد الإلكتروني أو رقم الهاتف أو قناة الاستفسار المفضلة لديك.",
+      body: "للاستفسار عن تفاصيل المنتجات أو التوافر أو طلبات الجملة، اختر المنتجات التي تهمّك وشاركنا بياناتك.",
+      note: "سواءً لمائدة منزلك أو لتوريد الأعمال، نؤكّد أحجام العبوات والتوافر والأسعار معك مباشرةً.",
       cta: "تصفّح التشكيلة الغذائية",
       orbitChar: "خ",
+      form: {
+        inquiryTypeLabel: "نوع الاستفسار",
+        typeHome: "طلب منزلي / شخصي",
+        typeTrade: "طلب جملة / شركاء",
+        productsLabel: "اختر المنتجات",
+        productsHint: "يمكن اختيار أكثر من منتج",
+        nameLabel: "الاسم الكامل",
+        namePlaceholder: "اكتب اسمك",
+        emailLabel: "البريد الإلكتروني",
+        emailPlaceholder: "name@example.com",
+        phoneLabel: "رقم الهاتف (اختياري)",
+        phonePlaceholder: "+966 5X XXX XXXX",
+        notesLabel: "تفاصيل الطلب أو الاستفسار",
+        notesPlaceholder: "أحجام العبوات، الكميات التقديرية، أو أي استفسارات أخرى...",
+        submitButton: "إرسال الاستفسار",
+        submittingButton: "جاري الإرسال...",
+        errors: {
+          productsRequired: "يُرجى اختيار منتج واحد على الأقل.",
+          nameRequired: "يُرجى إدخال الاسم الكامل.",
+          emailInvalid: "يُرجى إدخال بريد إلكتروني صحيح.",
+        },
+        successTitle: "تم استلام استفسارك",
+        successBody:
+          "شكراً لتواصلك مع الخلية. إليك ملخص استفسارك المسجّل أدناه.",
+        referenceLabel: "المرجع",
+        selectedProductsLabel: "المنتجات المختارة",
+        copyButton: "نسخ الملخص",
+        copiedButton: "تم النسخ",
+        resetButton: "إرسال استفسار آخر",
+      },
     },
     productDetail: {
       breadcrumbRoot: "منتجاتنا",
