@@ -9,14 +9,18 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
-const inquirySchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  email: z.string().trim().email().max(180),
-  phone: z.string().trim().max(40).optional().default(""),
-  inquiryType: z.enum(["home", "trade"]),
-  products: z.array(z.string().trim().min(1).max(80)).min(1).max(20),
-  message: z.string().trim().max(2000).optional().default(""),
-});
+const inquirySchema = z
+  .object({
+    name: z.string().trim().min(1).max(120),
+    email: z.string().trim().email().max(180).or(z.literal("")).optional().default(""),
+    phone: z.string().trim().max(40).optional().default(""),
+    inquiryType: z.enum(["home", "trade"]),
+    products: z.array(z.string().trim().min(1).max(80)).min(1).max(20),
+    message: z.string().trim().max(2000).optional().default(""),
+  })
+  .refine((data) => Boolean(data.phone || data.email), {
+    message: "Phone or email is required",
+  });
 
 async function startServer() {
   const app = express();

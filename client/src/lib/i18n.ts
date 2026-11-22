@@ -89,6 +89,7 @@ type CopyShape = {
     titleAccent: string;
     body: string;
     note: string;
+    whatsappDirectLabel: string;
     cta: string;
     orbitChar: string;
     form: {
@@ -110,10 +111,13 @@ type CopyShape = {
       errors: {
         productsRequired: string;
         nameRequired: string;
+        contactRequired: string;
         emailInvalid: string;
       };
       successTitle: string;
       successBody: string;
+      whatsappGreeting: string;
+      whatsappSendButton: string;
       referenceLabel: string;
       selectedProductsLabel: string;
       copyButton: string;
@@ -275,8 +279,9 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "Let's talk food",
       titleLead: "Something on",
       titleAccent: "your mind?",
-      body: "For product details, availability, or wholesale enquiries, select the products you are interested in and leave your details.",
-      note: "Whether for your home table or commercial supply, we confirm pack sizes, availability, and pricing directly.",
+      body: "For product details, availability, or wholesale enquiries, select the products you are interested in and send your inquiry directly to our WhatsApp.",
+      note: "Whether for your home table or commercial supply, we confirm pack sizes, availability, and pricing directly on WhatsApp.",
+      whatsappDirectLabel: "Direct WhatsApp",
       cta: "Browse the food range",
       orbitChar: "A",
       form: {
@@ -287,22 +292,25 @@ export const translations: Record<Language, CopyShape> = {
         productsHint: "Choose one or more",
         nameLabel: "Full name",
         namePlaceholder: "Your name",
-        emailLabel: "Email address",
+        emailLabel: "Email (optional)",
         emailPlaceholder: "name@example.com",
-        phoneLabel: "Phone (optional)",
-        phonePlaceholder: "+966 5X XXX XXXX",
+        phoneLabel: "Phone / WhatsApp",
+        phonePlaceholder: "+20 10X XXX XXXX",
         notesLabel: "Order details or questions",
         notesPlaceholder: "Pack sizes, estimated quantities, or any questions...",
-        submitButton: "Send inquiry",
-        submittingButton: "Sending...",
+        submitButton: "Prepare WhatsApp order",
+        submittingButton: "Preparing...",
         errors: {
           productsRequired: "Please select at least one product.",
           nameRequired: "Please enter your name.",
+          contactRequired: "Please enter a phone number or email address.",
           emailInvalid: "Please enter a valid email address.",
         },
-        successTitle: "Inquiry received",
+        successTitle: "Ready to send on WhatsApp",
         successBody:
-          "Thank you. Your product inquiry summary is ready below and has been recorded for our team.",
+          "Your inquiry summary is prepared below. Tap the WhatsApp button to send it directly to our team.",
+        whatsappGreeting: "Hello Alkhaleyah, I would like to send an order / inquiry:",
+        whatsappSendButton: "Send via WhatsApp",
         referenceLabel: "Reference",
         selectedProductsLabel: "Selected products",
         copyButton: "Copy summary",
@@ -463,8 +471,9 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "لنتحدّث عن الطعام",
       titleLead: "هل لديك",
       titleAccent: "استفسار؟",
-      body: "للاستفسار عن تفاصيل المنتجات أو التوافر أو طلبات الجملة، اختر المنتجات التي تهمّك وشاركنا بياناتك.",
-      note: "سواءً لمائدة منزلك أو لتوريد الأعمال، نؤكّد أحجام العبوات والتوافر والأسعار معك مباشرةً.",
+      body: "للاستفسار عن تفاصيل المنتجات أو التوافر أو طلبات الجملة، اختر المنتجات التي تهمّك وأرسل طلبك مباشرةً إلى واتساب الخلية.",
+      note: "سواءً لمائدة منزلك أو لتوريد الأعمال، نؤكّد معك أحجام العبوات والتوافر والأسعار مباشرةً عبر واتساب.",
+      whatsappDirectLabel: "واتساب مباشر",
       cta: "تصفّح التشكيلة الغذائية",
       orbitChar: "خ",
       form: {
@@ -475,22 +484,25 @@ export const translations: Record<Language, CopyShape> = {
         productsHint: "يمكن اختيار أكثر من منتج",
         nameLabel: "الاسم الكامل",
         namePlaceholder: "اكتب اسمك",
-        emailLabel: "البريد الإلكتروني",
+        emailLabel: "البريد الإلكتروني (اختياري)",
         emailPlaceholder: "name@example.com",
-        phoneLabel: "رقم الهاتف (اختياري)",
-        phonePlaceholder: "+966 5X XXX XXXX",
+        phoneLabel: "رقم الهاتف / واتساب",
+        phonePlaceholder: "+20 10X XXX XXXX",
         notesLabel: "تفاصيل الطلب أو الاستفسار",
         notesPlaceholder: "أحجام العبوات، الكميات التقديرية، أو أي استفسارات أخرى...",
-        submitButton: "إرسال الاستفسار",
-        submittingButton: "جاري الإرسال...",
+        submitButton: "تجهيز الطلب للواتساب",
+        submittingButton: "جاري التجهيز...",
         errors: {
           productsRequired: "يُرجى اختيار منتج واحد على الأقل.",
           nameRequired: "يُرجى إدخال الاسم الكامل.",
+          contactRequired: "يُرجى إدخال رقم الهاتف أو البريد الإلكتروني.",
           emailInvalid: "يُرجى إدخال بريد إلكتروني صحيح.",
         },
-        successTitle: "تم استلام استفسارك",
+        successTitle: "الطلب جاهز للإرسال عبر واتساب",
         successBody:
-          "شكراً لتواصلك مع الخلية. إليك ملخص استفسارك المسجّل أدناه.",
+          "تم تجهيز ملخص طلبك بالأسفل. اضغط على زر واتساب لإرساله مباشرةً إلى فريقنا.",
+        whatsappGreeting: "مرحباً الخلية، أود إرسال طلب / استفسار جديد:",
+        whatsappSendButton: "إرسال الطلب عبر واتساب",
         referenceLabel: "المرجع",
         selectedProductsLabel: "المنتجات المختارة",
         copyButton: "نسخ الملخص",

@@ -4,6 +4,7 @@ import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
 import brandLogo from "@/assets/images/alkhaleyah-logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/lib/i18n";
+import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 export function BrandMark() {
   const { lang } = useLanguage();
@@ -131,6 +132,14 @@ export function SiteFooter() {
           <SectionLink hash="our-range">{t.footer.exploreRange}</SectionLink>
           <SectionLink hash="our-story">{t.footer.about}</SectionLink>
           <SectionLink hash="contact">{t.footer.enquiries}</SectionLink>
+          <a
+            href={buildWhatsAppUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            dir="ltr"
+          >
+            {WHATSAPP_DISPLAY}
+          </a>
         </div>
       </div>
       <div className="footer-bottom">

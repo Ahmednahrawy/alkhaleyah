@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { ArrowUpRight, Check, Copy, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 type InquiryType = "home" | "trade";
 
@@ -29,6 +30,7 @@ export function ContactInquiryForm() {
   const [errors, setErrors] = useState<{
     products?: string;
     name?: string;
+    contact?: string;
     email?: string;
   }>({});
   const [submitting, setSubmitting] = useState(false);
@@ -55,19 +57,54 @@ export function ContactInquiryForm() {
   };
 
   const validate = () => {
-    const nextErrors: { products?: string; name?: string; email?: string } = {};
+    const nextErrors: {
+      products?: string;
+      name?: string;
+      contact?: string;
+      email?: string;
+    } = {};
+
     if (selectedSlugs.length === 0) {
       nextErrors.products = f.errors.productsRequired;
     }
     if (!name.trim()) {
       nextErrors.name = f.errors.nameRequired;
     }
+
+    const phoneTrimmed = phone.trim();
     const emailTrimmed = email.trim();
-    if (!emailTrimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+
+    if (!phoneTrimmed && !emailTrimmed) {
+      nextErrors.contact = f.errors.contactRequired;
+    }
+    if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
       nextErrors.email = f.errors.emailInvalid;
     }
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
+  };
+
+  const buildSummaryText = (summary: SubmittedSummary) => {
+    const productNames = summary.products
+      .map((slug) => {
+        const range = findProductRange(slug);
+        return range ? getRangeCopy(range, lang).title : slug;
+      })
+      .join(", ");
+
+    return [
+      f.whatsappGreeting,
+      `${f.referenceLabel}: ${summary.referenceId}`,
+      `${f.inquiryTypeLabel}: ${
+        summary.inquiryType === "trade" ? f.typeTrade : f.typeHome
+      }`,
+      `${f.selectedProductsLabel}: ${productNames}`,
+      `${f.nameLabel}: ${summary.name}`,
+      ...(summary.phone ? [`${f.phoneLabel}: ${summary.phone}`] : []),
+      ...(summary.email ? [`${f.emailLabel}: ${summary.email}`] : []),
+      ...(summary.message ? [`${f.notesLabel}: ${summary.message}`] : []),
+    ].join("\n");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -119,27 +156,8 @@ export function ContactInquiryForm() {
 
   const handleCopySummary = async () => {
     if (!submitted) return;
-    const productNames = submitted.products
-      .map((slug) => {
-        const range = findProductRange(slug);
-        return range ? getRangeCopy(range, lang).title : slug;
-      })
-      .join(", ");
-
-    const lines = [
-      `${f.referenceLabel}: ${submitted.referenceId}`,
-      `${f.inquiryTypeLabel}: ${
-        submitted.inquiryType === "trade" ? f.typeTrade : f.typeHome
-      }`,
-      `${f.selectedProductsLabel}: ${productNames}`,
-      `${f.nameLabel}: ${submitted.name}`,
-      `${f.emailLabel}: ${submitted.email}`,
-      ...(submitted.phone ? [`${f.phoneLabel}: ${submitted.phone}`] : []),
-      ...(submitted.message ? [`${f.notesLabel}: ${submitted.message}`] : []),
-    ].join("\n");
-
     try {
-      await navigator.clipboard.writeText(lines);
+      await navigator.clipboard.writeText(buildSummaryText(submitted));
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
@@ -163,12 +181,13 @@ export function ContactInquiryForm() {
       const range = findProductRange(slug);
       return range ? getRangeCopy(range, lang).title : slug;
     });
+    const whatsappUrl = buildWhatsAppUrl(buildSummaryText(submitted));
 
     return (
       <div className="inquiry-card inquiry-success" aria-live="polite">
         <div className="inquiry-success-head">
           <span className="inquiry-success-icon" aria-hidden="true">
-            <Check size={18} />
+            <MessageCircle size={18} />
           </span>
           <div>
             <h3>{f.successTitle}</h3>
@@ -193,14 +212,16 @@ export function ContactInquiryForm() {
             <dt>{f.nameLabel}</dt>
             <dd>{submitted.name}</dd>
           </div>
-          <div>
-            <dt>{f.emailLabel}</dt>
-            <dd>{submitted.email}</dd>
-          </div>
           {submitted.phone && (
             <div>
               <dt>{f.phoneLabel}</dt>
-              <dd>{submitted.phone}</dd>
+              <dd dir="ltr">{submitted.phone}</dd>
+            </div>
+          )}
+          {submitted.email && (
+            <div>
+              <dt>{f.emailLabel}</dt>
+              <dd dir="ltr">{submitted.email}</dd>
             </div>
           )}
           {submitted.message && (
@@ -211,6 +232,16 @@ export function ContactInquiryForm() {
           )}
         </dl>
         <div className="inquiry-success-actions">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="button button-whatsapp"
+          >
+            <MessageCircle size={16} />
+            {f.whatsappSendButton}
+            <ArrowUpRight size={15} className="rtl-flip" />
+          </a>
           <button
             type="button"
             className="button button-dark"
@@ -235,7 +266,11 @@ export function ContactInquiryForm() {
     <form className="inquiry-card" onSubmit={handleSubmit} noValidate>
       <div className="inquiry-group">
         <span className="inquiry-label">{f.inquiryTypeLabel}</span>
-        <div className="inquiry-type-group" role="radiogroup" aria-label={f.inquiryTypeLabel}>
+        <div
+          className="inquiry-type-group"
+          role="radiogroup"
+          aria-label={f.inquiryTypeLabel}
+        >
           <button
             type="button"
             role="radio"
@@ -303,23 +338,45 @@ export function ContactInquiryForm() {
         )}
       </div>
 
+      <label className="inquiry-field">
+        <span className="inquiry-label">{f.nameLabel}</span>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+          }}
+          placeholder={f.namePlaceholder}
+          autoComplete="name"
+          required
+        />
+        {errors.name && (
+          <span className="inquiry-error" role="alert">
+            {errors.name}
+          </span>
+        )}
+      </label>
+
       <div className="inquiry-fields-row">
         <label className="inquiry-field">
-          <span className="inquiry-label">{f.nameLabel}</span>
+          <span className="inquiry-label">{f.phoneLabel}</span>
           <input
-            type="text"
-            value={name}
+            type="tel"
+            value={phone}
             onChange={(e) => {
-              setName(e.target.value);
-              if (errors.name) setErrors((prev) => ({ ...prev, name: undefined }));
+              setPhone(e.target.value);
+              if (errors.contact) {
+                setErrors((prev) => ({ ...prev, contact: undefined }));
+              }
             }}
-            placeholder={f.namePlaceholder}
-            autoComplete="name"
-            required
+            placeholder={f.phonePlaceholder}
+            autoComplete="tel"
+            dir="ltr"
           />
-          {errors.name && (
+          {errors.contact && (
             <span className="inquiry-error" role="alert">
-              {errors.name}
+              {errors.contact}
             </span>
           )}
         </label>
@@ -331,12 +388,17 @@ export function ContactInquiryForm() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+              if (errors.contact || errors.email) {
+                setErrors((prev) => ({
+                  ...prev,
+                  contact: undefined,
+                  email: undefined,
+                }));
+              }
             }}
             placeholder={f.emailPlaceholder}
             autoComplete="email"
             dir="ltr"
-            required
           />
           {errors.email && (
             <span className="inquiry-error" role="alert">
@@ -345,18 +407,6 @@ export function ContactInquiryForm() {
           )}
         </label>
       </div>
-
-      <label className="inquiry-field">
-        <span className="inquiry-label">{f.phoneLabel}</span>
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder={f.phonePlaceholder}
-          autoComplete="tel"
-          dir="ltr"
-        />
-      </label>
 
       <label className="inquiry-field">
         <span className="inquiry-label">{f.notesLabel}</span>
@@ -370,11 +420,11 @@ export function ContactInquiryForm() {
 
       <button
         type="submit"
-        className="button button-dark inquiry-submit"
+        className="button button-whatsapp inquiry-submit"
         disabled={submitting}
       >
+        <MessageCircle size={17} />
         {submitting ? f.submittingButton : f.submitButton}
-        <ArrowRight size={17} className="rtl-flip" />
       </button>
     </form>
   );

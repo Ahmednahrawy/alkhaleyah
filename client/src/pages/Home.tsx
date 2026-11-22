@@ -3,6 +3,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   Leaf,
+  MessageCircle,
   Package,
   Sparkles,
 } from "lucide-react";
@@ -13,6 +14,7 @@ import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 export default function Home() {
   const { lang } = useLanguage();
@@ -219,10 +221,22 @@ export default function Home() {
               </h2>
               <p className="contact-lead">{t.contactSection.body}</p>
               <p className="contact-note">{t.contactSection.note}</p>
-              <a className="text-link light-link" href="#our-range">
-                {t.contactSection.cta}{" "}
-                <ArrowRight size={15} className="rtl-flip" />
-              </a>
+              <div className="contact-direct-links">
+                <a
+                  className="contact-whatsapp-link"
+                  href={buildWhatsAppUrl()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle size={17} aria-hidden="true" />
+                  <span>{t.contactSection.whatsappDirectLabel}:</span>
+                  <strong dir="ltr">{WHATSAPP_DISPLAY}</strong>
+                </a>
+                <a className="text-link light-link" href="#our-range">
+                  {t.contactSection.cta}{" "}
+                  <ArrowRight size={15} className="rtl-flip" />
+                </a>
+              </div>
             </div>
             <div className="contact-aside">
               <ContactInquiryForm />
