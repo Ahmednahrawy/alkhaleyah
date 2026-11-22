@@ -20,6 +20,7 @@ export type ProductVariant = {
   id: string;
   en: string;
   ar: string;
+  price: number;
 };
 
 export type ProductSubcategory = {
@@ -43,46 +44,6 @@ export type ProductRange = {
   ar: LocalizedRangeCopy;
   subcategories: ProductSubcategory[];
 };
-
-const WEIGHT_VARIANTS_DATES: ProductVariant[] = [
-  { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم" },
-  { id: "1kg", en: "1 kg", ar: "١ كجم" },
-  { id: "3kg", en: "3 kg", ar: "٣ كجم" },
-  { id: "5kg", en: "5 kg", ar: "٥ كجم" },
-  { id: "10kg", en: "10 kg", ar: "١٠ كجم" },
-];
-
-const WEIGHT_VARIANTS_HONEY: ProductVariant[] = [
-  { id: "0.25kg", en: "0.25 kg", ar: "٢٥٠ جم" },
-  { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم" },
-  { id: "1kg", en: "1 kg", ar: "١ كجم" },
-  { id: "3kg", en: "3 kg", ar: "٣ كجم" },
-];
-
-const WEIGHT_VARIANTS_BLACK_HONEY: ProductVariant[] = [
-  { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم" },
-  { id: "1kg", en: "1 kg", ar: "١ كجم" },
-  { id: "3kg", en: "3 kg", ar: "٣ كجم" },
-  { id: "5kg", en: "5 kg", ar: "٥ كجم" },
-];
-
-const VOLUME_VARIANTS_OIL: ProductVariant[] = [
-  { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر" },
-  { id: "1l", en: "1 liter", ar: "١ لتر" },
-];
-
-const VOLUME_VARIANTS_SYRUP: ProductVariant[] = [
-  { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر" },
-  { id: "1l", en: "1 liter", ar: "١ لتر" },
-  { id: "3l", en: "3 liter", ar: "٣ لتر" },
-];
-
-const WEIGHT_VARIANTS_OLIVES: ProductVariant[] = [
-  { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم" },
-  { id: "1kg", en: "1 kg", ar: "١ كجم" },
-  { id: "3kg", en: "3 kg", ar: "٣ كجم" },
-  { id: "5kg", en: "5 kg", ar: "٥ كجم" },
-];
 
 export const productRanges: ProductRange[] = [
   {
@@ -122,7 +83,12 @@ export const productRanges: ProductRange[] = [
           name: "عسل السدر",
           note: "نكهة غنية وعطرية مميزة وقوام ناعم مثالي للتقديم والضيافة.",
         },
-        variants: WEIGHT_VARIANTS_HONEY,
+        variants: [
+          { id: "0.25kg", en: "0.25 kg", ar: "٢٥٠ جم", price: 320 },
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 590 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 1100 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 3100 },
+        ],
       },
       {
         id: "mountain-wildflower",
@@ -134,7 +100,12 @@ export const productRanges: ProductRange[] = [
           name: "عسل زهور الجبل",
           note: "عسل أزهار طبيعي متوازن المذاق لمائدة الفطور اليومية.",
         },
-        variants: WEIGHT_VARIANTS_HONEY,
+        variants: [
+          { id: "0.25kg", en: "0.25 kg", ar: "٢٥٠ جم", price: 220 },
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 410 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 760 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 2150 },
+        ],
       },
       {
         id: "clover-honey",
@@ -146,7 +117,12 @@ export const productRanges: ProductRange[] = [
           name: "عسل زهرة البرسيم",
           note: "لون ذهبي فاتح وحلاوة لطيفة تناسب المشروبات والحلويات.",
         },
-        variants: WEIGHT_VARIANTS_HONEY,
+        variants: [
+          { id: "0.25kg", en: "0.25 kg", ar: "٢٥٠ جم", price: 140 },
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 250 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 460 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 1290 },
+        ],
       },
       {
         id: "raw-honeycomb",
@@ -159,8 +135,8 @@ export const productRanges: ProductRange[] = [
           note: "شمع طبيعي خام مملوء بالعسل الذهبي الصافي.",
         },
         variants: [
-          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم" },
-          { id: "1kg", en: "1 kg", ar: "١ كجم" },
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 480 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 890 },
         ],
       },
     ],
@@ -202,7 +178,12 @@ export const productRanges: ProductRange[] = [
           name: "عسل أسود صعيدي تقليدي",
           note: "قصب سكر مطهو ببطء على الطريقة الأصيلة بنكهة غنية وعميقة.",
         },
-        variants: WEIGHT_VARIANTS_BLACK_HONEY,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 75 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 135 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 380 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 610 },
+        ],
       },
       {
         id: "extra-thick-black-honey",
@@ -214,7 +195,12 @@ export const productRanges: ProductRange[] = [
           name: "عسل أسود فاخر ثقيل القوام",
           note: "قوام كثيف ومتركّز مثالي للتقديم مع الطحينة والفطائر.",
         },
-        variants: WEIGHT_VARIANTS_BLACK_HONEY,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 95 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 175 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 490 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 780 },
+        ],
       },
     ],
   },
@@ -255,7 +241,13 @@ export const productRanges: ProductRange[] = [
           name: "تمر المجدول",
           note: "حبات كبيرة وطريّة بمذاق يشبه الكراميل مثالية للضيافة والهدايا.",
         },
-        variants: WEIGHT_VARIANTS_DATES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 190 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 360 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 1020 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 1650 },
+          { id: "10kg", en: "10 kg", ar: "١٠ كجم", price: 3150 },
+        ],
       },
       {
         id: "sukkary-dates",
@@ -267,7 +259,13 @@ export const productRanges: ProductRange[] = [
           name: "تمر السكري",
           note: "لون ذهبي وطعم حلو يذوب في الفم، الرفيق الأمثل للقهوة العربية.",
         },
-        variants: WEIGHT_VARIANTS_DATES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 150 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 280 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 790 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 1280 },
+          { id: "10kg", en: "10 kg", ar: "١٠ كجم", price: 2450 },
+        ],
       },
       {
         id: "ajwa-dates",
@@ -279,7 +277,13 @@ export const productRanges: ProductRange[] = [
           name: "تمر العجوة",
           note: "تمر داكن طريّ القوام بحلاوة متوازنة وقيمة تقليدية عريقة.",
         },
-        variants: WEIGHT_VARIANTS_DATES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 240 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 450 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 1280 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 2050 },
+          { id: "10kg", en: "10 kg", ar: "١٠ كجم", price: 3950 },
+        ],
       },
       {
         id: "siwi-dates",
@@ -291,7 +295,13 @@ export const productRanges: ProductRange[] = [
           name: "تمر سيوي / صعيدي",
           note: "تمر واحات غني النكهة ومتوازن القوام للاستخدام اليومي.",
         },
-        variants: WEIGHT_VARIANTS_DATES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 90 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 165 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 470 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 750 },
+          { id: "10kg", en: "10 kg", ar: "١٠ كجم", price: 1420 },
+        ],
       },
     ],
   },
@@ -332,7 +342,11 @@ export const productRanges: ProductRange[] = [
           name: "دبس تمر طبيعي صافي",
           note: "مستخلص تمر نقي ١٠٠٪ بحلاوة فاكهية متوازنة وبدون إضافات.",
         },
-        variants: VOLUME_VARIANTS_SYRUP,
+        variants: [
+          { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر", price: 120 },
+          { id: "1l", en: "1 liter", ar: "١ لتر", price: 220 },
+          { id: "3l", en: "3 liter", ar: "٣ لتر", price: 620 },
+        ],
       },
       {
         id: "dark-roast-dibs",
@@ -344,7 +358,11 @@ export const productRanges: ProductRange[] = [
           name: "دبس تمر داكن مركز",
           note: "نكهة أعمق ومتركّزة تناسب الحلويات والتتبيلات وتقديم الطحينة.",
         },
-        variants: VOLUME_VARIANTS_SYRUP,
+        variants: [
+          { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر", price: 140 },
+          { id: "1l", en: "1 liter", ar: "١ لتر", price: 255 },
+          { id: "3l", en: "3 liter", ar: "٣ لتر", price: 710 },
+        ],
       },
     ],
   },
@@ -385,7 +403,12 @@ export const productRanges: ProductRange[] = [
           name: "زيتون أخضر مخلل",
           note: "زيتون أخضر مقرمش محضّر بالملح والليمون بنكهة منعشة.",
         },
-        variants: WEIGHT_VARIANTS_OLIVES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 95 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 175 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 490 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 790 },
+        ],
       },
       {
         id: "kalamata-black-olives",
@@ -397,7 +420,12 @@ export const productRanges: ProductRange[] = [
           name: "زيتون أسود / كالاماتا",
           note: "حبات ممتلئة غنية الطعم مُعدّة بالتخليل التقليدي.",
         },
-        variants: WEIGHT_VARIANTS_OLIVES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 125 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 230 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 650 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 1040 },
+        ],
       },
       {
         id: "herb-marinated-olives",
@@ -409,7 +437,12 @@ export const productRanges: ProductRange[] = [
           name: "زيتون متبّل بالأعشاب وزيت الزيتون",
           note: "متبّل بالزعتر البري والأعشاب العطرية وزيت الزيتون البكر.",
         },
-        variants: WEIGHT_VARIANTS_OLIVES,
+        variants: [
+          { id: "0.5kg", en: "0.5 kg", ar: "٠٫٥ كجم", price: 135 },
+          { id: "1kg", en: "1 kg", ar: "١ كجم", price: 250 },
+          { id: "3kg", en: "3 kg", ar: "٣ كجم", price: 700 },
+          { id: "5kg", en: "5 kg", ar: "٥ كجم", price: 1120 },
+        ],
       },
     ],
   },
@@ -450,7 +483,10 @@ export const productRanges: ProductRange[] = [
           name: "زيت زيتون بكر ممتاز (عصرة أولى على البارد)",
           note: "زيت ذو حموضة منخفضة ونكهة عشبية طازجة مثالي للتقديم والسلطات.",
         },
-        variants: VOLUME_VARIANTS_OIL,
+        variants: [
+          { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر", price: 340 },
+          { id: "1l", en: "1 liter", ar: "١ لتر", price: 640 },
+        ],
       },
       {
         id: "early-harvest-unfiltered",
@@ -462,7 +498,10 @@ export const productRanges: ProductRange[] = [
           name: "زيت زيتون قطفة أولى غير مفلتر",
           note: "زيت موسمي غني بمضادات الأكسدة بنكهة قوية وعطرية.",
         },
-        variants: VOLUME_VARIANTS_OIL,
+        variants: [
+          { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر", price: 390 },
+          { id: "1l", en: "1 liter", ar: "١ لتر", price: 740 },
+        ],
       },
       {
         id: "culinary-virgin-oil",
@@ -474,7 +513,10 @@ export const productRanges: ProductRange[] = [
           name: "زيت زيتون بكر للطبخ اليومي",
           note: "زيت متوازن وسلس يناسب الطهي اليومي والتتبيل.",
         },
-        variants: VOLUME_VARIANTS_OIL,
+        variants: [
+          { id: "0.5l", en: "0.5 liter", ar: "٠٫٥ لتر", price: 275 },
+          { id: "1l", en: "1 liter", ar: "١ لتر", price: 520 },
+        ],
       },
     ],
   },
@@ -506,4 +548,65 @@ export function findSubcategoryAndVariant(
   const subcategory = range?.subcategories.find((sub) => sub.id === subcategoryId);
   const variant = subcategory?.variants.find((v) => v.id === variantId);
   return { range, subcategory, variant };
+}
+
+export function formatPrice(amount: number, lang: Language): string {
+  const formatted = amount.toLocaleString(lang === "ar" ? "ar-EG" : "en-US");
+  return lang === "ar" ? `${formatted} ج.م` : `${formatted} EGP`;
+}
+
+export function getSubcategoryMinPrice(subcategory: ProductSubcategory): number {
+  return Math.min(...subcategory.variants.map((v) => v.price));
+}
+
+export function getRangeMinPrice(range: ProductRange): number {
+  return Math.min(
+    ...range.subcategories.flatMap((sub) => sub.variants.map((v) => v.price))
+  );
+}
+
+export type CatalogSearchResult = {
+  range: ProductRange;
+  subcategory: ProductSubcategory;
+  minPrice: number;
+};
+
+export function searchCatalog(query: string): CatalogSearchResult[] {
+  const trimmed = query.trim().toLowerCase();
+  if (!trimmed) return [];
+
+  const tokens = trimmed.split(/\s+/).filter(Boolean);
+  const results: CatalogSearchResult[] = [];
+
+  for (const range of productRanges) {
+    for (const subcategory of range.subcategories) {
+      const searchable = [
+        range.slug,
+        range.en.title,
+        range.en.eyebrow,
+        range.en.summary,
+        range.ar.title,
+        range.ar.eyebrow,
+        range.ar.summary,
+        subcategory.en.name,
+        subcategory.en.note,
+        subcategory.ar.name,
+        subcategory.ar.note,
+        ...subcategory.variants.map((v) => `${v.en} ${v.ar}`),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      const matches = tokens.every((token) => searchable.includes(token));
+      if (matches) {
+        results.push({
+          range,
+          subcategory,
+          minPrice: getSubcategoryMinPrice(subcategory),
+        });
+      }
+    }
+  }
+
+  return results;
 }

@@ -3,39 +3,44 @@ import { ArrowRight, Check, Minus, Plus, ShoppingBag, X } from "lucide-react";
 import { Link } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getRangeCopy, type ProductRange } from "@/lib/catalog";
+import {
+  formatPrice,
+  getRangeCopy,
+  getSubcategoryMinPrice,
+} from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 
-export function QuickAddModal({
-  range,
-  onClose,
-}: {
-  range: ProductRange | null;
-  onClose: () => void;
-}) {
+export function QuickAddModal() {
   const { lang } = useLanguage();
-  const { addItem, openCart } = useCart();
+  const { quickAddTarget, closeQuickAdd, addItem, openCart } = useCart();
   const q = translations[lang].quickAdd;
+  const r = translations[lang].rangeSection;
 
   const [selectedSubId, setSelectedSubId] = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
+  const range = quickAddTarget?.range ?? null;
+  const initialSubId = quickAddTarget?.initialSubcategoryId;
+
   useEffect(() => {
     if (!range) return;
-    const firstSub = range.subcategories[0];
-    setSelectedSubId(firstSub?.id ?? "");
-    setSelectedVariantId(firstSub?.variants[0]?.id ?? "");
+    const matchedSub =
+      (initialSubId &&
+        range.subcategories.find((sub) => sub.id === initialSubId)) ||
+      range.subcategories[0];
+    setSelectedSubId(matchedSub?.id ?? "");
+    setSelectedVariantId(matchedSub?.variants[0]?.id ?? "");
     setQuantity(1);
     setJustAdded(false);
-  }, [range]);
+  }, [range, initialSubId]);
 
   useEffect(() => {
     if (!range) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        closeQuickAdd();
       }
     };
     const prevOverflow = document.body.style.overflow;
@@ -45,7 +50,7 @@ export function QuickAddModal({
       document.body.style.overflow = prevOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [range, onClose]);
+  }, [range, closeQuickAdd]);
 
   if (!range) return null;
 
@@ -53,6 +58,10 @@ export function QuickAddModal({
   const currentSub =
     range.subcategories.find((sub) => sub.id === selectedSubId) ??
     range.subcategories[0];
+  const currentVariant =
+    currentSub?.variants.find((v) => v.id === selectedVariantId) ??
+    currentSub?.variants[0];
+  const lineTotal = (currentVariant?.price ?? 0) * quantity;
 
   const handleSelectSub = (subId: string) => {
     setSelectedSubId(subId);
@@ -69,13 +78,13 @@ export function QuickAddModal({
   };
 
   const handleAdd = () => {
-    if (!currentSub || !selectedVariantId) return;
-    addItem(range.slug, currentSub.id, selectedVariantId, quantity);
+    if (!currentSub || !currentVariant) return;
+    addItem(range.slug, currentSub.id, currentVariant.id, quantity);
     setJustAdded(true);
   };
 
   const handleViewCart = () => {
-    onClose();
+    closeQuickAdd();
     openCart();
   };
 
@@ -83,7 +92,7 @@ export function QuickAddModal({
     <div
       className="quick-add-backdrop"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) closeQuickAdd();
       }}
     >
       <div
@@ -108,7 +117,7 @@ export function QuickAddModal({
           <button
             type="button"
             className="cart-close-btn"
-            onClick={onClose}
+            onClick={closeQuickAdd}
             aria-label={q.closeAria}
           >
             <X size={20} />
@@ -121,6 +130,7 @@ export function QuickAddModal({
             <div className="quick-add-sub-list">
               {range.subcategories.map((sub) => {
                 const isSelected = sub.id === currentSub?.id;
+                const minPrice = getSubcategoryMinPrice(sub);
                 return (
                   <button
                     key={sub.id}
@@ -132,7 +142,12 @@ export function QuickAddModal({
                     }
                     onClick={() => handleSelectSub(sub.id)}
                   >
-                    <strong>{sub[lang].name}</strong>
+                    <div className="quick-add-sub-top">
+                      <strong>{sub[lang].name}</strong>
+                      <em className="quick-add-sub-price">
+                        {r.fromPricePrefix} {formatPrice(minPrice, lang)}
+                      </em>
+                    </div>
                     <span>{sub[lang].note}</span>
                   </button>
                 );
@@ -145,7 +160,7 @@ export function QuickAddModal({
               <span className="inquiry-label">{q.sizeLabel}</span>
               <div className="variant-grid">
                 {currentSub.variants.map((variant) => {
-                  const isSelected = variant.id === selectedVariantId;
+                  const isSelected = variant.id === currentVariant?.id;
                   return (
                     <button
                       key={variant.id}
@@ -158,7 +173,9 @@ export function QuickAddModal({
                         setJustAdded(false);
                       }}
                     >
-                      {variant[lang]}
+                      <span>{variant[lang]}</span>
+                      <span className="variant-chip-sep">·</span>
+                      <strong>{formatPrice(variant.price, lang)}</strong>
                     </button>
                   );
                 })}
@@ -167,23 +184,31 @@ export function QuickAddModal({
           )}
 
           <div className="quick-add-qty-row">
-            <span className="inquiry-label">{q.quantityLabel}</span>
-            <div className="qty-stepper">
-              <button
-                type="button"
-                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                aria-label="-"
-              >
-                <Minus size={14} />
-              </button>
-              <span>{quantity}</span>
-              <button
-                type="button"
-                onClick={() => setQuantity((prev) => prev + 1)}
-                aria-label="+"
-              >
-                <Plus size={14} />
-              </button>
+            <div className="quick-add-qty-group">
+              <span className="inquiry-label">{q.quantityLabel}</span>
+              <div className="qty-stepper">
+                <button
+                  type="button"
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                  aria-label="-"
+                >
+                  <Minus size={14} />
+                </button>
+                <span>{quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((prev) => prev + 1)}
+                  aria-label="+"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="quick-add-total-box">
+              <span className="inquiry-label">{q.totalLabel}</span>
+              <strong className="quick-add-total-price">
+                {formatPrice(lineTotal, lang)}
+              </strong>
             </div>
           </div>
         </div>
@@ -210,7 +235,7 @@ export function QuickAddModal({
             <Link
               href={`/products/${range.slug}`}
               className="text-link"
-              onClick={onClose}
+              onClick={closeQuickAdd}
             >
               {q.viewFullRange} <ArrowRight size={14} className="rtl-flip" />
             </Link>

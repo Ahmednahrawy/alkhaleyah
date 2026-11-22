@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -12,17 +11,22 @@ import {
 import { Link } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ContactInquiryForm } from "@/components/ContactInquiryForm";
-import { QuickAddModal } from "@/components/QuickAddModal";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getRangeCopy, productRanges, type ProductRange } from "@/lib/catalog";
+import {
+  formatPrice,
+  getRangeCopy,
+  getRangeMinPrice,
+  productRanges,
+} from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 export default function Home() {
   const { lang } = useLanguage();
+  const { openQuickAdd } = useCart();
   const t = translations[lang];
-  const [quickAddRange, setQuickAddRange] = useState<ProductRange | null>(null);
 
   return (
     <div className="site-shell">
@@ -93,6 +97,7 @@ export default function Home() {
           <div className="range-grid">
             {productRanges.map((range, index) => {
               const copy = getRangeCopy(range, lang);
+              const minPrice = getRangeMinPrice(range);
               const indexLabel =
                 lang === "ar"
                   ? `٠${["١", "٢", "٣", "٤", "٥", "٦"][index] ?? index + 1}`
@@ -114,6 +119,10 @@ export default function Home() {
                         referrerPolicy="no-referrer"
                       />
                       <span className="range-index">{indexLabel}</span>
+                      <span className="range-price-badge">
+                        {t.rangeSection.fromPricePrefix}{" "}
+                        {formatPrice(minPrice, lang)}
+                      </span>
                       <span className="range-arrow" aria-hidden="true">
                         <ArrowUpRight size={20} className="rtl-flip" />
                       </span>
@@ -131,7 +140,7 @@ export default function Home() {
                     <button
                       type="button"
                       className="range-quick-add"
-                      onClick={() => setQuickAddRange(range)}
+                      onClick={() => openQuickAdd(range)}
                     >
                       <ShoppingBag size={14} aria-hidden="true" />
                       <span>{t.rangeSection.quickAdd}</span>
@@ -276,10 +285,6 @@ export default function Home() {
         </section>
       </main>
       <SiteFooter />
-      <QuickAddModal
-        range={quickAddRange}
-        onClose={() => setQuickAddRange(null)}
-      />
     </div>
   );
 }

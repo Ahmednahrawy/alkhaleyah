@@ -14,7 +14,9 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   findProductRange,
+  formatPrice,
   getRangeCopy,
+  getSubcategoryMinPrice,
   productRanges,
   type ProductSubcategory,
 } from "@/lib/catalog";
@@ -45,9 +47,15 @@ function SubcategoryCard({
     setJustAdded(false);
   }, [categorySlug, subcategory]);
 
+  const currentVariant =
+    subcategory.variants.find((v) => v.id === variantId) ??
+    subcategory.variants[0];
+  const minPrice = getSubcategoryMinPrice(subcategory);
+  const lineTotal = (currentVariant?.price ?? 0) * quantity;
+
   const handleAdd = () => {
-    if (!variantId) return;
-    addItem(categorySlug, subcategory.id, variantId, quantity);
+    if (!currentVariant) return;
+    addItem(categorySlug, subcategory.id, currentVariant.id, quantity);
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2600);
   };
@@ -58,9 +66,17 @@ function SubcategoryCard({
       : `0${index + 1}`;
 
   return (
-    <article className="subcategory-card">
+    <article
+      className="subcategory-card"
+      id={`variety-${subcategory.id}`}
+    >
       <div className="subcategory-card-head">
-        <span className="subcategory-num">{numLabel}</span>
+        <div className="subcategory-top-row">
+          <span className="subcategory-num">{numLabel}</span>
+          <span className="subcategory-starting-price">
+            {p.fromPricePrefix} {formatPrice(minPrice, lang)}
+          </span>
+        </div>
         <h3>{subcategory[lang].name}</h3>
         <p>{subcategory[lang].note}</p>
       </div>
@@ -69,7 +85,7 @@ function SubcategoryCard({
         <span className="inquiry-label">{p.selectSizeLabel}</span>
         <div className="variant-grid">
           {subcategory.variants.map((variant) => {
-            const isSelected = variant.id === variantId;
+            const isSelected = variant.id === currentVariant?.id;
             return (
               <button
                 key={variant.id}
@@ -82,7 +98,9 @@ function SubcategoryCard({
                   setJustAdded(false);
                 }}
               >
-                {variant[lang]}
+                <span>{variant[lang]}</span>
+                <span className="variant-chip-sep">·</span>
+                <strong>{formatPrice(variant.price, lang)}</strong>
               </button>
             );
           })}
@@ -119,6 +137,9 @@ function SubcategoryCard({
         >
           {justAdded ? <Check size={15} /> : <ShoppingBag size={15} />}
           <span>{justAdded ? p.addedToCart : p.addToCart}</span>
+          <span className="subcategory-btn-price">
+            · {formatPrice(lineTotal, lang)}
+          </span>
         </button>
 
         {justAdded && (

@@ -13,6 +13,13 @@ type CopyShape = {
     getInTouch: string;
     cartLabel: string;
     cartAria: string;
+    searchPlaceholder: string;
+    searchAria: string;
+    searchToggleAria: string;
+    searchClearAria: string;
+    searchNoResults: string;
+    searchQuickAddLabel: string;
+    searchFromPrefix: string;
     switchLangLabel: string;
     switchLangAria: string;
   };
@@ -44,6 +51,7 @@ type CopyShape = {
     asideBody: string;
     asideNote: string;
     varietiesCountSuffix: string;
+    fromPricePrefix: string;
     quickAdd: string;
     viewCategory: string;
     footnote: string;
@@ -145,6 +153,8 @@ type CopyShape = {
     subcategoriesSubtitle: string;
     selectSizeLabel: string;
     quantityLabel: string;
+    priceLabel: string;
+    fromPricePrefix: string;
     addToCart: string;
     addedToCart: string;
     viewCart: string;
@@ -162,6 +172,7 @@ type CopyShape = {
     varietyLabel: string;
     sizeLabel: string;
     quantityLabel: string;
+    totalLabel: string;
     addToCart: string;
     addedToCart: string;
     viewCart: string;
@@ -175,6 +186,9 @@ type CopyShape = {
     emptyBody: string;
     browseButton: string;
     itemsCountSuffix: string;
+    unitPriceLabel: string;
+    subtotalLabel: string;
+    totalOrderLabel: string;
     decreaseAria: string;
     increaseAria: string;
     removeAria: string;
@@ -220,6 +234,13 @@ export const translations: Record<Language, CopyShape> = {
       getInTouch: "Get in touch",
       cartLabel: "Cart",
       cartAria: "Open order cart",
+      searchPlaceholder: "Search honey, dates, olive oil...",
+      searchAria: "Search products",
+      searchToggleAria: "Toggle product search",
+      searchClearAria: "Clear search",
+      searchNoResults: "No matching products found. Try honey, dates, olives, or oil.",
+      searchQuickAddLabel: "Add",
+      searchFromPrefix: "From",
       switchLangLabel: "العربية",
       switchLangAria: "Switch language to Arabic",
     },
@@ -258,10 +279,11 @@ export const translations: Record<Language, CopyShape> = {
         "From pantry foundations to the finishing touch, find your way around our food categories.",
       asideNote: "Find your favourite",
       varietiesCountSuffix: "varieties",
+      fromPricePrefix: "From",
       quickAdd: "Add to cart",
       viewCategory: "Varieties",
       footnote:
-        "Product availability and specifications are confirmed directly with Alkhaleyah.",
+        "All listed prices are in Egyptian Pounds (EGP). Delivery fees are confirmed directly with Alkhaleyah.",
     },
     storySection: {
       imageAria:
@@ -392,14 +414,16 @@ export const translations: Record<Language, CopyShape> = {
       browseVarietiesCta: "Choose varieties & sizes",
       allCategories: "All categories",
       disclaimer:
-        "Product names, pack sizes, and availability should be confirmed with Alkhaleyah.",
+        "All listed prices are in Egyptian Pounds (EGP) and confirmed upon order.",
       subcategoriesEyebrow: "Select varieties & weights",
       subcategoriesTitleLead: "Available",
       subcategoriesTitleAccent: "varieties.",
       subcategoriesSubtitle:
         "Pick the variety, select your preferred pack weight or bottle volume, and add directly to your order cart.",
-      selectSizeLabel: "Pack size",
+      selectSizeLabel: "Pack size & price",
       quantityLabel: "Quantity",
+      priceLabel: "Total",
+      fromPricePrefix: "From",
       addToCart: "Add to cart",
       addedToCart: "Added to cart",
       viewCart: "View cart",
@@ -415,8 +439,9 @@ export const translations: Record<Language, CopyShape> = {
     quickAdd: {
       title: "Select variety & pack size",
       varietyLabel: "Variety",
-      sizeLabel: "Weight / Volume",
+      sizeLabel: "Weight / Volume & Price",
       quantityLabel: "Quantity",
+      totalLabel: "Total",
       addToCart: "Add to cart",
       addedToCart: "Added to cart",
       viewCart: "Open cart",
@@ -431,6 +456,9 @@ export const translations: Record<Language, CopyShape> = {
         "Choose a product category, pick your preferred variety and weight or volume, and add items to prepare your WhatsApp order.",
       browseButton: "Browse our range",
       itemsCountSuffix: "items",
+      unitPriceLabel: "Unit price",
+      subtotalLabel: "Order subtotal",
+      totalOrderLabel: "Total",
       decreaseAria: "Decrease quantity",
       increaseAria: "Increase quantity",
       removeAria: "Remove item",
@@ -451,7 +479,7 @@ export const translations: Record<Language, CopyShape> = {
       copyOrder: "Copy order",
       copied: "Copied",
       whatsappGreeting: "Hello Alkhaleyah, I would like to place an order:",
-      noteConfirm: "Prices and delivery details will be confirmed directly on WhatsApp.",
+      noteConfirm: "Delivery details will be confirmed directly on WhatsApp.",
       missingContactHint: "Adding your name and phone helps our team confirm faster.",
       closeAria: "Close order cart",
     },
@@ -475,6 +503,13 @@ export const translations: Record<Language, CopyShape> = {
       getInTouch: "تواصل معنا",
       cartLabel: "السلة",
       cartAria: "فتح سلة الطلب",
+      searchPlaceholder: "ابحث عن العسل، التمور، زيت الزيتون...",
+      searchAria: "البحث في المنتجات",
+      searchToggleAria: "فتح شريط البحث",
+      searchClearAria: "مسح البحث",
+      searchNoResults: "لا توجد نتائج مطابقة. جرّب البحث عن العسل أو التمر أو الزيتون.",
+      searchQuickAddLabel: "أضف",
+      searchFromPrefix: "يبدأ من",
       switchLangLabel: "English",
       switchLangAria: "التبديل إلى اللغة الإنجليزية",
     },
@@ -513,10 +548,11 @@ export const translations: Record<Language, CopyShape> = {
         "من أساسيات المؤونة إلى اللمسة الأخيرة، تصفّح فئات منتجاتنا الغذائية بسهولة.",
       asideNote: "اختر ما يناسبك",
       varietiesCountSuffix: "أصناف",
+      fromPricePrefix: "يبدأ من",
       quickAdd: "أضف للسلة",
       viewCategory: "الأصناف",
       footnote:
-        "تُؤكَّد تفاصيل التوافر والمواصفات مباشرةً مع شركة الخلية.",
+        "جميع الأسعار بالجنيه المصري (ج.م)، وتُؤكَّد تفاصيل التوصيل مباشرةً مع شركة الخلية.",
     },
     storySection: {
       imageAria: "لقطة مقرّبة لزيت الزيتون البكر الممتاز مع أغصان الزيتون",
@@ -646,14 +682,16 @@ export const translations: Record<Language, CopyShape> = {
       browseVarietiesCta: "اختر الصنف والحجم",
       allCategories: "جميع الفئات",
       disclaimer:
-        "تُؤكَّد أسماء المنتجات وأحجام العبوات وتوافرها مباشرةً مع شركة الخلية.",
+        "جميع الأسعار المعروضة بالجنيه المصري (ج.م) وتُؤكَّد عند استلام الطلب.",
       subcategoriesEyebrow: "اختر الأصناف والأوزان",
       subcategoriesTitleLead: "الأصناف",
       subcategoriesTitleAccent: "المتوفرة.",
       subcategoriesSubtitle:
         "اختر الصنف المناسب وحدّد الوزن أو السعة المطلوبة وأضفها مباشرةً إلى سلة الطلب.",
-      selectSizeLabel: "حجم العبوة",
+      selectSizeLabel: "حجم العبوة والسعر",
       quantityLabel: "الكمية",
+      priceLabel: "الإجمالي",
+      fromPricePrefix: "يبدأ من",
       addToCart: "أضف إلى السلة",
       addedToCart: "تمت الإضافة",
       viewCart: "عرض السلة",
@@ -669,8 +707,9 @@ export const translations: Record<Language, CopyShape> = {
     quickAdd: {
       title: "اختر الصنف وحجم العبوة",
       varietyLabel: "الصنف",
-      sizeLabel: "الوزن / الحجم",
+      sizeLabel: "الوزن / الحجم والسعر",
       quantityLabel: "الكمية",
+      totalLabel: "الإجمالي",
       addToCart: "أضف إلى السلة",
       addedToCart: "تمت الإضافة",
       viewCart: "افتح السلة",
@@ -685,6 +724,9 @@ export const translations: Record<Language, CopyShape> = {
         "تصفّح فئات المنتجات واختر الصنف والوزن أو الحجم المناسب لإضافته وتجهيز طلبك عبر واتساب.",
       browseButton: "استكشف المنتجات",
       itemsCountSuffix: "منتجات",
+      unitPriceLabel: "سعر الوحدة",
+      subtotalLabel: "إجمالي الطلب",
+      totalOrderLabel: "الإجمالي",
       decreaseAria: "إنقاص الكمية",
       increaseAria: "زيادة الكمية",
       removeAria: "حذف الصنف",
@@ -705,7 +747,7 @@ export const translations: Record<Language, CopyShape> = {
       copyOrder: "نسخ الطلب",
       copied: "تم النسخ",
       whatsappGreeting: "مرحباً الخلية، أود إرسال هذا الطلب:",
-      noteConfirm: "سيتم تأكيد الأسعار وتفاصيل التوصيل مباشرةً عبر واتساب.",
+      noteConfirm: "سيتم تأكيد تفاصيل التوصيل مباشرةً عبر واتساب.",
       missingContactHint: "إضافة الاسم ورقم الهاتف يساعدنا على تأكيد طلبك بشكل أسرع.",
       closeAria: "إغلاق سلة الطلب",
     },

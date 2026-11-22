@@ -6,6 +6,7 @@ import ProductRange from "@/pages/ProductRange";
 import { Route, Router as WouterRouter, Switch, useLocation } from "wouter";
 import { CartDrawer } from "./components/CartDrawer";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { QuickAddModal } from "./components/QuickAddModal";
 import { CartProvider } from "./contexts/CartContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -15,18 +16,26 @@ function ScrollManager() {
   const [location] = useLocation();
 
   useEffect(() => {
-    const hash = window.location.hash.replace(/^#/, "");
-    if (hash) {
-      requestAnimationFrame(() => {
-        const target = document.getElementById(hash);
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-      return;
+    const scrollToHash = () => {
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash) {
+        requestAnimationFrame(() => {
+          const target = document.getElementById(hash);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+
+    if (!scrollToHash()) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
 
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
   }, [location]);
 
   return null;
@@ -43,6 +52,7 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       <CartDrawer />
+      <QuickAddModal />
     </WouterRouter>
   );
 }

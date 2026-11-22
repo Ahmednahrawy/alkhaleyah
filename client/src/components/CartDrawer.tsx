@@ -13,7 +13,11 @@ import {
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { findSubcategoryAndVariant, getRangeCopy } from "@/lib/catalog";
+import {
+  findSubcategoryAndVariant,
+  formatPrice,
+  getRangeCopy,
+} from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
@@ -23,6 +27,7 @@ export function CartDrawer() {
   const {
     items,
     totalCount,
+    subtotal,
     isOpen,
     closeCart,
     updateQuantity,
@@ -74,13 +79,14 @@ export function CartDrawer() {
         rangeCopy: getRangeCopy(resolved.range, lang),
         subcategory: resolved.subcategory,
         variant: resolved.variant,
+        lineTotal: resolved.variant.price * item.quantity,
       };
     })
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
   const itemLines = resolvedItems.map((entry, idx) => {
     const numberLabel = `${idx + 1}.`;
-    return `${numberLabel} ${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]}) × ${entry.item.quantity}`;
+    return `${numberLabel} ${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]} × ${entry.item.quantity}) = ${formatPrice(entry.lineTotal, lang)}`;
   });
 
   const whatsappMessage = [
@@ -89,6 +95,7 @@ export function CartDrawer() {
     "",
     ...itemLines,
     "",
+    `${c.subtotalLabel}: ${formatPrice(subtotal, lang)}`,
     ...(name.trim() ? [`${c.nameLabel}: ${name.trim()}`] : []),
     ...(phone.trim() ? [`${c.phoneLabel}: ${phone.trim()}`] : []),
     ...(email.trim() ? [`${c.emailLabel}: ${email.trim()}`] : []),
@@ -173,7 +180,14 @@ export function CartDrawer() {
             <>
               <div className="cart-items-list">
                 {resolvedItems.map(
-                  ({ item, range, rangeCopy, subcategory, variant }) => (
+                  ({
+                    item,
+                    range,
+                    rangeCopy,
+                    subcategory,
+                    variant,
+                    lineTotal,
+                  }) => (
                     <div key={item.key} className="cart-item">
                       <img
                         src={range.image}
@@ -188,9 +202,14 @@ export function CartDrawer() {
                         <h3 className="cart-item-title">
                           {subcategory[lang].name}
                         </h3>
-                        <span className="cart-item-variant">
-                          {variant[lang]}
-                        </span>
+                        <div className="cart-item-meta-row">
+                          <span className="cart-item-variant">
+                            {variant[lang]} · {formatPrice(variant.price, lang)}
+                          </span>
+                          <strong className="cart-item-line-total">
+                            {formatPrice(lineTotal, lang)}
+                          </strong>
+                        </div>
                         <div className="cart-item-controls">
                           <div className="qty-stepper">
                             <button
@@ -327,6 +346,10 @@ export function CartDrawer() {
 
         {resolvedItems.length > 0 && (
           <div className="cart-drawer-foot">
+            <div className="cart-subtotal-row">
+              <span>{c.subtotalLabel}</span>
+              <strong>{formatPrice(subtotal, lang)}</strong>
+            </div>
             <a
               href={whatsappUrl}
               target="_blank"
