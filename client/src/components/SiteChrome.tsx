@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
+import brandLogo from "@/assets/images/alkhaleyah-logo.png";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/lib/i18n";
 
@@ -10,12 +11,15 @@ export function BrandMark() {
 
   return (
     <Link href="/" className="brand" aria-label={t.brandHomeAria}>
-      <span className="brand-symbol" aria-hidden="true">
-        <span />
-        <span />
-        <span />
+      <span className="brand-logo-wrap">
+        <img
+          src={brandLogo}
+          alt={lang === "ar" ? t.brandName : ""}
+          className="brand-logo"
+          referrerPolicy="no-referrer"
+        />
       </span>
-      <span className="brand-name">{t.brandName}</span>
+      {lang === "en" && <span className="brand-name">{t.brandName}</span>}
     </Link>
   );
 }
