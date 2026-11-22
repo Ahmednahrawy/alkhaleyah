@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
@@ -201,6 +202,8 @@ export default function Home() {
             </article>
           </div>
         </section>
+
+        <TestimonialsSection />
 
         <section className="contact-section" id="contact">
           <div className="contact-inner">

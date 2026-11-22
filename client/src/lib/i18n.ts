@@ -63,6 +63,26 @@ type CopyShape = {
       { title: string; body: string; num: string },
     ];
   };
+  testimonialsSection: {
+    eyebrow: string;
+    titleLead: string;
+    titleAccent: string;
+    asideBody: string;
+    filters: {
+      all: string;
+      honey: string;
+      dates: string;
+    };
+    items: Array<{
+      id: string;
+      num: string;
+      category: string;
+      focus: Array<"honey" | "dates">;
+      quote: string;
+      author: string;
+      role: string;
+    }>;
+  };
   contactSection: {
     eyebrow: string;
     titleLead: string;
@@ -178,6 +198,50 @@ export const translations: Record<Language, CopyShape> = {
         },
       ],
     },
+    testimonialsSection: {
+      eyebrow: "From our tables",
+      titleLead: "Trusted for",
+      titleAccent: "pure quality.",
+      asideBody:
+        "Words from homes and hospitality partners who keep Alkhaleyah honey and dates in their kitchen.",
+      filters: {
+        all: "All",
+        honey: "Honey",
+        dates: "Dates",
+      },
+      items: [
+        {
+          id: "honey-quality",
+          num: "01",
+          category: "Natural honey",
+          focus: ["honey"],
+          quote:
+            "“The natural honey has an unmistakable floral depth and clean finish — thick, aromatic, and clearly unblended. It has become a daily staple on our breakfast table.”",
+          author: "Nadia Al-Mansoor",
+          role: "Home cook · Riyadh",
+        },
+        {
+          id: "dates-quality",
+          num: "02",
+          category: "Fine dates",
+          focus: ["dates"],
+          quote:
+            "“Every box of dates arrives plump, glossy, and evenly graded — tender without being overly sweet. Guests always ask where we sourced them.”",
+          author: "Tariq Haddad",
+          role: "Hospitality host · Amman",
+        },
+        {
+          id: "honey-and-dates",
+          num: "03",
+          category: "Honey & dates",
+          focus: ["honey", "dates"],
+          quote:
+            "“Consistency matters when supplying our kitchen. Alkhaleyah’s honey holds its natural clarity and their dates stay fresh and soft — reliable quality in every batch.”",
+          author: "Salma Kareem",
+          role: "Café & pantry buyer · Dubai",
+        },
+      ],
+    },
     contactSection: {
       eyebrow: "Let's talk food",
       titleLead: "Something on",
@@ -289,6 +353,50 @@ export const translations: Record<Language, CopyShape> = {
           title: "دائماً في خدمتك",
           body: "تواصل معنا للاستفسار عن تفاصيل المنتجات أو التوافر أو التوريد.",
           num: "٠٣",
+        },
+      ],
+    },
+    testimonialsSection: {
+      eyebrow: "من موائد عملائنا",
+      titleLead: "ثقةٌ تُبنى",
+      titleAccent: "بجودة الأصل.",
+      asideBody:
+        "آراء صادقة من عملاء المنازل وشركاء الضيافة حول جودة العسل والتمور من الخلية.",
+      filters: {
+        all: "الكل",
+        honey: "العسل",
+        dates: "التمور",
+      },
+      items: [
+        {
+          id: "honey-quality",
+          num: "٠١",
+          category: "العسل الطبيعي",
+          focus: ["honey"],
+          quote:
+            "«للعسل الطبيعي عمقٌ زهري واضح ونكهة صافية لا تُخطئها الحواس — كثيف القوام، عطِر، وأصبح جزءاً أساسياً من مائدة الفطور كل صباح.»",
+          author: "نادية المنصور",
+          role: "عميلة منزلية · الرياض",
+        },
+        {
+          id: "dates-quality",
+          num: "٠٢",
+          category: "التمور الفاخرة",
+          focus: ["dates"],
+          quote:
+            "«تصلنا التمور في كل مرة طازجة، لامعة الحبات، ومفرزة بعناية؛ طراوتها متوازنة وحلاوتها لطيفة تليق بمجالس الضيافة.»",
+          author: "طارق حداد",
+          role: "مضيف ومهتم بالضيافة · عمّان",
+        },
+        {
+          id: "honey-and-dates",
+          num: "٠٣",
+          category: "العسل والتمور",
+          focus: ["honey", "dates"],
+          quote:
+            "«ثبات الجودة هو ما نبحث عنه في مطبخنا. عسل الخلية يحافظ على صفائه الطبيعي وتمورهم تحتفظ بطراوتها في كل دفعة نطلبها.»",
+          author: "سلمى كريم",
+          role: "مسؤولة مشتريات مقهى ومؤونة · دبي",
         },
       ],
     },
