@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -5,20 +6,23 @@ import {
   Leaf,
   MessageCircle,
   Package,
+  ShoppingBag,
   Sparkles,
 } from "lucide-react";
 import { Link } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ContactInquiryForm } from "@/components/ContactInquiryForm";
+import { QuickAddModal } from "@/components/QuickAddModal";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { getRangeCopy, productRanges } from "@/lib/catalog";
+import { getRangeCopy, productRanges, type ProductRange } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 export default function Home() {
   const { lang } = useLanguage();
   const t = translations[lang];
+  const [quickAddRange, setQuickAddRange] = useState<ProductRange | null>(null);
 
   return (
     <div className="site-shell">
@@ -94,29 +98,53 @@ export default function Home() {
                   ? `٠${["١", "٢", "٣", "٤", "٥", "٦"][index] ?? index + 1}`
                   : `0${index + 1}`;
               return (
-                <Link
+                <article
                   key={range.slug}
-                  href={`/products/${range.slug}`}
                   className={`range-card range-card-${range.tone}`}
                 >
-                  <div className="range-image-wrap">
-                    <img
-                      src={range.image}
-                      alt=""
-                      loading="lazy"
-                      referrerPolicy="no-referrer"
-                    />
-                    <span className="range-index">{indexLabel}</span>
-                    <span className="range-arrow" aria-hidden="true">
-                      <ArrowUpRight size={20} className="rtl-flip" />
-                    </span>
+                  <Link
+                    href={`/products/${range.slug}`}
+                    className="range-card-link"
+                  >
+                    <div className="range-image-wrap">
+                      <img
+                        src={range.image}
+                        alt=""
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                      />
+                      <span className="range-index">{indexLabel}</span>
+                      <span className="range-arrow" aria-hidden="true">
+                        <ArrowUpRight size={20} className="rtl-flip" />
+                      </span>
+                    </div>
+                    <div className="range-card-copy">
+                      <span className="range-eyebrow">
+                        {copy.eyebrow} · {range.subcategories.length}{" "}
+                        {t.rangeSection.varietiesCountSuffix}
+                      </span>
+                      <h3>{copy.title}</h3>
+                      <p>{copy.summary}</p>
+                    </div>
+                  </Link>
+                  <div className="range-card-actions">
+                    <button
+                      type="button"
+                      className="range-quick-add"
+                      onClick={() => setQuickAddRange(range)}
+                    >
+                      <ShoppingBag size={14} aria-hidden="true" />
+                      <span>{t.rangeSection.quickAdd}</span>
+                    </button>
+                    <Link
+                      href={`/products/${range.slug}`}
+                      className="range-explore-link"
+                    >
+                      <span>{t.rangeSection.viewCategory}</span>
+                      <ArrowRight size={13} className="rtl-flip" />
+                    </Link>
                   </div>
-                  <div className="range-card-copy">
-                    <span className="range-eyebrow">{copy.eyebrow}</span>
-                    <h3>{copy.title}</h3>
-                    <p>{copy.summary}</p>
-                  </div>
-                </Link>
+                </article>
               );
             })}
           </div>
@@ -248,6 +276,10 @@ export default function Home() {
         </section>
       </main>
       <SiteFooter />
+      <QuickAddModal
+        range={quickAddRange}
+        onClose={() => setQuickAddRange(null)}
+      />
     </div>
   );
 }

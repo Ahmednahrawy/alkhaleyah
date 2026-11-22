@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import ProductRange from "@/pages/ProductRange";
 import { Route, Router as WouterRouter, Switch, useLocation } from "wouter";
+import { CartDrawer } from "./components/CartDrawer";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { CartProvider } from "./contexts/CartContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
@@ -40,6 +42,7 @@ function Router() {
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
+      <CartDrawer />
     </WouterRouter>
   );
 }
@@ -49,10 +52,12 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
+          <CartProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>

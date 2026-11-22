@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, Check, Copy, MessageCircle } from "lucide-react";
+import { ArrowUpRight, Check, Copy, MessageCircle, ShoppingBag } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
@@ -19,6 +20,7 @@ type SubmittedSummary = {
 
 export function ContactInquiryForm() {
   const { lang } = useLanguage();
+  const { totalCount, openCart } = useCart();
   const f = translations[lang].contactSection.form;
 
   const [inquiryType, setInquiryType] = useState<InquiryType>("home");
@@ -264,6 +266,24 @@ export function ContactInquiryForm() {
 
   return (
     <form className="inquiry-card" onSubmit={handleSubmit} noValidate>
+      {totalCount > 0 && (
+        <div className="inquiry-cart-banner">
+          <div className="inquiry-cart-banner-text">
+            <ShoppingBag size={15} aria-hidden="true" />
+            <span>
+              {f.cartBannerCountPrefix} <strong>{totalCount}</strong>{" "}
+              {f.cartBannerCountSuffix}
+            </span>
+          </div>
+          <button
+            type="button"
+            className="inquiry-cart-banner-btn"
+            onClick={openCart}
+          >
+            {f.cartBannerButton}
+          </button>
+        </div>
+      )}
       <div className="inquiry-group">
         <span className="inquiry-label">{f.inquiryTypeLabel}</span>
         <div

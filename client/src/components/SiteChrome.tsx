@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowUpRight, Globe, Menu, X } from "lucide-react";
+import { ArrowUpRight, Globe, Menu, ShoppingBag, X } from "lucide-react";
 import brandLogo from "@/assets/images/alkhaleyah-logo.png";
+import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/lib/i18n";
 import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
@@ -39,6 +40,33 @@ export function LanguageSwitcher() {
     >
       <Globe size={14} aria-hidden="true" />
       <span>{t.nav.switchLangLabel}</span>
+    </button>
+  );
+}
+
+export function CartButton({ onOpen }: { onOpen?: () => void }) {
+  const { lang } = useLanguage();
+  const { totalCount, openCart } = useCart();
+  const t = translations[lang];
+
+  return (
+    <button
+      type="button"
+      className="cart-trigger"
+      onClick={() => {
+        onOpen?.();
+        openCart();
+      }}
+      aria-label={t.nav.cartAria}
+      data-testid="cart-button"
+    >
+      <ShoppingBag size={15} aria-hidden="true" />
+      <span className="cart-trigger-label">{t.nav.cartLabel}</span>
+      {totalCount > 0 && (
+        <span className="cart-badge" aria-hidden="true">
+          {totalCount}
+        </span>
+      )}
     </button>
   );
 }
@@ -82,6 +110,7 @@ export function SiteHeader() {
       <div className="header-inner">
         <BrandMark />
         <div className="header-controls">
+          <CartButton onOpen={close} />
           <div className="mobile-lang-wrap">
             <LanguageSwitcher />
           </div>
@@ -108,6 +137,9 @@ export function SiteHeader() {
           <SectionLink hash="contact" className="nav-cta" onNavigate={close}>
             {t.nav.getInTouch} <ArrowUpRight size={15} className="rtl-flip" />
           </SectionLink>
+          <div className="desktop-cart-wrap">
+            <CartButton onOpen={close} />
+          </div>
           <div className="desktop-lang-wrap">
             <LanguageSwitcher />
           </div>

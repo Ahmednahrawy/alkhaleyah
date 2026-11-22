@@ -11,6 +11,8 @@ type CopyShape = {
     ourRange: string;
     ourStory: string;
     getInTouch: string;
+    cartLabel: string;
+    cartAria: string;
     switchLangLabel: string;
     switchLangAria: string;
   };
@@ -41,6 +43,9 @@ type CopyShape = {
     titleAccent: string;
     asideBody: string;
     asideNote: string;
+    varietiesCountSuffix: string;
+    quickAdd: string;
+    viewCategory: string;
     footnote: string;
   };
   storySection: {
@@ -123,13 +128,26 @@ type CopyShape = {
       copyButton: string;
       copiedButton: string;
       resetButton: string;
+      cartBannerCountPrefix: string;
+      cartBannerCountSuffix: string;
+      cartBannerButton: string;
     };
   };
   productDetail: {
     breadcrumbRoot: string;
     askCta: string;
+    browseVarietiesCta: string;
     allCategories: string;
     disclaimer: string;
+    subcategoriesEyebrow: string;
+    subcategoriesTitleLead: string;
+    subcategoriesTitleAccent: string;
+    subcategoriesSubtitle: string;
+    selectSizeLabel: string;
+    quantityLabel: string;
+    addToCart: string;
+    addedToCart: string;
+    viewCart: string;
     moreEyebrow: string;
     moreTitleLead: string;
     moreTitleAccent: string;
@@ -138,6 +156,48 @@ type CopyShape = {
     notFoundTitleAccent: string;
     notFoundBody: string;
     notFoundCta: string;
+  };
+  quickAdd: {
+    title: string;
+    varietyLabel: string;
+    sizeLabel: string;
+    quantityLabel: string;
+    addToCart: string;
+    addedToCart: string;
+    viewCart: string;
+    viewFullRange: string;
+    closeAria: string;
+  };
+  cart: {
+    title: string;
+    subtitle: string;
+    emptyTitle: string;
+    emptyBody: string;
+    browseButton: string;
+    itemsCountSuffix: string;
+    decreaseAria: string;
+    increaseAria: string;
+    removeAria: string;
+    clearCart: string;
+    customerSectionTitle: string;
+    orderTypeLabel: string;
+    typeHome: string;
+    typeTrade: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    phoneLabel: string;
+    phonePlaceholder: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    notesLabel: string;
+    notesPlaceholder: string;
+    sendWhatsApp: string;
+    copyOrder: string;
+    copied: string;
+    whatsappGreeting: string;
+    noteConfirm: string;
+    missingContactHint: string;
+    closeAria: string;
   };
   notFoundPage: {
     title: string;
@@ -158,6 +218,8 @@ export const translations: Record<Language, CopyShape> = {
       ourRange: "Our range",
       ourStory: "Our story",
       getInTouch: "Get in touch",
+      cartLabel: "Cart",
+      cartAria: "Open order cart",
       switchLangLabel: "العربية",
       switchLangAria: "Switch language to Arabic",
     },
@@ -195,6 +257,9 @@ export const translations: Record<Language, CopyShape> = {
       asideBody:
         "From pantry foundations to the finishing touch, find your way around our food categories.",
       asideNote: "Find your favourite",
+      varietiesCountSuffix: "varieties",
+      quickAdd: "Add to cart",
+      viewCategory: "Varieties",
       footnote:
         "Product availability and specifications are confirmed directly with Alkhaleyah.",
     },
@@ -316,14 +381,28 @@ export const translations: Record<Language, CopyShape> = {
         copyButton: "Copy summary",
         copiedButton: "Copied",
         resetButton: "Send another inquiry",
+        cartBannerCountPrefix: "You currently have",
+        cartBannerCountSuffix: "item(s) in your order cart.",
+        cartBannerButton: "Open cart",
       },
     },
     productDetail: {
       breadcrumbRoot: "Our range",
       askCta: "Ask about this range",
+      browseVarietiesCta: "Choose varieties & sizes",
       allCategories: "All categories",
       disclaimer:
         "Product names, pack sizes, and availability should be confirmed with Alkhaleyah.",
+      subcategoriesEyebrow: "Select varieties & weights",
+      subcategoriesTitleLead: "Available",
+      subcategoriesTitleAccent: "varieties.",
+      subcategoriesSubtitle:
+        "Pick the variety, select your preferred pack weight or bottle volume, and add directly to your order cart.",
+      selectSizeLabel: "Pack size",
+      quantityLabel: "Quantity",
+      addToCart: "Add to cart",
+      addedToCart: "Added to cart",
+      viewCart: "View cart",
       moreEyebrow: "Keep exploring",
       moreTitleLead: "More from",
       moreTitleAccent: "the pantry.",
@@ -332,6 +411,49 @@ export const translations: Record<Language, CopyShape> = {
       notFoundTitleAccent: "isn't here.",
       notFoundBody: "Head back to explore the categories we have listed.",
       notFoundCta: "Return to our range",
+    },
+    quickAdd: {
+      title: "Select variety & pack size",
+      varietyLabel: "Variety",
+      sizeLabel: "Weight / Volume",
+      quantityLabel: "Quantity",
+      addToCart: "Add to cart",
+      addedToCart: "Added to cart",
+      viewCart: "Open cart",
+      viewFullRange: "Explore full category",
+      closeAria: "Close product selector",
+    },
+    cart: {
+      title: "Your order cart",
+      subtitle: "Review your selected varieties and send your order directly via WhatsApp.",
+      emptyTitle: "Your cart is empty",
+      emptyBody:
+        "Choose a product category, pick your preferred variety and weight or volume, and add items to prepare your WhatsApp order.",
+      browseButton: "Browse our range",
+      itemsCountSuffix: "items",
+      decreaseAria: "Decrease quantity",
+      increaseAria: "Increase quantity",
+      removeAria: "Remove item",
+      clearCart: "Clear cart",
+      customerSectionTitle: "Your details for order confirmation",
+      orderTypeLabel: "Order type",
+      typeHome: "Personal / Home",
+      typeTrade: "Wholesale / Trade",
+      nameLabel: "Full name",
+      namePlaceholder: "Your name",
+      phoneLabel: "Phone / WhatsApp",
+      phonePlaceholder: "+20 10X XXX XXXX",
+      emailLabel: "Email (optional)",
+      emailPlaceholder: "name@example.com",
+      notesLabel: "Delivery area or notes (optional)",
+      notesPlaceholder: "City, delivery notes, or any extra requests...",
+      sendWhatsApp: "Send order via WhatsApp",
+      copyOrder: "Copy order",
+      copied: "Copied",
+      whatsappGreeting: "Hello Alkhaleyah, I would like to place an order:",
+      noteConfirm: "Prices and delivery details will be confirmed directly on WhatsApp.",
+      missingContactHint: "Adding your name and phone helps our team confirm faster.",
+      closeAria: "Close order cart",
     },
     notFoundPage: {
       title: "Page Not Found",
@@ -351,6 +473,8 @@ export const translations: Record<Language, CopyShape> = {
       ourRange: "منتجاتنا",
       ourStory: "قصتنا",
       getInTouch: "تواصل معنا",
+      cartLabel: "السلة",
+      cartAria: "فتح سلة الطلب",
       switchLangLabel: "English",
       switchLangAria: "التبديل إلى اللغة الإنجليزية",
     },
@@ -388,6 +512,9 @@ export const translations: Record<Language, CopyShape> = {
       asideBody:
         "من أساسيات المؤونة إلى اللمسة الأخيرة، تصفّح فئات منتجاتنا الغذائية بسهولة.",
       asideNote: "اختر ما يناسبك",
+      varietiesCountSuffix: "أصناف",
+      quickAdd: "أضف للسلة",
+      viewCategory: "الأصناف",
       footnote:
         "تُؤكَّد تفاصيل التوافر والمواصفات مباشرةً مع شركة الخلية.",
     },
@@ -508,14 +635,28 @@ export const translations: Record<Language, CopyShape> = {
         copyButton: "نسخ الملخص",
         copiedButton: "تم النسخ",
         resetButton: "إرسال استفسار آخر",
+        cartBannerCountPrefix: "لديك حالياً",
+        cartBannerCountSuffix: "منتج/منتجات في سلة الطلب.",
+        cartBannerButton: "عرض السلة",
       },
     },
     productDetail: {
       breadcrumbRoot: "منتجاتنا",
       askCta: "اسأل عن هذه الفئة",
+      browseVarietiesCta: "اختر الصنف والحجم",
       allCategories: "جميع الفئات",
       disclaimer:
         "تُؤكَّد أسماء المنتجات وأحجام العبوات وتوافرها مباشرةً مع شركة الخلية.",
+      subcategoriesEyebrow: "اختر الأصناف والأوزان",
+      subcategoriesTitleLead: "الأصناف",
+      subcategoriesTitleAccent: "المتوفرة.",
+      subcategoriesSubtitle:
+        "اختر الصنف المناسب وحدّد الوزن أو السعة المطلوبة وأضفها مباشرةً إلى سلة الطلب.",
+      selectSizeLabel: "حجم العبوة",
+      quantityLabel: "الكمية",
+      addToCart: "أضف إلى السلة",
+      addedToCart: "تمت الإضافة",
+      viewCart: "عرض السلة",
       moreEyebrow: "واصل الاستكشاف",
       moreTitleLead: "المزيد من",
       moreTitleAccent: "المؤونة.",
@@ -524,6 +665,49 @@ export const translations: Record<Language, CopyShape> = {
       notFoundTitleAccent: "غير متوفرة.",
       notFoundBody: "عُد لتصفّح الفئات الغذائية المدرجة لدينا.",
       notFoundCta: "العودة إلى منتجاتنا",
+    },
+    quickAdd: {
+      title: "اختر الصنف وحجم العبوة",
+      varietyLabel: "الصنف",
+      sizeLabel: "الوزن / الحجم",
+      quantityLabel: "الكمية",
+      addToCart: "أضف إلى السلة",
+      addedToCart: "تمت الإضافة",
+      viewCart: "افتح السلة",
+      viewFullRange: "استعرض الفئة كاملة",
+      closeAria: "إغلاق نافذة الاختيار",
+    },
+    cart: {
+      title: "سلة الطلب",
+      subtitle: "راجع الأصناف والأحجام المختارة وأرسل طلبك مباشرةً عبر واتساب.",
+      emptyTitle: "سلة الطلب فارغة",
+      emptyBody:
+        "تصفّح فئات المنتجات واختر الصنف والوزن أو الحجم المناسب لإضافته وتجهيز طلبك عبر واتساب.",
+      browseButton: "استكشف المنتجات",
+      itemsCountSuffix: "منتجات",
+      decreaseAria: "إنقاص الكمية",
+      increaseAria: "زيادة الكمية",
+      removeAria: "حذف الصنف",
+      clearCart: "تفريغ السلة",
+      customerSectionTitle: "بياناتك لتأكيد الطلب",
+      orderTypeLabel: "نوع الطلب",
+      typeHome: "طلب منزلي / شخصي",
+      typeTrade: "طلب جملة / شركاء",
+      nameLabel: "الاسم الكامل",
+      namePlaceholder: "اكتب اسمك",
+      phoneLabel: "رقم الهاتف / واتساب",
+      phonePlaceholder: "+20 10X XXX XXXX",
+      emailLabel: "البريد الإلكتروني (اختياري)",
+      emailPlaceholder: "name@example.com",
+      notesLabel: "العنوان أو ملاحظات إضافية (اختياري)",
+      notesPlaceholder: "المدينة، تفاصيل التوصيل، أو أي ملاحظات أخرى...",
+      sendWhatsApp: "إرسال الطلب عبر واتساب",
+      copyOrder: "نسخ الطلب",
+      copied: "تم النسخ",
+      whatsappGreeting: "مرحباً الخلية، أود إرسال هذا الطلب:",
+      noteConfirm: "سيتم تأكيد الأسعار وتفاصيل التوصيل مباشرةً عبر واتساب.",
+      missingContactHint: "إضافة الاسم ورقم الهاتف يساعدنا على تأكيد طلبك بشكل أسرع.",
+      closeAria: "إغلاق سلة الطلب",
     },
     notFoundPage: {
       title: "الصفحة غير موجودة",
