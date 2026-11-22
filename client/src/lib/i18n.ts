@@ -52,6 +52,8 @@ type CopyShape = {
     asideNote: string;
     varietiesCountSuffix: string;
     fromPricePrefix: string;
+    allCategoriesTab: string;
+    viewAllCategories: string;
     quickAdd: string;
     viewCategory: string;
     footnote: string;
@@ -280,6 +282,8 @@ export const translations: Record<Language, CopyShape> = {
       asideNote: "Find your favourite",
       varietiesCountSuffix: "varieties",
       fromPricePrefix: "From",
+      allCategoriesTab: "All categories",
+      viewAllCategories: "Show all categories",
       quickAdd: "Add to cart",
       viewCategory: "Varieties",
       footnote:
@@ -549,6 +553,8 @@ export const translations: Record<Language, CopyShape> = {
       asideNote: "اختر ما يناسبك",
       varietiesCountSuffix: "أصناف",
       fromPricePrefix: "يبدأ من",
+      allCategoriesTab: "جميع الفئات",
+      viewAllCategories: "عرض كل الفئات",
       quickAdd: "أضف للسلة",
       viewCategory: "الأصناف",
       footnote:

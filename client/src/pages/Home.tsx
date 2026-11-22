@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -11,6 +12,7 @@ import {
 import { Link } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ContactInquiryForm } from "@/components/ContactInquiryForm";
+import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -27,17 +29,21 @@ export default function Home() {
   const { lang } = useLanguage();
   const { openQuickAdd } = useCart();
   const t = translations[lang];
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  const selectedRange =
+    activeCategory === "all"
+      ? null
+      : productRanges.find((item) => item.slug === activeCategory) ?? null;
 
   return (
     <div className="site-shell">
-      <div className="announcement">
-        <span className="announcement-dot" /> {t.announcement}
-      </div>
+      <div className="announcement">{t.announcement}</div>
       <SiteHeader />
       <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <p className="eyebrow light-eyebrow">
+            <p className="eyebrow">
               <span /> {t.hero.eyebrow}
             </p>
             <h1 id="hero-title">
@@ -47,16 +53,12 @@ export default function Home() {
             </h1>
             <p className="hero-description">{t.hero.description}</p>
             <div className="hero-actions">
-              <a className="button button-light" href="#our-range">
+              <a className="button button-dark" href="#our-range">
                 {t.hero.ctaPrimary} <ArrowRight size={17} className="rtl-flip" />
               </a>
-              <a className="text-link light-link" href="#our-story">
+              <a className="text-link" href="#our-story">
                 {t.hero.ctaSecondary} <ArrowDown size={15} />
               </a>
-            </div>
-            <div className="hero-caption">
-              <span>{t.hero.captionCount}</span>
-              <span>{t.hero.captionText}</span>
             </div>
           </div>
           <div
@@ -64,15 +66,6 @@ export default function Home() {
             role="img"
             aria-label={t.hero.imageAria}
           />
-          <div className="hero-vertical-label">{t.hero.verticalLabel}</div>
-        </section>
-
-        <section className="intro-strip" aria-label={t.rangeSection.ariaLabel}>
-          <p>{t.introStrip[0]}</p>
-          <span className="intro-divider" />
-          <p>{t.introStrip[1]}</p>
-          <span className="intro-divider" />
-          <p>{t.introStrip[2]}</p>
         </section>
 
         <section className="range-section section-pad" id="our-range">
@@ -89,74 +82,140 @@ export default function Home() {
             </div>
             <div className="section-aside">
               <p>{t.rangeSection.asideBody}</p>
-              <span className="handwritten-note">
-                {t.rangeSection.asideNote} <ArrowDown size={16} />
-              </span>
             </div>
           </div>
-          <div className="range-grid">
-            {productRanges.map((range, index) => {
+
+          <div
+            className="category-tabs"
+            role="tablist"
+            aria-label={t.rangeSection.ariaLabel}
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeCategory === "all"}
+              className={
+                activeCategory === "all"
+                  ? "category-tab is-active"
+                  : "category-tab"
+              }
+              onClick={() => setActiveCategory("all")}
+            >
+              {t.rangeSection.allCategoriesTab}
+            </button>
+            {productRanges.map((range) => {
               const copy = getRangeCopy(range, lang);
-              const minPrice = getRangeMinPrice(range);
-              const indexLabel =
-                lang === "ar"
-                  ? `٠${["١", "٢", "٣", "٤", "٥", "٦"][index] ?? index + 1}`
-                  : `0${index + 1}`;
+              const isSelected = activeCategory === range.slug;
               return (
-                <article
+                <button
                   key={range.slug}
-                  className={`range-card range-card-${range.tone}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  className={
+                    isSelected ? "category-tab is-active" : "category-tab"
+                  }
+                  onClick={() => setActiveCategory(range.slug)}
                 >
-                  <Link
-                    href={`/products/${range.slug}`}
-                    className="range-card-link"
-                  >
-                    <div className="range-image-wrap">
-                      <img
-                        src={range.image}
-                        alt=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                      <span className="range-index">{indexLabel}</span>
-                      <span className="range-price-badge">
-                        {t.rangeSection.fromPricePrefix}{" "}
-                        {formatPrice(minPrice, lang)}
-                      </span>
-                      <span className="range-arrow" aria-hidden="true">
-                        <ArrowUpRight size={20} className="rtl-flip" />
-                      </span>
-                    </div>
-                    <div className="range-card-copy">
-                      <span className="range-eyebrow">
-                        {copy.eyebrow} · {range.subcategories.length}{" "}
-                        {t.rangeSection.varietiesCountSuffix}
-                      </span>
-                      <h3>{copy.title}</h3>
-                      <p>{copy.summary}</p>
-                    </div>
-                  </Link>
-                  <div className="range-card-actions">
-                    <button
-                      type="button"
-                      className="range-quick-add"
-                      onClick={() => openQuickAdd(range)}
-                    >
-                      <ShoppingBag size={14} aria-hidden="true" />
-                      <span>{t.rangeSection.quickAdd}</span>
-                    </button>
-                    <Link
-                      href={`/products/${range.slug}`}
-                      className="range-explore-link"
-                    >
-                      <span>{t.rangeSection.viewCategory}</span>
-                      <ArrowRight size={13} className="rtl-flip" />
-                    </Link>
-                  </div>
-                </article>
+                  {copy.title}
+                </button>
               );
             })}
           </div>
+
+          {selectedRange ? (
+            <div className="home-selected-range">
+              <div className="home-selected-range-bar">
+                <div className="home-selected-range-info">
+                  <img
+                    src={selectedRange.image}
+                    alt={getRangeCopy(selectedRange, lang).imageAlt}
+                    className="home-selected-range-thumb"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <h3>{getRangeCopy(selectedRange, lang).title}</h3>
+                    <p>{getRangeCopy(selectedRange, lang).detail}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="text-link home-show-all-btn"
+                  onClick={() => setActiveCategory("all")}
+                >
+                  {t.rangeSection.viewAllCategories}
+                </button>
+              </div>
+
+              <div className="subcategory-grid">
+                {selectedRange.subcategories.map((subcategory) => (
+                  <SubcategoryCard
+                    key={`${selectedRange.slug}-${subcategory.id}`}
+                    categorySlug={selectedRange.slug}
+                    subcategory={subcategory}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="range-grid">
+              {productRanges.map((range) => {
+                const copy = getRangeCopy(range, lang);
+                const minPrice = getRangeMinPrice(range);
+                return (
+                  <article
+                    key={range.slug}
+                    className={`range-card range-card-${range.tone}`}
+                  >
+                    <Link
+                      href={`/products/${range.slug}`}
+                      className="range-card-link"
+                    >
+                      <div className="range-image-wrap">
+                        <img
+                          src={range.image}
+                          alt={copy.imageAlt}
+                          loading="lazy"
+                          referrerPolicy="no-referrer"
+                        />
+                        <span className="range-arrow" aria-hidden="true">
+                          <ArrowUpRight size={18} className="rtl-flip" />
+                        </span>
+                      </div>
+                      <div className="range-card-copy">
+                        <span className="range-meta tabular-nums">
+                          {range.subcategories.length}{" "}
+                          {t.rangeSection.varietiesCountSuffix} ·{" "}
+                          {t.rangeSection.fromPricePrefix}{" "}
+                          {formatPrice(minPrice, lang)}
+                        </span>
+                        <h3>{copy.title}</h3>
+                        <p>{copy.summary}</p>
+                      </div>
+                    </Link>
+                    <div className="range-card-actions">
+                      <button
+                        type="button"
+                        className="range-quick-add"
+                        onClick={() => openQuickAdd(range)}
+                      >
+                        <ShoppingBag size={14} aria-hidden="true" />
+                        <span>{t.rangeSection.quickAdd}</span>
+                      </button>
+                      <Link
+                        href={`/products/${range.slug}`}
+                        className="range-explore-link"
+                      >
+                        <span>{t.rangeSection.viewCategory}</span>
+                        <ArrowRight size={13} className="rtl-flip" />
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
           <div className="range-footnote">
             <span className="footnote-line" /> {t.rangeSection.footnote}
           </div>
@@ -169,7 +228,7 @@ export default function Home() {
             aria-label={t.storySection.imageAria}
           />
           <div className="story-copy">
-            <p className="eyebrow light-eyebrow">
+            <p className="eyebrow">
               <span /> {t.storySection.eyebrow}
             </p>
             <h2>
@@ -178,17 +237,10 @@ export default function Home() {
               <em>{t.storySection.titleAccent}</em>
             </h2>
             <p className="story-body">{t.storySection.body}</p>
-            <a className="text-link light-link" href="#contact">
-              {t.storySection.cta} <ArrowRight size={16} className="rtl-flip" />
+            <a className="text-link" href="#contact">
+              {t.storySection.cta}{" "}
+              <ArrowRight size={16} className="rtl-flip" />
             </a>
-            <span className="story-stamp">
-              <Leaf size={22} />
-              <span>
-                {t.storySection.stampLine1}
-                <br />
-                {t.storySection.stampLine2}
-              </span>
-            </span>
           </div>
         </section>
 
@@ -212,9 +264,6 @@ export default function Home() {
                 <h3>{t.valuesSection.items[0].title}</h3>
                 <p>{t.valuesSection.items[0].body}</p>
               </div>
-              <span className="value-number">
-                {t.valuesSection.items[0].num}
-              </span>
             </article>
             <article className="value-item">
               <span className="value-icon">
@@ -224,9 +273,6 @@ export default function Home() {
                 <h3>{t.valuesSection.items[1].title}</h3>
                 <p>{t.valuesSection.items[1].body}</p>
               </div>
-              <span className="value-number">
-                {t.valuesSection.items[1].num}
-              </span>
             </article>
             <article className="value-item">
               <span className="value-icon">
@@ -236,9 +282,6 @@ export default function Home() {
                 <h3>{t.valuesSection.items[2].title}</h3>
                 <p>{t.valuesSection.items[2].body}</p>
               </div>
-              <span className="value-number">
-                {t.valuesSection.items[2].num}
-              </span>
             </article>
           </div>
         </section>
@@ -278,9 +321,6 @@ export default function Home() {
             <div className="contact-aside">
               <ContactInquiryForm />
             </div>
-            <span className="contact-orbit" aria-hidden="true">
-              {t.contactSection.orbitChar}
-            </span>
           </div>
         </section>
       </main>

@@ -1,160 +1,14 @@
-import { useEffect, useState } from "react";
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  Minus,
-  Plus,
-  ShoppingBag,
-} from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
-import { useCart } from "@/contexts/CartContext";
+import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   findProductRange,
-  formatPrice,
   getRangeCopy,
-  getSubcategoryMinPrice,
   productRanges,
-  type ProductSubcategory,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
-
-function SubcategoryCard({
-  categorySlug,
-  subcategory,
-  index,
-}: {
-  categorySlug: string;
-  subcategory: ProductSubcategory;
-  index: number;
-}) {
-  const { lang } = useLanguage();
-  const { addItem, openCart } = useCart();
-  const p = translations[lang].productDetail;
-
-  const [variantId, setVariantId] = useState(
-    subcategory.variants[0]?.id ?? ""
-  );
-  const [quantity, setQuantity] = useState(1);
-  const [justAdded, setJustAdded] = useState(false);
-
-  useEffect(() => {
-    setVariantId(subcategory.variants[0]?.id ?? "");
-    setQuantity(1);
-    setJustAdded(false);
-  }, [categorySlug, subcategory]);
-
-  const currentVariant =
-    subcategory.variants.find((v) => v.id === variantId) ??
-    subcategory.variants[0];
-  const minPrice = getSubcategoryMinPrice(subcategory);
-  const lineTotal = (currentVariant?.price ?? 0) * quantity;
-
-  const handleAdd = () => {
-    if (!currentVariant) return;
-    addItem(categorySlug, subcategory.id, currentVariant.id, quantity);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 2600);
-  };
-
-  const numLabel =
-    lang === "ar"
-      ? `٠${["١", "٢", "٣", "٤", "٥", "٦"][index] ?? index + 1}`
-      : `0${index + 1}`;
-
-  return (
-    <article
-      className="subcategory-card"
-      id={`variety-${subcategory.id}`}
-    >
-      <div className="subcategory-card-head">
-        <div className="subcategory-top-row">
-          <span className="subcategory-num">{numLabel}</span>
-          <span className="subcategory-starting-price">
-            {p.fromPricePrefix} {formatPrice(minPrice, lang)}
-          </span>
-        </div>
-        <h3>{subcategory[lang].name}</h3>
-        <p>{subcategory[lang].note}</p>
-      </div>
-
-      <div className="subcategory-variants">
-        <span className="inquiry-label">{p.selectSizeLabel}</span>
-        <div className="variant-grid">
-          {subcategory.variants.map((variant) => {
-            const isSelected = variant.id === currentVariant?.id;
-            return (
-              <button
-                key={variant.id}
-                type="button"
-                className={
-                  isSelected ? "variant-chip is-selected" : "variant-chip"
-                }
-                onClick={() => {
-                  setVariantId(variant.id);
-                  setJustAdded(false);
-                }}
-              >
-                <span>{variant[lang]}</span>
-                <span className="variant-chip-sep">·</span>
-                <strong>{formatPrice(variant.price, lang)}</strong>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="subcategory-actions">
-        <div className="qty-stepper" aria-label={p.quantityLabel}>
-          <button
-            type="button"
-            onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-            aria-label="-"
-          >
-            <Minus size={13} />
-          </button>
-          <span>{quantity}</span>
-          <button
-            type="button"
-            onClick={() => setQuantity((prev) => prev + 1)}
-            aria-label="+"
-          >
-            <Plus size={13} />
-          </button>
-        </div>
-
-        <button
-          type="button"
-          className={
-            justAdded
-              ? "button button-whatsapp subcategory-add-btn"
-              : "button button-dark subcategory-add-btn"
-          }
-          onClick={handleAdd}
-        >
-          {justAdded ? <Check size={15} /> : <ShoppingBag size={15} />}
-          <span>{justAdded ? p.addedToCart : p.addToCart}</span>
-          <span className="subcategory-btn-price">
-            · {formatPrice(lineTotal, lang)}
-          </span>
-        </button>
-
-        {justAdded && (
-          <button
-            type="button"
-            className="text-link subcategory-view-cart"
-            onClick={openCart}
-          >
-            {p.viewCart} <ArrowRight size={13} className="rtl-flip" />
-          </button>
-        )}
-      </div>
-    </article>
-  );
-}
 
 export default function ProductRange() {
   const [, params] = useRoute("/products/:slug");
@@ -190,9 +44,7 @@ export default function ProductRange() {
 
   return (
     <div className="site-shell">
-      <div className="announcement">
-        <span className="announcement-dot" /> {t.announcement}
-      </div>
+      <div className="announcement">{t.announcement}</div>
       <SiteHeader />
       <main className="range-detail">
         <div className="detail-breadcrumb">
@@ -257,12 +109,11 @@ export default function ProductRange() {
           </div>
 
           <div className="subcategory-grid">
-            {range.subcategories.map((subcategory, idx) => (
+            {range.subcategories.map((subcategory) => (
               <SubcategoryCard
                 key={`${range.slug}-${subcategory.id}`}
                 categorySlug={range.slug}
                 subcategory={subcategory}
-                index={idx}
               />
             ))}
           </div>

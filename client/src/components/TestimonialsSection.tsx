@@ -65,7 +65,6 @@ export function TestimonialsSection() {
                 <Quote size={14} aria-hidden="true" />
                 {item.category}
               </span>
-              <span className="testimonial-num">{item.num}</span>
             </div>
             <blockquote className="testimonial-quote">{item.quote}</blockquote>
             <footer className="testimonial-author">
