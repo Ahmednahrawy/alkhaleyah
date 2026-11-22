@@ -85,10 +85,10 @@ img { display: block; width: 100%; }
 .section-aside { width: min(330px, 37%); padding-bottom: 4px; }
 .section-aside > p { margin: 0 0 15px; color: var(--muted); font-size: 12px; line-height: 1.8; }
 .handwritten-note { display: inline-flex; align-items: center; gap: 8px; color: var(--clay); font-family: var(--serif); font-style: italic; font-size: 15px; }
-.range-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.range-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .range-card { min-width: 0; display: block; background: var(--paper); transition: transform .25s ease, box-shadow .25s ease; }
 .range-card:hover { transform: translateY(-5px); box-shadow: 0 14px 35px rgba(41, 53, 42, .12); }
-.range-image-wrap { position: relative; height: 220px; overflow: hidden; background: #e3dece; }
+.range-image-wrap { position: relative; height: 245px; overflow: hidden; background: #e3dece; }
 .range-image-wrap img { height: 100%; object-fit: cover; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
 .range-card:hover .range-image-wrap img { transform: scale(1.04); }
 .range-card-sand .range-image-wrap img { object-position: center; }

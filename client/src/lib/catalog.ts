@@ -1,5 +1,7 @@
 import type { Language } from "@/contexts/LanguageContext";
+import blackHoneyImage from "@/assets/images/alkhaleyah_black_honey_1795340752261.jpg";
 import datesImage from "@/assets/images/alkhaleyah_dates_1795293710764.jpg";
+import dateSyrupImage from "@/assets/images/alkhaleyah_date_syrup_1795340751834.jpg";
 import honeyImage from "@/assets/images/alkhaleyah_honey_1795293711325.jpg";
 import oliveOilImage from "@/assets/images/alkhaleyah_olive_oil_1795293711836.jpg";
 import olivesImage from "@/assets/images/alkhaleyah_olives_1795293711340.jpg";
@@ -51,6 +53,33 @@ export const productRanges: ProductRange[] = [
     },
   },
   {
+    slug: "black-honey",
+    image: blackHoneyImage,
+    tone: "clay",
+    en: {
+      title: "Black honey",
+      titleLead: "Black",
+      titleAccent: "honey",
+      eyebrow: "Sugarcane molasses",
+      summary:
+        "Thick, dark sugarcane black honey with a deep, comforting sweetness for everyday tables.",
+      detail:
+        "Discover Alkhaleyah's black honey range, prepared to preserve its rich body and traditional flavour for breakfasts, tahini pairings, and trade supply. Contact us for pack sizes and current availability.",
+      imageAlt: "Dark glossy black honey sugarcane molasses in a glass jar with wooden spoon",
+    },
+    ar: {
+      title: "العسل الأسود",
+      titleLead: "العسل",
+      titleAccent: "الأسود",
+      eyebrow: "غنيّ وطبيعي",
+      summary:
+        "عسل أسود صافٍ بقوامٍ غني ونكهة أصيلة لمائدة الفطور والوصفات التقليدية.",
+      detail:
+        "استكشف تشكيلة العسل الأسود لدى الخلية، المحضّر بعناية ليجمع بين الطعم الغني والقوام الأصيل للمطابخ اليومية وشركاء التجارة. تواصل معنا للتعرّف على الأحجام والتوافر.",
+      imageAlt: "عسل أسود طبيعي غني في وعاء زجاجي مع ملعقة خشبية",
+    },
+  },
+  {
     slug: "dates",
     image: datesImage,
     tone: "olive",
@@ -75,6 +104,33 @@ export const productRanges: ProductRange[] = [
       detail:
         "تعرّف على فئة التمور من الخلية للمنازل والهدايا وشركاء التجارة. تُؤكَّد الأصناف والدرجات والمصدر والتوافر الموسمي مباشرةً مع فريقنا.",
       imageAlt: "تمور فاخرة مرتّبة في طبق خزفي",
+    },
+  },
+  {
+    slug: "date-syrup",
+    image: dateSyrupImage,
+    tone: "sand",
+    en: {
+      title: "Date syrup",
+      titleLead: "Date",
+      titleAccent: "syrup",
+      eyebrow: "Pressed from dates",
+      summary:
+        "Velvety, pure date syrup (dibs) crafted for drizzling, sweetening, and baking.",
+      detail:
+        "Explore Alkhaleyah's date syrup range—a naturally rich sweetener made from selected dates for homes, cafes, and foodservice partners. Reach out for bottle formats and wholesale details.",
+      imageAlt: "Dark glossy date syrup bottle and pouring bowl beside ripe dates",
+    },
+    ar: {
+      title: "دبس التمر",
+      titleLead: "دبس",
+      titleAccent: "التمر",
+      eyebrow: "مستخلصٌ من التمر",
+      summary:
+        "دبس تمر طبيعي بقوامٍ مخملي وحلاوة نقية للتحلية والتقديم والحلويات.",
+      detail:
+        "تعرّف على دبس التمر من الخلية، المحضّر من أجود التمور ليمنح موائدك ووصفاتك حلاوةً طبيعية متوازنة. تواصل معنا للاستفسار عن أحجام العبوات وتفاصيل التوريد.",
+      imageAlt: "عبوة دبس التمر الطبيعي وطبق تقديم بجانب حبات التمر",
     },
   },
   {

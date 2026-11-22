@@ -123,7 +123,7 @@ export const translations: Record<Language, CopyShape> = {
         "Explore the Alkhaleyah food range — familiar ingredients, gathered for the moments that bring us to the table.",
       ctaPrimary: "Explore our range",
       ctaSecondary: "Get to know us",
-      captionCount: "01 / 04",
+      captionCount: "01 / 06",
       captionText: "From the pantry, to the table",
       imageAria:
         "A still life of raw golden honey, dates, cured olives, and extra virgin olive oil",
@@ -238,7 +238,7 @@ export const translations: Record<Language, CopyShape> = {
         "استكشف تشكيلة الخلية الغذائية — مكوّنات مألوفة، جمعناها للحظات التي تجمعنا حول المائدة.",
       ctaPrimary: "استكشف منتجاتنا",
       ctaSecondary: "تعرّف علينا",
-      captionCount: "٠١ / ٠٤",
+      captionCount: "٠١ / ٠٦",
       captionText: "من المؤونة، إلى المائدة",
       imageAria:
         "مشهد لمكوّنات المائدة من العسل الطبيعي والتمور والزيتون وزيت الزيتون البكر",

@@ -87,7 +87,7 @@ export default function Home() {
               const copy = getRangeCopy(range, lang);
               const indexLabel =
                 lang === "ar"
-                  ? `٠${["١", "٢", "٣", "٤"][index] ?? index + 1}`
+                  ? `٠${["١", "٢", "٣", "٤", "٥", "٦"][index] ?? index + 1}`
                   : `0${index + 1}`;
               return (
                 <Link
