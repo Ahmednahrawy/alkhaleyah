@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import {
   ArrowUpRight,
   Globe,
+  Heart,
   Menu,
   Search,
   ShoppingBag,
@@ -11,6 +12,7 @@ import {
 import brandLogo from "@/assets/images/alkhaleyah-logo.png";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
@@ -52,6 +54,33 @@ export function LanguageSwitcher() {
     >
       <Globe size={14} aria-hidden="true" />
       <span>{t.nav.switchLangLabel}</span>
+    </button>
+  );
+}
+
+export function WishlistButton({ onOpen }: { onOpen?: () => void }) {
+  const { lang } = useLanguage();
+  const { totalCount, openWishlist } = useWishlist();
+  const t = translations[lang];
+
+  return (
+    <button
+      type="button"
+      className="cart-trigger wishlist-trigger"
+      onClick={() => {
+        onOpen?.();
+        openWishlist();
+      }}
+      aria-label={t.nav.wishlistAria}
+      data-testid="wishlist-button"
+    >
+      <Heart size={15} aria-hidden="true" />
+      <span className="cart-trigger-label">{t.nav.wishlistLabel}</span>
+      {totalCount > 0 && (
+        <span className="cart-badge" aria-hidden="true">
+          {totalCount}
+        </span>
+      )}
     </button>
   );
 }
@@ -305,6 +334,7 @@ export function SiteHeader() {
           >
             {mobileSearchOpen ? <X size={18} /> : <Search size={18} />}
           </button>
+          <WishlistButton onOpen={closeMenu} />
           <CartButton onOpen={closeMenu} />
           <div className="mobile-lang-wrap">
             <LanguageSwitcher />
@@ -333,9 +363,15 @@ export function SiteHeader() {
           <SectionLink hash="our-story" onNavigate={closeMenu}>
             {t.nav.ourStory}
           </SectionLink>
+          <SectionLink hash="order-tracking" onNavigate={closeMenu}>
+            {t.nav.trackOrder}
+          </SectionLink>
           <SectionLink hash="contact" className="nav-cta" onNavigate={closeMenu}>
             {t.nav.getInTouch} <ArrowUpRight size={15} className="rtl-flip" />
           </SectionLink>
+          <div className="desktop-cart-wrap">
+            <WishlistButton onOpen={closeMenu} />
+          </div>
           <div className="desktop-cart-wrap">
             <CartButton onOpen={closeMenu} />
           </div>
@@ -375,6 +411,7 @@ export function SiteFooter() {
         <div className="footer-links">
           <SectionLink hash="our-range">{t.footer.exploreRange}</SectionLink>
           <SectionLink hash="our-story">{t.footer.about}</SectionLink>
+          <SectionLink hash="order-tracking">{t.footer.trackOrder}</SectionLink>
           <SectionLink hash="contact">{t.footer.enquiries}</SectionLink>
           <a
             href={buildWhatsAppUrl()}

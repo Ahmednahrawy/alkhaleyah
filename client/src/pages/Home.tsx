@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -6,35 +6,83 @@ import {
   Leaf,
   MessageCircle,
   Package,
+  RotateCcw,
   ShoppingBag,
+  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 import { Link } from "wouter";
-import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { ContactInquiryForm } from "@/components/ContactInquiryForm";
+import { OrderTrackingSection } from "@/components/OrderTrackingSection";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   formatPrice,
+  getAllSubcategoryEntries,
   getRangeCopy,
   getRangeMinPrice,
+  matchesSubcategoryFilters,
   productRanges,
+  type PriceFilterId,
+  type WeightFilterId,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
+
+const PRICE_FILTER_IDS: PriceFilterId[] = [
+  "all",
+  "under-250",
+  "250-600",
+  "600-1500",
+  "over-1500",
+];
+
+const WEIGHT_FILTER_IDS: WeightFilterId[] = [
+  "all",
+  "small-pack",
+  "1kg",
+  "3-5kg",
+  "10kg",
+  "bottles",
+];
 
 export default function Home() {
   const { lang } = useLanguage();
   const { openQuickAdd } = useCart();
   const t = translations[lang];
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [priceFilter, setPriceFilter] = useState<PriceFilterId>("all");
+  const [weightFilter, setWeightFilter] = useState<WeightFilterId>("all");
+
+  const hasActiveFilters = priceFilter !== "all" || weightFilter !== "all";
 
   const selectedRange =
     activeCategory === "all"
       ? null
       : productRanges.find((item) => item.slug === activeCategory) ?? null;
+
+  const filteredEntries = useMemo(() => {
+    const baseEntries = selectedRange
+      ? selectedRange.subcategories.map((subcategory) => ({
+          range: selectedRange,
+          subcategory,
+        }))
+      : getAllSubcategoryEntries();
+
+    return baseEntries.filter((entry) =>
+      matchesSubcategoryFilters(entry.subcategory, priceFilter, weightFilter)
+    );
+  }, [selectedRange, priceFilter, weightFilter]);
+
+  const showVarietiesGrid = Boolean(selectedRange) || hasActiveFilters;
+
+  const resetFilters = () => {
+    setPriceFilter("all");
+    setWeightFilter("all");
+  };
 
   return (
     <div className="site-shell">
@@ -123,39 +171,132 @@ export default function Home() {
             })}
           </div>
 
-          {selectedRange ? (
-            <div className="home-selected-range">
-              <div className="home-selected-range-bar">
-                <div className="home-selected-range-info">
-                  <img
-                    src={selectedRange.image}
-                    alt={getRangeCopy(selectedRange, lang).imageAlt}
-                    className="home-selected-range-thumb"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div>
-                    <h3>{getRangeCopy(selectedRange, lang).title}</h3>
-                    <p>{getRangeCopy(selectedRange, lang).detail}</p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="text-link home-show-all-btn"
-                  onClick={() => setActiveCategory("all")}
+          <div className="range-filters-bar">
+            <div className="range-filters-controls">
+              <div className="filter-select-group">
+                <label htmlFor="home-price-filter" className="filter-label">
+                  <SlidersHorizontal size={13} aria-hidden="true" />
+                  <span>{t.rangeSection.filters.priceLabel}</span>
+                </label>
+                <select
+                  id="home-price-filter"
+                  value={priceFilter}
+                  onChange={(e) =>
+                    setPriceFilter(e.target.value as PriceFilterId)
+                  }
+                  className="filter-select"
+                  data-testid="home-price-filter"
                 >
-                  {t.rangeSection.viewAllCategories}
-                </button>
+                  {PRICE_FILTER_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {t.rangeSection.filters.priceOptions[id]}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              <div className="subcategory-grid">
-                {selectedRange.subcategories.map((subcategory) => (
-                  <SubcategoryCard
-                    key={`${selectedRange.slug}-${subcategory.id}`}
-                    categorySlug={selectedRange.slug}
-                    subcategory={subcategory}
-                  />
-                ))}
+              <div className="filter-select-group">
+                <label htmlFor="home-weight-filter" className="filter-label">
+                  <Package size={13} aria-hidden="true" />
+                  <span>{t.rangeSection.filters.weightLabel}</span>
+                </label>
+                <select
+                  id="home-weight-filter"
+                  value={weightFilter}
+                  onChange={(e) =>
+                    setWeightFilter(e.target.value as WeightFilterId)
+                  }
+                  className="filter-select"
+                  data-testid="home-weight-filter"
+                >
+                  {WEIGHT_FILTER_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {t.rangeSection.filters.weightOptions[id]}
+                    </option>
+                  ))}
+                </select>
               </div>
+            </div>
+
+            {showVarietiesGrid && (
+              <div className="range-filters-summary">
+                <span className="range-filters-count tabular-nums">
+                  {t.rangeSection.filters.showingPrefix}{" "}
+                  <strong>{filteredEntries.length}</strong>{" "}
+                  {filteredEntries.length === 1
+                    ? t.rangeSection.filters.resultsSingle
+                    : t.rangeSection.filters.resultsPlural}
+                </span>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    className="filter-reset-btn"
+                    onClick={resetFilters}
+                    data-testid="home-filter-reset"
+                  >
+                    <RotateCcw size={13} aria-hidden="true" />
+                    <span>{t.rangeSection.filters.resetButton}</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {showVarietiesGrid ? (
+            <div className="home-selected-range">
+              {selectedRange && (
+                <div className="home-selected-range-bar">
+                  <div className="home-selected-range-info">
+                    <img
+                      src={selectedRange.image}
+                      alt={getRangeCopy(selectedRange, lang).imageAlt}
+                      className="home-selected-range-thumb"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div>
+                      <h3>{getRangeCopy(selectedRange, lang).title}</h3>
+                      <p>{getRangeCopy(selectedRange, lang).detail}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-link home-show-all-btn"
+                    onClick={() => setActiveCategory("all")}
+                  >
+                    {t.rangeSection.viewAllCategories}
+                  </button>
+                </div>
+              )}
+
+              {filteredEntries.length === 0 ? (
+                <div className="filter-empty-state">
+                  <h3>{t.rangeSection.filters.noMatchesTitle}</h3>
+                  <p>{t.rangeSection.filters.noMatchesBody}</p>
+                  <button
+                    type="button"
+                    className="button button-dark"
+                    onClick={resetFilters}
+                  >
+                    <RotateCcw size={15} aria-hidden="true" />
+                    <span>{t.rangeSection.filters.resetButton}</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="subcategory-grid">
+                  {filteredEntries.map(({ range, subcategory }) => (
+                    <SubcategoryCard
+                      key={`${range.slug}-${subcategory.id}`}
+                      categorySlug={range.slug}
+                      categoryLabel={
+                        selectedRange ? undefined : getRangeCopy(range, lang).title
+                      }
+                      subcategory={subcategory}
+                      activePriceFilter={priceFilter}
+                      activeWeightFilter={weightFilter}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="range-grid">
@@ -287,6 +428,8 @@ export default function Home() {
         </section>
 
         <TestimonialsSection />
+
+        <OrderTrackingSection />
 
         <section className="contact-section" id="contact">
           <div className="contact-inner">

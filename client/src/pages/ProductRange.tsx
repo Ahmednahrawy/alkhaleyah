@@ -1,4 +1,12 @@
-import { ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Package,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Link, useRoute } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SubcategoryCard } from "@/components/SubcategoryCard";
@@ -6,15 +14,51 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import {
   findProductRange,
   getRangeCopy,
+  matchesSubcategoryFilters,
   productRanges,
+  type PriceFilterId,
+  type WeightFilterId,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+
+const PRICE_FILTER_IDS: PriceFilterId[] = [
+  "all",
+  "under-250",
+  "250-600",
+  "600-1500",
+  "over-1500",
+];
+
+const WEIGHT_FILTER_IDS: WeightFilterId[] = [
+  "all",
+  "small-pack",
+  "1kg",
+  "3-5kg",
+  "10kg",
+  "bottles",
+];
 
 export default function ProductRange() {
   const [, params] = useRoute("/products/:slug");
   const { lang } = useLanguage();
   const t = translations[lang];
   const range = findProductRange(params?.slug);
+  const [priceFilter, setPriceFilter] = useState<PriceFilterId>("all");
+  const [weightFilter, setWeightFilter] = useState<WeightFilterId>("all");
+
+  const hasActiveFilters = priceFilter !== "all" || weightFilter !== "all";
+
+  const visibleSubcategories = useMemo(() => {
+    if (!range) return [];
+    return range.subcategories.filter((sub) =>
+      matchesSubcategoryFilters(sub, priceFilter, weightFilter)
+    );
+  }, [range, priceFilter, weightFilter]);
+
+  const resetFilters = () => {
+    setPriceFilter("all");
+    setWeightFilter("all");
+  };
 
   if (!range) {
     return (
@@ -108,15 +152,98 @@ export default function ProductRange() {
             </div>
           </div>
 
-          <div className="subcategory-grid">
-            {range.subcategories.map((subcategory) => (
-              <SubcategoryCard
-                key={`${range.slug}-${subcategory.id}`}
-                categorySlug={range.slug}
-                subcategory={subcategory}
-              />
-            ))}
+          <div className="range-filters-bar">
+            <div className="range-filters-controls">
+              <div className="filter-select-group">
+                <label htmlFor="detail-price-filter" className="filter-label">
+                  <SlidersHorizontal size={13} aria-hidden="true" />
+                  <span>{t.rangeSection.filters.priceLabel}</span>
+                </label>
+                <select
+                  id="detail-price-filter"
+                  value={priceFilter}
+                  onChange={(e) =>
+                    setPriceFilter(e.target.value as PriceFilterId)
+                  }
+                  className="filter-select"
+                >
+                  {PRICE_FILTER_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {t.rangeSection.filters.priceOptions[id]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-select-group">
+                <label htmlFor="detail-weight-filter" className="filter-label">
+                  <Package size={13} aria-hidden="true" />
+                  <span>{t.rangeSection.filters.weightLabel}</span>
+                </label>
+                <select
+                  id="detail-weight-filter"
+                  value={weightFilter}
+                  onChange={(e) =>
+                    setWeightFilter(e.target.value as WeightFilterId)
+                  }
+                  className="filter-select"
+                >
+                  {WEIGHT_FILTER_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {t.rangeSection.filters.weightOptions[id]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="range-filters-summary">
+              <span className="range-filters-count tabular-nums">
+                {t.rangeSection.filters.showingPrefix}{" "}
+                <strong>{visibleSubcategories.length}</strong>{" "}
+                {visibleSubcategories.length === 1
+                  ? t.rangeSection.filters.resultsSingle
+                  : t.rangeSection.filters.resultsPlural}
+              </span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="filter-reset-btn"
+                  onClick={resetFilters}
+                >
+                  <RotateCcw size={13} aria-hidden="true" />
+                  <span>{t.rangeSection.filters.resetButton}</span>
+                </button>
+              )}
+            </div>
           </div>
+
+          {visibleSubcategories.length === 0 ? (
+            <div className="filter-empty-state">
+              <h3>{t.rangeSection.filters.noMatchesTitle}</h3>
+              <p>{t.rangeSection.filters.noMatchesBody}</p>
+              <button
+                type="button"
+                className="button button-dark"
+                onClick={resetFilters}
+              >
+                <RotateCcw size={15} aria-hidden="true" />
+                <span>{t.rangeSection.filters.resetButton}</span>
+              </button>
+            </div>
+          ) : (
+            <div className="subcategory-grid">
+              {visibleSubcategories.map((subcategory) => (
+                <SubcategoryCard
+                  key={`${range.slug}-${subcategory.id}`}
+                  categorySlug={range.slug}
+                  subcategory={subcategory}
+                  activePriceFilter={priceFilter}
+                  activeWeightFilter={weightFilter}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="more-ranges">

@@ -1,42 +1,68 @@
-import { useEffect, useState } from "react";
-import { ArrowRight, Check, Minus, Plus, ShoppingBag } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Check, Heart, Minus, Plus, ShoppingBag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
+  getMatchingVariants,
   getSubcategoryMinPrice,
+  variantMatchesPrice,
+  variantMatchesWeight,
+  type PriceFilterId,
   type ProductSubcategory,
+  type WeightFilterId,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 
 export function SubcategoryCard({
   categorySlug,
+  categoryLabel,
   subcategory,
+  activePriceFilter = "all",
+  activeWeightFilter = "all",
 }: {
   categorySlug: string;
+  categoryLabel?: string;
   subcategory: ProductSubcategory;
+  activePriceFilter?: PriceFilterId;
+  activeWeightFilter?: WeightFilterId;
 }) {
   const { lang } = useLanguage();
   const { addItem, openCart } = useCart();
+  const { hasItem, toggleItem } = useWishlist();
   const p = translations[lang].productDetail;
+  const w = translations[lang].wishlist;
 
-  const [variantId, setVariantId] = useState(
-    subcategory.variants[0]?.id ?? ""
+  const hasActiveFilter =
+    activePriceFilter !== "all" || activeWeightFilter !== "all";
+
+  const matchingVariants = useMemo(
+    () =>
+      getMatchingVariants(subcategory, activePriceFilter, activeWeightFilter),
+    [subcategory, activePriceFilter, activeWeightFilter]
   );
+
+  const preferredVariantId =
+    matchingVariants[0]?.id ?? subcategory.variants[0]?.id ?? "";
+
+  const [variantId, setVariantId] = useState(preferredVariantId);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
   useEffect(() => {
-    setVariantId(subcategory.variants[0]?.id ?? "");
+    setVariantId(preferredVariantId);
     setQuantity(1);
     setJustAdded(false);
-  }, [categorySlug, subcategory]);
+  }, [categorySlug, subcategory, preferredVariantId]);
 
   const currentVariant =
     subcategory.variants.find((v) => v.id === variantId) ??
+    matchingVariants[0] ??
     subcategory.variants[0];
   const minPrice = getSubcategoryMinPrice(subcategory);
   const lineTotal = (currentVariant?.price ?? 0) * quantity;
+  const isSaved = hasItem(categorySlug, subcategory.id);
 
   const handleAdd = () => {
     if (!currentVariant) return;
@@ -51,9 +77,30 @@ export function SubcategoryCard({
       id={`variety-${subcategory.id}`}
     >
       <div className="subcategory-card-head">
-        <span className="subcategory-starting-price">
-          {p.fromPricePrefix} {formatPrice(minPrice, lang)}
-        </span>
+        <div className="subcategory-card-top">
+          <span className="subcategory-starting-price tabular-nums">
+            {categoryLabel ? `${categoryLabel} · ` : ""}
+            {p.fromPricePrefix} {formatPrice(minPrice, lang)}
+          </span>
+          <button
+            type="button"
+            className={
+              isSaved ? "wishlist-heart-btn is-saved" : "wishlist-heart-btn"
+            }
+            onClick={() =>
+              toggleItem(categorySlug, subcategory.id, currentVariant?.id)
+            }
+            aria-pressed={isSaved}
+            aria-label={isSaved ? w.removeAria : w.addAria}
+            data-testid={`wishlist-toggle-${subcategory.id}`}
+          >
+            <Heart
+              size={16}
+              fill={isSaved ? "currentColor" : "none"}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
         <h3>{subcategory[lang].name}</h3>
         <p>{subcategory[lang].note}</p>
       </div>
@@ -63,13 +110,21 @@ export function SubcategoryCard({
         <div className="variant-grid">
           {subcategory.variants.map((variant) => {
             const isSelected = variant.id === currentVariant?.id;
+            const matchesFilter =
+              !hasActiveFilter ||
+              (variantMatchesPrice(variant.price, activePriceFilter) &&
+                variantMatchesWeight(variant.id, activeWeightFilter));
             return (
               <button
                 key={variant.id}
                 type="button"
-                className={
-                  isSelected ? "variant-chip is-selected" : "variant-chip"
-                }
+                className={[
+                  "variant-chip",
+                  isSelected ? "is-selected" : "",
+                  !matchesFilter ? "is-dimmed" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 onClick={() => {
                   setVariantId(variant.id);
                   setJustAdded(false);

@@ -565,11 +565,96 @@ export function getRangeMinPrice(range: ProductRange): number {
   );
 }
 
+export type PriceFilterId =
+  | "all"
+  | "under-250"
+  | "250-600"
+  | "600-1500"
+  | "over-1500";
+
+export type WeightFilterId =
+  | "all"
+  | "small-pack"
+  | "1kg"
+  | "3-5kg"
+  | "10kg"
+  | "bottles";
+
+export function variantMatchesPrice(
+  price: number,
+  priceFilter: PriceFilterId
+): boolean {
+  switch (priceFilter) {
+    case "under-250":
+      return price <= 250;
+    case "250-600":
+      return price > 250 && price <= 600;
+    case "600-1500":
+      return price > 600 && price <= 1500;
+    case "over-1500":
+      return price > 1500;
+    case "all":
+    default:
+      return true;
+  }
+}
+
+export function variantMatchesWeight(
+  variantId: string,
+  weightFilter: WeightFilterId
+): boolean {
+  switch (weightFilter) {
+    case "small-pack":
+      return variantId === "0.25kg" || variantId === "0.5kg";
+    case "1kg":
+      return variantId === "1kg";
+    case "3-5kg":
+      return variantId === "3kg" || variantId === "5kg";
+    case "10kg":
+      return variantId === "10kg";
+    case "bottles":
+      return variantId === "0.5l" || variantId === "1l" || variantId === "3l";
+    case "all":
+    default:
+      return true;
+  }
+}
+
+export function getMatchingVariants(
+  subcategory: ProductSubcategory,
+  priceFilter: PriceFilterId,
+  weightFilter: WeightFilterId
+): ProductVariant[] {
+  return subcategory.variants.filter(
+    (v) =>
+      variantMatchesPrice(v.price, priceFilter) &&
+      variantMatchesWeight(v.id, weightFilter)
+  );
+}
+
+export function matchesSubcategoryFilters(
+  subcategory: ProductSubcategory,
+  priceFilter: PriceFilterId,
+  weightFilter: WeightFilterId
+): boolean {
+  return getMatchingVariants(subcategory, priceFilter, weightFilter).length > 0;
+}
+
 export type CatalogSearchResult = {
   range: ProductRange;
   subcategory: ProductSubcategory;
   minPrice: number;
 };
+
+export function getAllSubcategoryEntries(): CatalogSearchResult[] {
+  return productRanges.flatMap((range) =>
+    range.subcategories.map((subcategory) => ({
+      range,
+      subcategory,
+      minPrice: getSubcategoryMinPrice(subcategory),
+    }))
+  );
+}
 
 export function searchCatalog(query: string): CatalogSearchResult[] {
   const trimmed = query.trim().toLowerCase();

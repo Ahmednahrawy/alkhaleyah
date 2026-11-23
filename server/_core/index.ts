@@ -5,6 +5,11 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { z } from "zod";
 import { registerOAuthRoutes } from "./oauth";
 import { publicPlatformScript } from "./publicConfig";
+import {
+  generateReferenceId,
+  getOrderRecord,
+  saveOrderRecord,
+} from "../orders";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -22,6 +27,17 @@ const inquirySchema = z
     message: "Phone or email is required",
   });
 
+const orderSchema = z.object({
+  referenceId: z.string().trim().min(3).max(40).optional(),
+  orderType: z.enum(["home", "trade"]).default("home"),
+  customerName: z.string().trim().max(120).optional().default(""),
+  phone: z.string().trim().max(40).optional().default(""),
+  email: z.string().trim().max(180).optional().default(""),
+  items: z.array(z.string().trim().min(1).max(300)).min(1).max(50),
+  subtotal: z.number().nonnegative().optional(),
+  notes: z.string().trim().max(2000).optional().default(""),
+});
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -37,9 +53,52 @@ async function startServer() {
     if (!parsed.success) {
       return res.status(400).json({ ok: false, error: "Invalid inquiry details" });
     }
-    const referenceId = `ALK-${Date.now().toString(36).toUpperCase()}`;
-    return res.status(200).json({ ok: true, referenceId });
+    const now = new Date().toISOString();
+    const referenceId = generateReferenceId();
+    const order = saveOrderRecord({
+      referenceId,
+      kind: "inquiry",
+      orderType: parsed.data.inquiryType,
+      customerName: parsed.data.name,
+      itemsSummary: parsed.data.products,
+      status: "received",
+      createdAt: now,
+      updatedAt: now,
+      notes: parsed.data.message || undefined,
+    });
+    return res.status(200).json({ ok: true, referenceId, order });
   });
+  app.post(["/api/orders", "/alkhaleyah/api/orders"], (req, res) => {
+    const parsed = orderSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ ok: false, error: "Invalid order details" });
+    }
+    const now = new Date().toISOString();
+    const referenceId = parsed.data.referenceId || generateReferenceId();
+    const order = saveOrderRecord({
+      referenceId,
+      kind: "order",
+      orderType: parsed.data.orderType,
+      customerName: parsed.data.customerName || "WhatsApp customer",
+      itemsSummary: parsed.data.items,
+      subtotal: parsed.data.subtotal,
+      status: "received",
+      createdAt: now,
+      updatedAt: now,
+      notes: parsed.data.notes || undefined,
+    });
+    return res.status(200).json({ ok: true, referenceId: order.referenceId, order });
+  });
+  app.get(
+    ["/api/orders/:referenceId", "/alkhaleyah/api/orders/:referenceId"],
+    (req, res) => {
+      const order = getOrderRecord(req.params.referenceId);
+      if (!order) {
+        return res.status(404).json({ ok: false, error: "Order not found" });
+      }
+      return res.status(200).json({ ok: true, order });
+    }
+  );
   registerOAuthRoutes(app);
   // tRPC API
   app.use(

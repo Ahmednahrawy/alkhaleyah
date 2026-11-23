@@ -19,6 +19,11 @@ import {
   getRangeCopy,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+import {
+  createClientReferenceId,
+  recordCartOrder,
+  selectOrderForTracking,
+} from "@/lib/orders";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 type OrderType = "home" | "trade";
@@ -44,6 +49,15 @@ export function CartDrawer() {
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
   const [copied, setCopied] = useState(false);
+  const [orderRefId, setOrderRefId] = useState(() => createClientReferenceId());
+  const [recordedRefId, setRecordedRefId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (items.length === 0) {
+      setRecordedRefId(null);
+      setOrderRefId(createClientReferenceId());
+    }
+  }, [items.length]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -91,6 +105,7 @@ export function CartDrawer() {
 
   const whatsappMessage = [
     c.whatsappGreeting,
+    `${c.orderRefLabel}: ${orderRefId}`,
     `${c.orderTypeLabel}: ${orderType === "trade" ? c.typeTrade : c.typeHome}`,
     "",
     ...itemLines,
@@ -105,7 +120,26 @@ export function CartDrawer() {
 
   const whatsappUrl = buildWhatsAppUrl(whatsappMessage);
 
+  const persistCartOrder = () => {
+    if (resolvedItems.length === 0) return;
+    setRecordedRefId(orderRefId);
+    void recordCartOrder({
+      referenceId: orderRefId,
+      orderType,
+      customerName: name,
+      phone,
+      email,
+      itemsSummary: resolvedItems.map(
+        (entry) =>
+          `${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]} × ${entry.item.quantity})`
+      ),
+      subtotal,
+      notes,
+    });
+  };
+
   const handleCopyOrder = async () => {
+    persistCartOrder();
     try {
       await navigator.clipboard.writeText(whatsappMessage);
       setCopied(true);
@@ -350,11 +384,33 @@ export function CartDrawer() {
               <span>{c.subtotalLabel}</span>
               <strong>{formatPrice(subtotal, lang)}</strong>
             </div>
+            {recordedRefId && (
+              <div className="cart-order-ref-banner" aria-live="polite">
+                <div>
+                  <span>{c.orderRefLabel}:</span>{" "}
+                  <strong className="tabular-nums" dir="ltr">
+                    {recordedRefId}
+                  </strong>
+                  <small>{c.orderSavedNote}</small>
+                </div>
+                <button
+                  type="button"
+                  className="text-link"
+                  onClick={() => {
+                    closeCart();
+                    selectOrderForTracking(recordedRefId);
+                  }}
+                >
+                  {c.trackOrderButton}
+                </button>
+              </div>
+            )}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="button button-whatsapp cart-whatsapp-btn"
+              onClick={persistCartOrder}
             >
               <MessageCircle size={17} />
               <span>{c.sendWhatsApp}</span>

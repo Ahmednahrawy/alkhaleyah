@@ -10,7 +10,10 @@ type CopyShape = {
     closeMenuAria: string;
     ourRange: string;
     ourStory: string;
+    trackOrder: string;
     getInTouch: string;
+    wishlistLabel: string;
+    wishlistAria: string;
     cartLabel: string;
     cartAria: string;
     searchPlaceholder: string;
@@ -27,6 +30,7 @@ type CopyShape = {
     note: string;
     exploreRange: string;
     about: string;
+    trackOrder: string;
     enquiries: string;
     tagline: string;
   };
@@ -57,6 +61,31 @@ type CopyShape = {
     quickAdd: string;
     viewCategory: string;
     footnote: string;
+    filters: {
+      priceLabel: string;
+      weightLabel: string;
+      resetButton: string;
+      showingPrefix: string;
+      resultsSingle: string;
+      resultsPlural: string;
+      noMatchesTitle: string;
+      noMatchesBody: string;
+      priceOptions: {
+        all: string;
+        "under-250": string;
+        "250-600": string;
+        "600-1500": string;
+        "over-1500": string;
+      };
+      weightOptions: {
+        all: string;
+        "small-pack": string;
+        "1kg": string;
+        "3-5kg": string;
+        "10kg": string;
+        bottles: string;
+      };
+    };
   };
   storySection: {
     imageAria: string;
@@ -98,6 +127,40 @@ type CopyShape = {
       role: string;
     }>;
   };
+  tracking: {
+    eyebrow: string;
+    titleLead: string;
+    titleAccent: string;
+    asideBody: string;
+    inputLabel: string;
+    inputPlaceholder: string;
+    submitButton: string;
+    checkingButton: string;
+    recentLabel: string;
+    sampleLabel: string;
+    orderIdLabel: string;
+    typeLabel: string;
+    typeInquiry: string;
+    typeOrder: string;
+    channelHome: string;
+    channelTrade: string;
+    customerLabel: string;
+    itemsLabel: string;
+    subtotalLabel: string;
+    updatedLabel: string;
+    sampleBadge: string;
+    notFoundTitle: string;
+    notFoundBody: string;
+    askWhatsAppButton: string;
+    askWhatsAppMessagePrefix: string;
+    steps: {
+      received: { label: string; detail: string };
+      confirmed: { label: string; detail: string };
+      preparing: { label: string; detail: string };
+      dispatched: { label: string; detail: string };
+      delivered: { label: string; detail: string };
+    };
+  };
   contactSection: {
     eyebrow: string;
     titleLead: string;
@@ -137,6 +200,7 @@ type CopyShape = {
       selectedProductsLabel: string;
       copyButton: string;
       copiedButton: string;
+      trackOrderButton: string;
       resetButton: string;
       cartBannerCountPrefix: string;
       cartBannerCountSuffix: string;
@@ -181,6 +245,24 @@ type CopyShape = {
     viewFullRange: string;
     closeAria: string;
   };
+  wishlist: {
+    drawerTitle: string;
+    drawerSubtitle: string;
+    itemsCountSuffix: string;
+    addAria: string;
+    removeAria: string;
+    savedLabel: string;
+    saveLabel: string;
+    emptyTitle: string;
+    emptyBody: string;
+    browseButton: string;
+    selectSizeLabel: string;
+    addToCart: string;
+    addedToCart: string;
+    viewCart: string;
+    clearAll: string;
+    closeAria: string;
+  };
   cart: {
     title: string;
     subtitle: string;
@@ -207,6 +289,9 @@ type CopyShape = {
     emailPlaceholder: string;
     notesLabel: string;
     notesPlaceholder: string;
+    orderRefLabel: string;
+    orderSavedNote: string;
+    trackOrderButton: string;
     sendWhatsApp: string;
     copyOrder: string;
     copied: string;
@@ -233,7 +318,10 @@ export const translations: Record<Language, CopyShape> = {
       closeMenuAria: "Close navigation",
       ourRange: "Our range",
       ourStory: "Our story",
+      trackOrder: "Track order",
       getInTouch: "Get in touch",
+      wishlistLabel: "Saved",
+      wishlistAria: "Open wishlist",
       cartLabel: "Cart",
       cartAria: "Open order cart",
       searchPlaceholder: "Search honey, dates, olive oil...",
@@ -250,6 +338,7 @@ export const translations: Record<Language, CopyShape> = {
       note: "Food products for the everyday table.",
       exploreRange: "Explore the range",
       about: "About Alkhaleyah",
+      trackOrder: "Track order",
       enquiries: "Enquiries",
       tagline: "Food products · Made for sharing",
     },
@@ -288,6 +377,32 @@ export const translations: Record<Language, CopyShape> = {
       viewCategory: "Varieties",
       footnote:
         "All listed prices are in Egyptian Pounds (EGP). Delivery fees are confirmed directly with Alkhaleyah.",
+      filters: {
+        priceLabel: "Price range",
+        weightLabel: "Weight / size",
+        resetButton: "Reset filters",
+        showingPrefix: "Showing",
+        resultsSingle: "matching variety",
+        resultsPlural: "matching varieties",
+        noMatchesTitle: "No varieties match this filter combination",
+        noMatchesBody:
+          "Try widening the price range or choosing another weight category to see available items.",
+        priceOptions: {
+          all: "All prices",
+          "under-250": "Up to 250 EGP",
+          "250-600": "250 – 600 EGP",
+          "600-1500": "600 – 1,500 EGP",
+          "over-1500": "Over 1,500 EGP",
+        },
+        weightOptions: {
+          all: "All weights & sizes",
+          "small-pack": "Small packs (0.25 – 0.5 kg)",
+          "1kg": "Standard (1 kg)",
+          "3-5kg": "Family packs (3 – 5 kg)",
+          "10kg": "Bulk cartons (10 kg)",
+          bottles: "Bottles (0.5 – 3 liter)",
+        },
+      },
     },
     storySection: {
       imageAria:
@@ -366,6 +481,57 @@ export const translations: Record<Language, CopyShape> = {
         },
       ],
     },
+    tracking: {
+      eyebrow: "Order status",
+      titleLead: "Track your",
+      titleAccent: "order or inquiry.",
+      asideBody:
+        "Enter your Alkhaleyah reference ID (from a WhatsApp cart order or product inquiry) to check current progress.",
+      inputLabel: "Order or inquiry ID",
+      inputPlaceholder: "e.g. ALK-1041",
+      submitButton: "Check status",
+      checkingButton: "Checking...",
+      recentLabel: "Your recent IDs:",
+      sampleLabel: "Sample orders:",
+      orderIdLabel: "Reference ID",
+      typeLabel: "Request type",
+      typeInquiry: "Product inquiry",
+      typeOrder: "WhatsApp order",
+      channelHome: "Personal / Home",
+      channelTrade: "Wholesale / Trade",
+      customerLabel: "Customer",
+      itemsLabel: "Items",
+      subtotalLabel: "Estimated total",
+      updatedLabel: "Last update",
+      sampleBadge: "Demo status",
+      notFoundTitle: "Reference ID not found",
+      notFoundBody:
+        "Double-check your reference (for example ALK-1041), or message our team directly on WhatsApp for live order updates.",
+      askWhatsAppButton: "Ask about this ID on WhatsApp",
+      askWhatsAppMessagePrefix: "Hello Alkhaleyah, could you please share an update on my reference ID:",
+      steps: {
+        received: {
+          label: "Received",
+          detail: "Logged in our system and awaiting WhatsApp confirmation.",
+        },
+        confirmed: {
+          label: "Confirmed",
+          detail: "Pack sizes, availability, and delivery slot confirmed.",
+        },
+        preparing: {
+          label: "Preparing",
+          detail: "Freshly packed and sealed for dispatch.",
+        },
+        dispatched: {
+          label: "Out for delivery",
+          detail: "With our courier team on the way to you.",
+        },
+        delivered: {
+          label: "Delivered",
+          detail: "Handed over safely. Thank you for choosing Alkhaleyah.",
+        },
+      },
+    },
     contactSection: {
       eyebrow: "Let's talk food",
       titleLead: "Something on",
@@ -406,6 +572,7 @@ export const translations: Record<Language, CopyShape> = {
         selectedProductsLabel: "Selected products",
         copyButton: "Copy summary",
         copiedButton: "Copied",
+        trackOrderButton: "Track status",
         resetButton: "Send another inquiry",
         cartBannerCountPrefix: "You currently have",
         cartBannerCountSuffix: "item(s) in your order cart.",
@@ -452,6 +619,25 @@ export const translations: Record<Language, CopyShape> = {
       viewFullRange: "Explore full category",
       closeAria: "Close product selector",
     },
+    wishlist: {
+      drawerTitle: "Saved wishlist",
+      drawerSubtitle: "Products you hearted for later viewing and ordering.",
+      itemsCountSuffix: "saved",
+      addAria: "Save to wishlist",
+      removeAria: "Remove from wishlist",
+      savedLabel: "Saved",
+      saveLabel: "Save",
+      emptyTitle: "No saved products yet",
+      emptyBody:
+        "Tap the heart icon on any variety while browsing to keep your favourites handy here.",
+      browseButton: "Browse products",
+      selectSizeLabel: "Choose pack size",
+      addToCart: "Add to cart",
+      addedToCart: "Added",
+      viewCart: "Open cart",
+      clearAll: "Clear wishlist",
+      closeAria: "Close wishlist",
+    },
     cart: {
       title: "Your order cart",
       subtitle: "Review your selected varieties and send your order directly via WhatsApp.",
@@ -479,6 +665,9 @@ export const translations: Record<Language, CopyShape> = {
       emailPlaceholder: "name@example.com",
       notesLabel: "Delivery area or notes (optional)",
       notesPlaceholder: "City, delivery notes, or any extra requests...",
+      orderRefLabel: "Order reference",
+      orderSavedNote: "Saved for order tracking.",
+      trackOrderButton: "Track order",
       sendWhatsApp: "Send order via WhatsApp",
       copyOrder: "Copy order",
       copied: "Copied",
@@ -504,7 +693,10 @@ export const translations: Record<Language, CopyShape> = {
       closeMenuAria: "إغلاق القائمة",
       ourRange: "منتجاتنا",
       ourStory: "قصتنا",
+      trackOrder: "تتبع الطلب",
       getInTouch: "تواصل معنا",
+      wishlistLabel: "المفضلة",
+      wishlistAria: "فتح قائمة المفضلة",
       cartLabel: "السلة",
       cartAria: "فتح سلة الطلب",
       searchPlaceholder: "ابحث عن العسل، التمور، زيت الزيتون...",
@@ -521,6 +713,7 @@ export const translations: Record<Language, CopyShape> = {
       note: "منتجات غذائية لمائدة كل يوم.",
       exploreRange: "استكشف التشكيلة",
       about: "عن الخلية",
+      trackOrder: "تتبع الطلب",
       enquiries: "الاستفسارات",
       tagline: "منتجات غذائية · صُنعت للمشاركة",
     },
@@ -559,6 +752,32 @@ export const translations: Record<Language, CopyShape> = {
       viewCategory: "الأصناف",
       footnote:
         "جميع الأسعار بالجنيه المصري (ج.م)، وتُؤكَّد تفاصيل التوصيل مباشرةً مع شركة الخلية.",
+      filters: {
+        priceLabel: "نطاق السعر",
+        weightLabel: "الوزن / الحجم",
+        resetButton: "إعادة ضبط الفلاتر",
+        showingPrefix: "عرض",
+        resultsSingle: "صنف مطابق",
+        resultsPlural: "أصناف مطابقة",
+        noMatchesTitle: "لا توجد أصناف مطابقة لهذا التحديد",
+        noMatchesBody:
+          "جرّب توسيع نطاق السعر أو اختيار وزن مختلف لعرض المنتجات المتوفرة.",
+        priceOptions: {
+          all: "جميع الأسعار",
+          "under-250": "حتى ٢٥٠ ج.م",
+          "250-600": "٢٥٠ – ٦٠٠ ج.م",
+          "600-1500": "٦٠٠ – ١٬٥٠٠ ج.م",
+          "over-1500": "أكثر من ١٬٥٠٠ ج.م",
+        },
+        weightOptions: {
+          all: "جميع الأوزان والأحجام",
+          "small-pack": "عبوات صغيرة (٢٥٠ – ٥٠٠ جم)",
+          "1kg": "عبوة قياسية (١ كجم)",
+          "3-5kg": "عبوات عائلية (٣ – ٥ كجم)",
+          "10kg": "كرتون جملة (١٠ كجم)",
+          bottles: "زجاجات (٠٫٥ – ٣ لتر)",
+        },
+      },
     },
     storySection: {
       imageAria: "لقطة مقرّبة لزيت الزيتون البكر الممتاز مع أغصان الزيتون",
@@ -636,6 +855,57 @@ export const translations: Record<Language, CopyShape> = {
         },
       ],
     },
+    tracking: {
+      eyebrow: "متابعة الطلب",
+      titleLead: "تتبع حالة",
+      titleAccent: "طلبك أو استفسارك.",
+      asideBody:
+        "أدخل رقم المرجع الخاص بطلب الخلية (من سلة الواتساب أو نموذج الاستفسار) للاطلاع على حالته الحالية.",
+      inputLabel: "رقم الطلب أو الاستفسار",
+      inputPlaceholder: "مثال: ALK-1041",
+      submitButton: "عرض الحالة",
+      checkingButton: "جاري التحقق...",
+      recentLabel: "طلباتك الأخيرة:",
+      sampleLabel: "أمثلة تجريبية:",
+      orderIdLabel: "رقم المرجع",
+      typeLabel: "نوع الطلب",
+      typeInquiry: "استفسار منتجات",
+      typeOrder: "طلب عبر واتساب",
+      channelHome: "طلب منزلي / شخصي",
+      channelTrade: "طلب جملة / شركاء",
+      customerLabel: "العميل",
+      itemsLabel: "المنتجات",
+      subtotalLabel: "الإجمالي التقديري",
+      updatedLabel: "آخر تحديث",
+      sampleBadge: "حالة تجريبية",
+      notFoundTitle: "لم يتم العثور على رقم المرجع",
+      notFoundBody:
+        "تأكد من كتابة رقم الطلب بشكل صحيح (مثل ALK-1041)، أو تواصل معنا مباشرةً عبر واتساب لمتابعة طلبك.",
+      askWhatsAppButton: "استفسر عن هذا الطلب عبر واتساب",
+      askWhatsAppMessagePrefix: "مرحباً الخلية، أرغب في متابعة حالة الطلب رقم:",
+      steps: {
+        received: {
+          label: "تم الاستلام",
+          detail: "تم تسجيل الطلب وبانتظار تأكيده عبر واتساب.",
+        },
+        confirmed: {
+          label: "تم التأكيد",
+          detail: "تمت مراجعة الأوزان والتوافر وتحديد موعد التسليم.",
+        },
+        preparing: {
+          label: "جاري التجهيز",
+          detail: "يتم تعبئة وتغليف الأصناف بعناية تمهيداً للشحن.",
+        },
+        dispatched: {
+          label: "في الطريق للتسليم",
+          detail: "الشحنة مع مندوب التوصيل وفي طريقها إليك.",
+        },
+        delivered: {
+          label: "تم التسليم",
+          detail: "تم تسليم الطلب بنجاح. نسعد دائماً بخدمتك.",
+        },
+      },
+    },
     contactSection: {
       eyebrow: "لنتحدّث عن الطعام",
       titleLead: "هل لديك",
@@ -676,6 +946,7 @@ export const translations: Record<Language, CopyShape> = {
         selectedProductsLabel: "المنتجات المختارة",
         copyButton: "نسخ الملخص",
         copiedButton: "تم النسخ",
+        trackOrderButton: "تتبع الحالة",
         resetButton: "إرسال استفسار آخر",
         cartBannerCountPrefix: "لديك حالياً",
         cartBannerCountSuffix: "منتج/منتجات في سلة الطلب.",
@@ -722,6 +993,25 @@ export const translations: Record<Language, CopyShape> = {
       viewFullRange: "استعرض الفئة كاملة",
       closeAria: "إغلاق نافذة الاختيار",
     },
+    wishlist: {
+      drawerTitle: "قائمة المفضلة",
+      drawerSubtitle: "المنتجات التي حفظتها للرجوع إليها والطلب لاحقاً.",
+      itemsCountSuffix: "محفوظ",
+      addAria: "إضافة إلى المفضلة",
+      removeAria: "إزالة من المفضلة",
+      savedLabel: "في المفضلة",
+      saveLabel: "حفظ",
+      emptyTitle: "لا توجد منتجات محفوظة بعد",
+      emptyBody:
+        "اضغط على أيقونة القلب بجانب أي صنف أثناء التصفح لحفظ منتجاتك المفضلة هنا.",
+      browseButton: "تصفّح المنتجات",
+      selectSizeLabel: "اختر حجم العبوة",
+      addToCart: "أضف للسلة",
+      addedToCart: "تمت الإضافة",
+      viewCart: "افتح السلة",
+      clearAll: "مسح المفضلة",
+      closeAria: "إغلاق المفضلة",
+    },
     cart: {
       title: "سلة الطلب",
       subtitle: "راجع الأصناف والأحجام المختارة وأرسل طلبك مباشرةً عبر واتساب.",
@@ -749,6 +1039,9 @@ export const translations: Record<Language, CopyShape> = {
       emailPlaceholder: "name@example.com",
       notesLabel: "العنوان أو ملاحظات إضافية (اختياري)",
       notesPlaceholder: "المدينة، تفاصيل التوصيل، أو أي ملاحظات أخرى...",
+      orderRefLabel: "رقم مرجع الطلب",
+      orderSavedNote: "تم الحفظ لتتبع حالة الطلب.",
+      trackOrderButton: "تتبع الطلب",
       sendWhatsApp: "إرسال الطلب عبر واتساب",
       copyOrder: "نسخ الطلب",
       copied: "تم النسخ",

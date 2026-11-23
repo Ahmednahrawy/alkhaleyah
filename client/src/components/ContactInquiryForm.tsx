@@ -4,6 +4,13 @@ import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+import {
+  createClientReferenceId,
+  mapProductSlugsToTitles,
+  saveOrderLocally,
+  selectOrderForTracking,
+  type TrackedOrder,
+} from "@/lib/orders";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 type InquiryType = "home" | "trade";
@@ -114,7 +121,8 @@ export function ContactInquiryForm() {
     if (!validate() || submitting) return;
 
     setSubmitting(true);
-    let referenceId = `ALK-${Date.now().toString(36).toUpperCase()}`;
+    let referenceId = createClientReferenceId();
+    let serverOrder: TrackedOrder | undefined;
 
     const payload = {
       name: name.trim(),
@@ -133,9 +141,15 @@ export function ContactInquiryForm() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        const data = (await res.json()) as { referenceId?: string };
+        const data = (await res.json()) as {
+          referenceId?: string;
+          order?: TrackedOrder;
+        };
         if (data.referenceId) {
           referenceId = data.referenceId;
+        }
+        if (data.order) {
+          serverOrder = data.order;
         }
       }
     } catch {
@@ -143,6 +157,19 @@ export function ContactInquiryForm() {
     } finally {
       setSubmitting(false);
     }
+
+    const now = new Date().toISOString();
+    saveOrderLocally({
+      referenceId,
+      kind: "inquiry",
+      orderType: inquiryType,
+      customerName: payload.name,
+      itemsSummary: mapProductSlugsToTitles(selectedSlugs, lang),
+      status: serverOrder?.status ?? "received",
+      createdAt: serverOrder?.createdAt ?? now,
+      updatedAt: serverOrder?.updatedAt ?? now,
+      notes: payload.message || undefined,
+    });
 
     setSubmitted({
       referenceId,
@@ -251,6 +278,13 @@ export function ContactInquiryForm() {
           >
             {copied ? <Check size={15} /> : <Copy size={15} />}
             {copied ? f.copiedButton : f.copyButton}
+          </button>
+          <button
+            type="button"
+            className="text-link"
+            onClick={() => selectOrderForTracking(submitted.referenceId)}
+          >
+            {f.trackOrderButton}
           </button>
           <button
             type="button"

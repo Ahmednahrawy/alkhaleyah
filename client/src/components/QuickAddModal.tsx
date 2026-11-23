@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Minus, Plus, ShoppingBag, X } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Heart,
+  Minus,
+  Plus,
+  ShoppingBag,
+  X,
+} from "lucide-react";
 import { Link } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
@@ -13,8 +22,10 @@ import { translations } from "@/lib/i18n";
 export function QuickAddModal() {
   const { lang } = useLanguage();
   const { quickAddTarget, closeQuickAdd, addItem, openCart } = useCart();
+  const { hasItem, toggleItem } = useWishlist();
   const q = translations[lang].quickAdd;
   const r = translations[lang].rangeSection;
+  const w = translations[lang].wishlist;
 
   const [selectedSubId, setSelectedSubId] = useState("");
   const [selectedVariantId, setSelectedVariantId] = useState("");
@@ -62,6 +73,9 @@ export function QuickAddModal() {
     currentSub?.variants.find((v) => v.id === selectedVariantId) ??
     currentSub?.variants[0];
   const lineTotal = (currentVariant?.price ?? 0) * quantity;
+  const isCurrentSaved = currentSub
+    ? hasItem(range.slug, currentSub.id)
+    : false;
 
   const handleSelectSub = (subId: string) => {
     setSelectedSubId(subId);
@@ -114,14 +128,37 @@ export function QuickAddModal() {
               <h2 id="quick-add-title">{q.title}</h2>
             </div>
           </div>
-          <button
-            type="button"
-            className="cart-close-btn"
-            onClick={closeQuickAdd}
-            aria-label={q.closeAria}
-          >
-            <X size={20} />
-          </button>
+          <div className="quick-add-head-actions">
+            {currentSub && (
+              <button
+                type="button"
+                className={
+                  isCurrentSaved
+                    ? "wishlist-heart-btn is-saved"
+                    : "wishlist-heart-btn"
+                }
+                onClick={() =>
+                  toggleItem(range.slug, currentSub.id, currentVariant?.id)
+                }
+                aria-pressed={isCurrentSaved}
+                aria-label={isCurrentSaved ? w.removeAria : w.addAria}
+              >
+                <Heart
+                  size={17}
+                  fill={isCurrentSaved ? "currentColor" : "none"}
+                  aria-hidden="true"
+                />
+              </button>
+            )}
+            <button
+              type="button"
+              className="cart-close-btn"
+              onClick={closeQuickAdd}
+              aria-label={q.closeAria}
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="quick-add-body">

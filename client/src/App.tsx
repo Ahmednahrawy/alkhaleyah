@@ -7,9 +7,11 @@ import { Route, Router as WouterRouter, Switch, useLocation } from "wouter";
 import { CartDrawer } from "./components/CartDrawer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { QuickAddModal } from "./components/QuickAddModal";
+import { WishlistDrawer } from "./components/WishlistDrawer";
 import { CartProvider } from "./contexts/CartContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { WishlistProvider } from "./contexts/WishlistContext";
 import Home from "./pages/Home";
 
 function ScrollManager() {
@@ -52,6 +54,7 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       <CartDrawer />
+      <WishlistDrawer />
       <QuickAddModal />
     </WouterRouter>
   );
@@ -63,10 +66,12 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <LanguageProvider>
           <CartProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-            </TooltipProvider>
+            <WishlistProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+              </TooltipProvider>
+            </WishlistProvider>
           </CartProvider>
         </LanguageProvider>
       </ThemeProvider>
