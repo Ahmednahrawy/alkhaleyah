@@ -5,7 +5,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { findProductRange } from "@/lib/catalog";
 
 export type WishlistItem = {
   key: string;
@@ -52,29 +51,25 @@ function loadInitialWishlist(): WishlistItem[] {
       if (
         !entry ||
         typeof entry.categorySlug !== "string" ||
-        typeof entry.subcategoryId !== "string"
+        !entry.categorySlug.trim() ||
+        typeof entry.subcategoryId !== "string" ||
+        !entry.subcategoryId.trim()
       ) {
         continue;
       }
-      const range = findProductRange(entry.categorySlug);
-      const sub = range?.subcategories.find(
-        (item) => item.id === entry.subcategoryId
-      );
-      if (!range || !sub) continue;
 
-      const key = buildWishlistKey(range.slug, sub.id);
+      const key = buildWishlistKey(entry.categorySlug, entry.subcategoryId);
       if (seen.has(key)) continue;
       seen.add(key);
 
       valid.push({
         key,
-        categorySlug: range.slug,
-        subcategoryId: sub.id,
+        categorySlug: entry.categorySlug,
+        subcategoryId: entry.subcategoryId,
         preferredVariantId:
-          typeof entry.preferredVariantId === "string" &&
-          sub.variants.some((v) => v.id === entry.preferredVariantId)
+          typeof entry.preferredVariantId === "string"
             ? entry.preferredVariantId
-            : sub.variants[0]?.id,
+            : undefined,
         addedAt: typeof entry.addedAt === "number" ? entry.addedAt : Date.now(),
       });
     }

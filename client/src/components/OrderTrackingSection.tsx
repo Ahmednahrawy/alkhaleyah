@@ -8,6 +8,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import { formatPrice } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import {
@@ -21,7 +22,6 @@ import {
   type OrderStatusStep,
   type TrackedOrder,
 } from "@/lib/orders";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 function formatOrderDate(iso: string, lang: "en" | "ar") {
   const date = new Date(iso);
@@ -59,6 +59,7 @@ function StepIcon({
 
 export function OrderTrackingSection() {
   const { lang } = useLanguage();
+  const { buildStoreWhatsAppUrl } = useStore();
   const tr = translations[lang].tracking;
 
   const [queryId, setQueryId] = useState(SAMPLE_ORDERS[0].referenceId);
@@ -121,7 +122,7 @@ export function OrderTrackingSection() {
     ? Math.max(0, ORDER_STATUS_SEQUENCE.indexOf(trackedOrder.status))
     : -1;
 
-  const whatsappInquiryUrl = buildWhatsAppUrl(
+  const whatsappInquiryUrl = buildStoreWhatsAppUrl(
     `${tr.askWhatsAppMessagePrefix} ${notFoundId || trackedOrder?.referenceId || queryId}`
   );
 

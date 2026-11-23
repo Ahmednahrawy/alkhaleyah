@@ -19,18 +19,16 @@ import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import {
   formatPrice,
-  getAllSubcategoryEntries,
   getRangeCopy,
   getRangeMinPrice,
   matchesSubcategoryFilters,
-  productRanges,
   type PriceFilterId,
   type WeightFilterId,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
-import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 const PRICE_FILTER_IDS: PriceFilterId[] = [
   "all",
@@ -51,6 +49,8 @@ const WEIGHT_FILTER_IDS: WeightFilterId[] = [
 
 export default function Home() {
   const { lang } = useLanguage();
+  const { ranges, allSubcategoryEntries, storeSettings, buildStoreWhatsAppUrl } =
+    useStore();
   const { openQuickAdd } = useCart();
   const t = translations[lang];
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -62,7 +62,7 @@ export default function Home() {
   const selectedRange =
     activeCategory === "all"
       ? null
-      : productRanges.find((item) => item.slug === activeCategory) ?? null;
+      : ranges.find((item) => item.slug === activeCategory) ?? null;
 
   const filteredEntries = useMemo(() => {
     const baseEntries = selectedRange
@@ -70,12 +70,12 @@ export default function Home() {
           range: selectedRange,
           subcategory,
         }))
-      : getAllSubcategoryEntries();
+      : allSubcategoryEntries;
 
     return baseEntries.filter((entry) =>
       matchesSubcategoryFilters(entry.subcategory, priceFilter, weightFilter)
     );
-  }, [selectedRange, priceFilter, weightFilter]);
+  }, [selectedRange, allSubcategoryEntries, priceFilter, weightFilter]);
 
   const showVarietiesGrid = Boolean(selectedRange) || hasActiveFilters;
 
@@ -84,9 +84,12 @@ export default function Home() {
     setWeightFilter("all");
   };
 
+  const announcementText =
+    lang === "ar" ? storeSettings.announcementAr : storeSettings.announcementEn;
+
   return (
     <div className="site-shell">
-      <div className="announcement">{t.announcement}</div>
+      <div className="announcement">{announcementText}</div>
       <SiteHeader />
       <main>
         <section className="hero" aria-labelledby="hero-title">
@@ -151,7 +154,7 @@ export default function Home() {
             >
               {t.rangeSection.allCategoriesTab}
             </button>
-            {productRanges.map((range) => {
+            {ranges.map((range) => {
               const copy = getRangeCopy(range, lang);
               const isSelected = activeCategory === range.slug;
               return (
@@ -300,7 +303,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="range-grid">
-              {productRanges.map((range) => {
+              {ranges.map((range) => {
                 const copy = getRangeCopy(range, lang);
                 const minPrice = getRangeMinPrice(range);
                 return (
@@ -447,13 +450,13 @@ export default function Home() {
               <div className="contact-direct-links">
                 <a
                   className="contact-whatsapp-link"
-                  href={buildWhatsAppUrl()}
+                  href={buildStoreWhatsAppUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <MessageCircle size={17} aria-hidden="true" />
                   <span>{t.contactSection.whatsappDirectLabel}:</span>
-                  <strong dir="ltr">{WHATSAPP_DISPLAY}</strong>
+                  <strong dir="ltr">{storeSettings.whatsappDisplay}</strong>
                 </a>
                 <a className="text-link light-link" href="#our-range">
                   {t.contactSection.cta}{" "}

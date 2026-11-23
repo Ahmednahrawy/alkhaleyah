@@ -1,4 +1,12 @@
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { findProductRange } from "@/lib/catalog";
+import { db } from "@/lib/firebase";
 
 export type OrderStatusStep =
   | "received"
@@ -81,10 +89,32 @@ export function normalizeReferenceId(raw: string): string {
   return raw.trim().toUpperCase();
 }
 
+export function isValidReferenceId(id: string): boolean {
+  return /^[a-zA-Z0-9_-]{4,64}$/.test(id);
+}
+
 export function createClientReferenceId(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
   const suffix = Math.random().toString(36).slice(2, 4).toUpperCase();
   return `ALK-${timestamp}${suffix}`;
+}
+
+export function timestampToIso(value: unknown, fallback = new Date().toISOString()): string {
+  if (value instanceof Timestamp) {
+    return value.toDate().toISOString();
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "toDate" in value &&
+    typeof (value as { toDate: () => Date }).toDate === "function"
+  ) {
+    return (value as { toDate: () => Date }).toDate().toISOString();
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+  return fallback;
 }
 
 export function getSavedLocalOrders(): TrackedOrder[] {
@@ -127,6 +157,61 @@ export function saveOrderLocally(order: TrackedOrder): TrackedOrder {
   return normalized;
 }
 
+async function saveOrderToFirestore(
+  order: TrackedOrder,
+  privateContact: {
+    fullName: string;
+    phone: string;
+    email: string;
+    notes: string;
+  }
+): Promise<void> {
+  const refId = normalizeReferenceId(order.referenceId);
+  if (!isValidReferenceId(refId)) return;
+
+  const safeSummary = order.itemsSummary
+    .map((item) => String(item).trim())
+    .filter(Boolean)
+    .slice(0, 30);
+  if (safeSummary.length === 0) return;
+
+  const orderDoc: Record<string, unknown> = {
+    referenceId: refId,
+    kind: order.kind,
+    orderType: order.orderType,
+    customerName: (order.customerName.trim() || "Customer").slice(0, 80),
+    itemsSummary: safeSummary,
+    status: "received",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  if (
+    typeof order.subtotal === "number" &&
+    Number.isFinite(order.subtotal) &&
+    order.subtotal >= 0 &&
+    order.subtotal <= 10000000
+  ) {
+    orderDoc.subtotal = order.subtotal;
+  }
+
+  try {
+    const orderRef = doc(db, "orders", refId);
+    await setDoc(orderRef, orderDoc);
+    const contactRef = doc(db, "orders", refId, "private", "contact");
+    await setDoc(contactRef, {
+      fullName: privateContact.fullName.trim().slice(0, 120),
+      phone: privateContact.phone.trim().slice(0, 40),
+      email: privateContact.email.trim().slice(0, 180),
+      notes: privateContact.notes.trim().slice(0, 2000),
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    // Graceful fallback when running offline or in test environments
+    console.warn("Firestore order sync warning:", error);
+  }
+}
+
 export async function recordCartOrder(input: {
   referenceId: string;
   orderType: "home" | "trade";
@@ -138,7 +223,7 @@ export async function recordCartOrder(input: {
   notes: string;
 }): Promise<TrackedOrder> {
   const now = new Date().toISOString();
-  const fallbackRecord: TrackedOrder = {
+  let finalRecord: TrackedOrder = {
     referenceId: normalizeReferenceId(input.referenceId),
     kind: "order",
     orderType: input.orderType,
@@ -151,7 +236,7 @@ export async function recordCartOrder(input: {
     notes: input.notes.trim() || undefined,
   };
 
-  saveOrderLocally(fallbackRecord);
+  saveOrderLocally(finalRecord);
 
   try {
     const endpoint = `${import.meta.env.BASE_URL}api/orders`;
@@ -159,7 +244,7 @@ export async function recordCartOrder(input: {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        referenceId: fallbackRecord.referenceId,
+        referenceId: finalRecord.referenceId,
         orderType: input.orderType,
         customerName: input.customerName.trim(),
         phone: input.phone.trim(),
@@ -172,14 +257,55 @@ export async function recordCartOrder(input: {
     if (res.ok) {
       const data = (await res.json()) as { order?: TrackedOrder };
       if (data.order?.referenceId) {
-        return saveOrderLocally(data.order);
+        finalRecord = saveOrderLocally(data.order);
       }
     }
   } catch {
     // Graceful fallback when running on static hosting
   }
 
-  return fallbackRecord;
+  await saveOrderToFirestore(finalRecord, {
+    fullName: input.customerName.trim() || finalRecord.customerName,
+    phone: input.phone,
+    email: input.email,
+    notes: input.notes,
+  });
+
+  return finalRecord;
+}
+
+export async function recordInquiryOrder(input: {
+  referenceId: string;
+  orderType: "home" | "trade";
+  customerName: string;
+  phone: string;
+  email: string;
+  itemsSummary: string[];
+  notes: string;
+}): Promise<TrackedOrder> {
+  const now = new Date().toISOString();
+  const record: TrackedOrder = {
+    referenceId: normalizeReferenceId(input.referenceId),
+    kind: "inquiry",
+    orderType: input.orderType,
+    customerName: input.customerName.trim() || "Customer",
+    itemsSummary: input.itemsSummary,
+    status: "received",
+    createdAt: now,
+    updatedAt: now,
+    notes: input.notes.trim() || undefined,
+  };
+
+  saveOrderLocally(record);
+
+  await saveOrderToFirestore(record, {
+    fullName: input.customerName,
+    phone: input.phone,
+    email: input.email,
+    notes: input.notes,
+  });
+
+  return record;
 }
 
 export async function lookupTrackedOrder(
@@ -187,6 +313,35 @@ export async function lookupTrackedOrder(
 ): Promise<TrackedOrder | null> {
   const normalizedId = normalizeReferenceId(rawReferenceId);
   if (!normalizedId) return null;
+
+  if (isValidReferenceId(normalizedId)) {
+    try {
+      const snap = await getDoc(doc(db, "orders", normalizedId));
+      if (snap.exists()) {
+        const data = snap.data();
+        const status = ORDER_STATUS_SEQUENCE.includes(data.status as OrderStatusStep)
+          ? (data.status as OrderStatusStep)
+          : "received";
+        return {
+          referenceId: String(data.referenceId || normalizedId),
+          kind: data.kind === "inquiry" ? "inquiry" : "order",
+          orderType: data.orderType === "trade" ? "trade" : "home",
+          customerName: String(data.customerName || "Customer"),
+          itemsSummary: Array.isArray(data.itemsSummary)
+            ? data.itemsSummary.map((line) => String(line))
+            : [],
+          subtotal:
+            typeof data.subtotal === "number" ? data.subtotal : undefined,
+          status,
+          createdAt: timestampToIso(data.createdAt),
+          updatedAt: timestampToIso(data.updatedAt),
+          isSample: data.isSample === true ? true : undefined,
+        };
+      }
+    } catch {
+      // Fallback to Express API / localStorage / sample orders
+    }
+  }
 
   try {
     const endpoint = `${import.meta.env.BASE_URL}api/orders/${encodeURIComponent(

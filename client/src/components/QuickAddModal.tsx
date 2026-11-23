@@ -11,6 +11,7 @@ import {
 import { Link } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
@@ -21,6 +22,7 @@ import { translations } from "@/lib/i18n";
 
 export function QuickAddModal() {
   const { lang } = useLanguage();
+  const { findRange } = useStore();
   const { quickAddTarget, closeQuickAdd, addItem, openCart } = useCart();
   const { hasItem, toggleItem } = useWishlist();
   const q = translations[lang].quickAdd;
@@ -32,7 +34,9 @@ export function QuickAddModal() {
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
-  const range = quickAddTarget?.range ?? null;
+  const range = quickAddTarget
+    ? (findRange(quickAddTarget.range.slug) ?? quickAddTarget.range)
+    : null;
   const initialSubId = quickAddTarget?.initialSubcategoryId;
 
   useEffect(() => {

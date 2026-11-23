@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { findSubcategoryAndVariant, type ProductRange } from "@/lib/catalog";
+import { useStore } from "@/contexts/StoreContext";
+import { type ProductRange } from "@/lib/catalog";
 
 export type CartItem = {
   key: string;
@@ -49,24 +50,19 @@ function loadInitialCart(): CartItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((entry): entry is CartItem => {
-      if (
-        !entry ||
-        typeof entry.categorySlug !== "string" ||
-        typeof entry.subcategoryId !== "string" ||
-        typeof entry.variantId !== "string" ||
-        typeof entry.quantity !== "number" ||
-        entry.quantity < 1
-      ) {
-        return false;
-      }
-      const resolved = findSubcategoryAndVariant(
-        entry.categorySlug,
-        entry.subcategoryId,
-        entry.variantId
-      );
-      return Boolean(resolved.range && resolved.subcategory && resolved.variant);
-    });
+    return parsed.filter(
+      (entry): entry is CartItem =>
+        Boolean(entry) &&
+        typeof entry.categorySlug === "string" &&
+        entry.categorySlug.trim().length > 0 &&
+        typeof entry.subcategoryId === "string" &&
+        entry.subcategoryId.trim().length > 0 &&
+        typeof entry.variantId === "string" &&
+        entry.variantId.trim().length > 0 &&
+        typeof entry.quantity === "number" &&
+        Number.isFinite(entry.quantity) &&
+        entry.quantity >= 1
+    );
   } catch {
     return [];
   }
@@ -75,6 +71,7 @@ function loadInitialCart(): CartItem[] {
 const CartContext = createContext<CartContextValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { findVariant } = useStore();
   const [items, setItems] = useState<CartItem[]>(loadInitialCart);
   const [isOpen, setIsOpen] = useState(false);
   const [quickAddTarget, setQuickAddTarget] = useState<QuickAddTarget | null>(null);
@@ -90,7 +87,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const subtotal = items.reduce((sum, item) => {
-    const resolved = findSubcategoryAndVariant(
+    const resolved = findVariant(
       item.categorySlug,
       item.subcategoryId,
       item.variantId

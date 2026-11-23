@@ -3,13 +3,16 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import ProductRange from "@/pages/ProductRange";
+import AdminDashboard from "@/pages/AdminDashboard";
 import { Route, Router as WouterRouter, Switch, useLocation } from "wouter";
 import { CartDrawer } from "./components/CartDrawer";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { QuickAddModal } from "./components/QuickAddModal";
 import { WishlistDrawer } from "./components/WishlistDrawer";
+import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { StoreProvider } from "./contexts/StoreContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { WishlistProvider } from "./contexts/WishlistContext";
 import Home from "./pages/Home";
@@ -50,6 +53,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/products/:slug" component={ProductRange} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -65,14 +69,18 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <LanguageProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Router />
-              </TooltipProvider>
-            </WishlistProvider>
-          </CartProvider>
+          <AuthProvider>
+            <StoreProvider>
+              <CartProvider>
+                <WishlistProvider>
+                  <TooltipProvider>
+                    <Toaster />
+                    <Router />
+                  </TooltipProvider>
+                </WishlistProvider>
+              </CartProvider>
+            </StoreProvider>
+          </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>

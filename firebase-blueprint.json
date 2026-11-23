@@ -1,0 +1,278 @@
+{
+  "entities": {
+    "AdminAccount": {
+      "title": "AdminAccount",
+      "description": "Authorized Alkhaleyah admin user record keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 180,
+          "description": "Email address of the admin account."
+        },
+        "addedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of the owner admin who granted access."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": ["email", "addedBy", "createdAt"]
+    },
+    "OrderRecord": {
+      "title": "OrderRecord",
+      "description": "Publicly trackable non-PII status summary for an Alkhaleyah order or product inquiry.",
+      "type": "object",
+      "properties": {
+        "referenceId": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Normalized uppercase ALK reference ID."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["inquiry", "order"],
+          "description": "Whether the submission originated from the inquiry form or shopping cart."
+        },
+        "orderType": {
+          "type": "string",
+          "enum": ["home", "trade"],
+          "description": "Personal home customer or wholesale trade inquiry."
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Display name shown on order tracking status."
+        },
+        "itemsSummary": {
+          "type": "array",
+          "description": "List of ordered varieties, pack sizes, and quantities."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Optional order subtotal in EGP."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["received", "confirmed", "preparing", "dispatched", "delivered"],
+          "description": "Current fulfilment progress stage."
+        },
+        "isSample": {
+          "type": "boolean",
+          "description": "Optional flag marking built-in demo records."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        }
+      },
+      "required": [
+        "referenceId",
+        "kind",
+        "orderType",
+        "customerName",
+        "itemsSummary",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderContactPii": {
+      "title": "OrderContactPii",
+      "description": "Admin-only private contact details and delivery notes for an order.",
+      "type": "object",
+      "properties": {
+        "fullName": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Customer full name."
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Customer phone or WhatsApp number."
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 180,
+          "description": "Optional customer email address."
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Customer delivery instructions or inquiry notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": ["fullName", "phone", "email", "notes", "createdAt"]
+    },
+    "CatalogOverride": {
+      "title": "CatalogOverride",
+      "description": "Admin-managed product variety price, pack variant, visibility, or custom item definition.",
+      "type": "object",
+      "properties": {
+        "productKey": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Composite key categorySlug__subcategoryId."
+        },
+        "categorySlug": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Parent category slug."
+        },
+        "subcategoryId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Variety identifier."
+        },
+        "nameEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "English variety name."
+        },
+        "nameAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Arabic variety name."
+        },
+        "noteEn": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "English tasting or usage note."
+        },
+        "noteAr": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Arabic tasting or usage note."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether this product variety is currently visible in the storefront."
+        },
+        "variants": {
+          "type": "array",
+          "description": "Pack size variants and EGP prices (up to 10 variants)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who updated the catalog entry."
+        }
+      },
+      "required": [
+        "productKey",
+        "categorySlug",
+        "subcategoryId",
+        "nameEn",
+        "nameAr",
+        "noteEn",
+        "noteAr",
+        "isActive",
+        "variants",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Public storefront operational settings editable by admins.",
+      "type": "object",
+      "properties": {
+        "whatsappNumber": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 24,
+          "description": "Digits-only WhatsApp number for wa.me links."
+        },
+        "whatsappDisplay": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 32,
+          "description": "Formatted WhatsApp phone number shown in UI."
+        },
+        "announcementEn": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Top announcement bar text in English."
+        },
+        "announcementAr": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Top announcement bar text in Arabic."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who saved settings."
+        }
+      },
+      "required": [
+        "whatsappNumber",
+        "whatsappDisplay",
+        "announcementEn",
+        "announcementAr",
+        "updatedAt",
+        "updatedBy"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminAccount" },
+      "description": "Authorized admin role records."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/OrderRecord" },
+      "description": "Trackable order and inquiry progress summaries indexed by reference ID."
+    },
+    "/orders/{orderId}/private/contact": {
+      "schema": { "$ref": "#/entities/OrderContactPii" },
+      "description": "Admin-only private customer contact information for each order."
+    },
+    "/catalogOverrides/{productKey}": {
+      "schema": { "$ref": "#/entities/CatalogOverride" },
+      "description": "Live admin product catalog overrides and custom varieties."
+    },
+    "/storeSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Global storefront configuration document (document ID: public)."
+    }
+  }
+}

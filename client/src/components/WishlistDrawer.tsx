@@ -3,9 +3,9 @@ import { Check, Heart, ShoppingBag, Trash2, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import {
-  findProductRange,
   formatPrice,
   getRangeCopy,
   getSubcategoryMinPrice,
@@ -17,6 +17,7 @@ export function WishlistDrawer() {
     useWishlist();
   const { addItem, openCart } = useCart();
   const { lang } = useLanguage();
+  const { findRange } = useStore();
   const [location] = useLocation();
   const w = translations[lang].wishlist;
   const r = translations[lang].rangeSection;
@@ -46,7 +47,7 @@ export function WishlistDrawer() {
 
   const resolvedItems = items
     .map((entry) => {
-      const range = findProductRange(entry.categorySlug);
+      const range = findRange(entry.categorySlug);
       const subcategory = range?.subcategories.find(
         (sub) => sub.id === entry.subcategoryId
       );

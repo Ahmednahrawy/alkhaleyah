@@ -1,0 +1,233 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 2 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwnerAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'abahafc@gmail.com';
+    }
+
+    function isAdmin() {
+      return isOwnerAdmin() || (
+        isVerifiedUser() && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidAdminAccount(data) {
+      return data.keys().hasAll(['email', 'addedBy', 'createdAt']) &&
+        data.keys().hasOnly(['email', 'addedBy', 'createdAt']) &&
+        data.email is string && data.email.size() >= 3 && data.email.size() <= 180 &&
+        data.addedBy is string && data.addedBy == request.auth.uid && data.addedBy.size() <= 128 &&
+        data.createdAt == request.time;
+    }
+
+    function isValidOrderRecord(data) {
+      return data.keys().hasAll([
+          'referenceId',
+          'kind',
+          'orderType',
+          'customerName',
+          'itemsSummary',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'referenceId',
+          'kind',
+          'orderType',
+          'customerName',
+          'itemsSummary',
+          'subtotal',
+          'status',
+          'isSample',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.referenceId) && data.referenceId.size() >= 4 && data.referenceId.size() <= 64 &&
+        data.kind in ['inquiry', 'order'] &&
+        data.orderType in ['home', 'trade'] &&
+        data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 80 &&
+        data.itemsSummary is list && data.itemsSummary.size() >= 1 && data.itemsSummary.size() <= 30 &&
+        data.itemsSummary[0] is string &&
+        (!('subtotal' in data) || (data.subtotal is number && data.subtotal >= 0 && data.subtotal <= 10000000)) &&
+        (!('isSample' in data) || data.isSample is bool) &&
+        data.status in ['received', 'confirmed', 'preparing', 'dispatched', 'delivered'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidOrderContactPii(data) {
+      return data.keys().hasAll(['fullName', 'phone', 'email', 'notes', 'createdAt']) &&
+        data.keys().hasOnly(['fullName', 'phone', 'email', 'notes', 'createdAt']) &&
+        data.fullName is string && data.fullName.size() <= 120 &&
+        data.phone is string && data.phone.size() <= 40 &&
+        data.email is string && data.email.size() <= 180 &&
+        data.notes is string && data.notes.size() <= 2000 &&
+        data.createdAt == request.time;
+    }
+
+    function isValidCatalogOverride(data) {
+      return data.keys().hasAll([
+          'productKey',
+          'categorySlug',
+          'subcategoryId',
+          'nameEn',
+          'nameAr',
+          'noteEn',
+          'noteAr',
+          'isActive',
+          'variants',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        data.keys().hasOnly([
+          'productKey',
+          'categorySlug',
+          'subcategoryId',
+          'nameEn',
+          'nameAr',
+          'noteEn',
+          'noteAr',
+          'isActive',
+          'variants',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        isValidId(data.productKey) && data.productKey.size() >= 3 && data.productKey.size() <= 128 &&
+        isValidId(data.categorySlug) && data.categorySlug.size() <= 64 &&
+        isValidId(data.subcategoryId) && data.subcategoryId.size() <= 64 &&
+        data.nameEn is string && data.nameEn.size() >= 1 && data.nameEn.size() <= 120 &&
+        data.nameAr is string && data.nameAr.size() >= 1 && data.nameAr.size() <= 120 &&
+        data.noteEn is string && data.noteEn.size() <= 400 &&
+        data.noteAr is string && data.noteAr.size() <= 400 &&
+        data.isActive is bool &&
+        data.variants is list && data.variants.size() >= 1 && data.variants.size() <= 10 &&
+        data.variants[0] is map &&
+        data.updatedAt == request.time &&
+        data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    function isValidStoreSettings(data) {
+      return data.keys().hasAll([
+          'whatsappNumber',
+          'whatsappDisplay',
+          'announcementEn',
+          'announcementAr',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        data.keys().hasOnly([
+          'whatsappNumber',
+          'whatsappDisplay',
+          'announcementEn',
+          'announcementAr',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        data.whatsappNumber is string && data.whatsappNumber.size() >= 6 && data.whatsappNumber.size() <= 24 &&
+        data.whatsappDisplay is string && data.whatsappDisplay.size() >= 6 && data.whatsappDisplay.size() <= 32 &&
+        data.announcementEn is string && data.announcementEn.size() <= 160 &&
+        data.announcementAr is string && data.announcementAr.size() <= 160 &&
+        data.updatedAt == request.time &&
+        data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
+    match /admins/{userId} {
+      allow get: if isValidId(userId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && isOwnerAdmin() && isValidAdminAccount(incoming());
+      allow update: if isValidId(userId) && isOwnerAdmin() && isValidAdminAccount(incoming()) &&
+        incoming().createdAt == existing().createdAt;
+      allow delete: if isValidId(userId) && isOwnerAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow get: if isValidId(orderId);
+      allow list: if isAdmin();
+      allow create: if isValidId(orderId) &&
+        isValidOrderRecord(incoming()) &&
+        incoming().referenceId == orderId &&
+        incoming().status == 'received' &&
+        (!('isSample' in incoming()) || incoming().isSample == false) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isValidId(orderId) &&
+        isAdmin() &&
+        isValidOrderRecord(incoming()) &&
+        incoming().referenceId == existing().referenceId &&
+        incoming().kind == existing().kind &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['status', 'customerName', 'itemsSummary', 'subtotal', 'updatedAt']);
+      allow delete: if isValidId(orderId) && isAdmin();
+
+      match /private/contact {
+        allow get: if isValidId(orderId) && isAdmin();
+        allow list: if false;
+        allow create: if isValidId(orderId) &&
+          isValidOrderContactPii(incoming()) &&
+          exists(/databases/$(database)/documents/orders/$(orderId));
+        allow update: if isValidId(orderId) &&
+          isAdmin() &&
+          isValidOrderContactPii(incoming()) &&
+          incoming().createdAt == existing().createdAt;
+        allow delete: if isValidId(orderId) && isAdmin();
+      }
+    }
+
+    match /catalogOverrides/{productKey} {
+      allow get, list: if true;
+      allow create: if isValidId(productKey) &&
+        isAdmin() &&
+        isValidCatalogOverride(incoming()) &&
+        incoming().productKey == productKey;
+      allow update: if isValidId(productKey) &&
+        isAdmin() &&
+        isValidCatalogOverride(incoming()) &&
+        incoming().productKey == existing().productKey &&
+        incoming().categorySlug == existing().categorySlug &&
+        incoming().subcategoryId == existing().subcategoryId &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'nameEn',
+          'nameAr',
+          'noteEn',
+          'noteAr',
+          'isActive',
+          'variants',
+          'updatedAt',
+          'updatedBy'
+        ]);
+      allow delete: if isValidId(productKey) && isAdmin();
+    }
+
+    match /storeSettings/{settingId} {
+      allow get: if settingId == 'public';
+      allow list: if false;
+      allow create, update: if settingId == 'public' && isAdmin() && isValidStoreSettings(incoming());
+      allow delete: if false;
+    }
+  }
+}

@@ -11,11 +11,10 @@ import { Link, useRoute } from "wouter";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import {
-  findProductRange,
   getRangeCopy,
   matchesSubcategoryFilters,
-  productRanges,
   type PriceFilterId,
   type WeightFilterId,
 } from "@/lib/catalog";
@@ -41,8 +40,9 @@ const WEIGHT_FILTER_IDS: WeightFilterId[] = [
 export default function ProductRange() {
   const [, params] = useRoute("/products/:slug");
   const { lang } = useLanguage();
+  const { ranges, findRange, storeSettings } = useStore();
   const t = translations[lang];
-  const range = findProductRange(params?.slug);
+  const range = findRange(params?.slug);
   const [priceFilter, setPriceFilter] = useState<PriceFilterId>("all");
   const [weightFilter, setWeightFilter] = useState<WeightFilterId>("all");
 
@@ -85,10 +85,12 @@ export default function ProductRange() {
   }
 
   const copy = getRangeCopy(range, lang);
+  const announcementText =
+    lang === "ar" ? storeSettings.announcementAr : storeSettings.announcementEn;
 
   return (
     <div className="site-shell">
-      <div className="announcement">{t.announcement}</div>
+      <div className="announcement">{announcementText}</div>
       <SiteHeader />
       <main className="range-detail">
         <div className="detail-breadcrumb">
@@ -258,7 +260,7 @@ export default function ProductRange() {
             </h2>
           </div>
           <div className="more-range-links">
-            {productRanges
+            {ranges
               .filter((item) => item.slug !== range.slug)
               .map((item) => {
                 const itemCopy = getRangeCopy(item, lang);

@@ -2,16 +2,15 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ArrowUpRight, Check, Copy, MessageCircle, ShoppingBag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { findProductRange, getRangeCopy, productRanges } from "@/lib/catalog";
+import { useStore } from "@/contexts/StoreContext";
+import { getRangeCopy } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import {
   createClientReferenceId,
-  mapProductSlugsToTitles,
-  saveOrderLocally,
+  recordInquiryOrder,
   selectOrderForTracking,
   type TrackedOrder,
 } from "@/lib/orders";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 type InquiryType = "home" | "trade";
 
@@ -27,6 +26,7 @@ type SubmittedSummary = {
 
 export function ContactInquiryForm() {
   const { lang } = useLanguage();
+  const { ranges, findRange, buildStoreWhatsAppUrl } = useStore();
   const { totalCount, openCart } = useCart();
   const f = translations[lang].contactSection.form;
 
@@ -50,13 +50,13 @@ export function ContactInquiryForm() {
     const params = new URLSearchParams(window.location.search);
     const productParam = params.get("product");
     if (!productParam) return;
-    const matched = findProductRange(productParam);
+    const matched = findRange(productParam);
     if (matched) {
       setSelectedSlugs((prev) =>
         prev.includes(matched.slug) ? prev : [...prev, matched.slug]
       );
     }
-  }, []);
+  }, [findRange]);
 
   const toggleProduct = (slug: string) => {
     setSelectedSlugs((prev) =>
@@ -97,7 +97,7 @@ export function ContactInquiryForm() {
   const buildSummaryText = (summary: SubmittedSummary) => {
     const productNames = summary.products
       .map((slug) => {
-        const range = findProductRange(slug);
+        const range = findRange(slug);
         return range ? getRangeCopy(range, lang).title : slug;
       })
       .join(", ");
@@ -158,18 +158,24 @@ export function ContactInquiryForm() {
       setSubmitting(false);
     }
 
-    const now = new Date().toISOString();
-    saveOrderLocally({
+    const itemsSummary = selectedSlugs.map((slug) => {
+      const range = findRange(slug);
+      return range ? range[lang].title : slug;
+    });
+
+    await recordInquiryOrder({
       referenceId,
-      kind: "inquiry",
       orderType: inquiryType,
       customerName: payload.name,
-      itemsSummary: mapProductSlugsToTitles(selectedSlugs, lang),
-      status: serverOrder?.status ?? "received",
-      createdAt: serverOrder?.createdAt ?? now,
-      updatedAt: serverOrder?.updatedAt ?? now,
-      notes: payload.message || undefined,
+      phone: payload.phone,
+      email: payload.email,
+      itemsSummary,
+      notes: payload.message,
     });
+
+    if (serverOrder && serverOrder.status !== "received") {
+      // keep local synced if Express responded with an updated order
+    }
 
     setSubmitted({
       referenceId,
@@ -207,10 +213,10 @@ export function ContactInquiryForm() {
 
   if (submitted) {
     const selectedTitles = submitted.products.map((slug) => {
-      const range = findProductRange(slug);
+      const range = findRange(slug);
       return range ? getRangeCopy(range, lang).title : slug;
     });
-    const whatsappUrl = buildWhatsAppUrl(buildSummaryText(submitted));
+    const whatsappUrl = buildStoreWhatsAppUrl(buildSummaryText(submitted));
 
     return (
       <div className="inquiry-card inquiry-success" aria-live="polite">
@@ -360,7 +366,7 @@ export function ContactInquiryForm() {
           <span className="inquiry-hint">{f.productsHint}</span>
         </div>
         <div className="inquiry-products-grid">
-          {productRanges.map((range) => {
+          {ranges.map((range) => {
             const copy = getRangeCopy(range, lang);
             const checked = selectedSlugs.includes(range.slug);
             return (

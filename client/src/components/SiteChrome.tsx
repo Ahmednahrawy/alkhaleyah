@@ -12,14 +12,13 @@ import {
 import brandLogo from "@/assets/images/alkhaleyah-logo.png";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
-  searchCatalog,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
-import { buildWhatsAppUrl, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 
 export function BrandMark() {
   const { lang } = useLanguage();
@@ -128,12 +127,13 @@ function HeaderSearch({
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   const { lang } = useLanguage();
+  const { searchRanges } = useStore();
   const { openQuickAdd } = useCart();
   const [, setLocation] = useLocation();
   const n = translations[lang].nav;
 
   const trimmed = query.trim();
-  const results = trimmed ? searchCatalog(trimmed) : [];
+  const results = trimmed ? searchRanges(trimmed) : [];
   const showDropdown = isFocused && trimmed.length > 0;
 
   const handleNavigate = (href: string) => {
@@ -399,6 +399,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const { lang } = useLanguage();
+  const { storeSettings, buildStoreWhatsAppUrl } = useStore();
   const t = translations[lang];
 
   return (
@@ -414,13 +415,16 @@ export function SiteFooter() {
           <SectionLink hash="order-tracking">{t.footer.trackOrder}</SectionLink>
           <SectionLink hash="contact">{t.footer.enquiries}</SectionLink>
           <a
-            href={buildWhatsAppUrl()}
+            href={buildStoreWhatsAppUrl()}
             target="_blank"
             rel="noopener noreferrer"
             dir="ltr"
           >
-            {WHATSAPP_DISPLAY}
+            {storeSettings.whatsappDisplay}
           </a>
+          <Link href="/admin" data-testid="footer-admin-link">
+            {t.footer.adminPortal}
+          </Link>
         </div>
       </div>
       <div className="footer-bottom">

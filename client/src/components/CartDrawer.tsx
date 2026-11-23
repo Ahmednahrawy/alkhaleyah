@@ -13,8 +13,8 @@ import {
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useStore } from "@/contexts/StoreContext";
 import {
-  findSubcategoryAndVariant,
   formatPrice,
   getRangeCopy,
 } from "@/lib/catalog";
@@ -24,7 +24,6 @@ import {
   recordCartOrder,
   selectOrderForTracking,
 } from "@/lib/orders";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
 type OrderType = "home" | "trade";
 
@@ -40,6 +39,7 @@ export function CartDrawer() {
     clearCart,
   } = useCart();
   const { lang } = useLanguage();
+  const { findVariant, buildStoreWhatsAppUrl } = useStore();
   const [location] = useLocation();
   const c = translations[lang].cart;
 
@@ -79,7 +79,7 @@ export function CartDrawer() {
 
   const resolvedItems = items
     .map((item) => {
-      const resolved = findSubcategoryAndVariant(
+      const resolved = findVariant(
         item.categorySlug,
         item.subcategoryId,
         item.variantId
@@ -118,7 +118,7 @@ export function CartDrawer() {
     c.noteConfirm,
   ].join("\n");
 
-  const whatsappUrl = buildWhatsAppUrl(whatsappMessage);
+  const whatsappUrl = buildStoreWhatsAppUrl(whatsappMessage);
 
   const persistCartOrder = () => {
     if (resolvedItems.length === 0) return;

@@ -32,6 +32,7 @@ type CopyShape = {
     about: string;
     trackOrder: string;
     enquiries: string;
+    adminPortal: string;
     tagline: string;
   };
   hero: {
@@ -305,6 +306,95 @@ type CopyShape = {
     description: string;
     goHome: string;
   };
+  admin: {
+    backToStore: string;
+    eyebrow: string;
+    titleLead: string;
+    titleAccent: string;
+    subtitle: string;
+    signInTitle: string;
+    signInBody: string;
+    signInGoogle: string;
+    signingIn: string;
+    signInFailed: string;
+    unauthorizedTitle: string;
+    unauthorizedBody: string;
+    signedInAs: string;
+    signOut: string;
+    tabs: {
+      orders: string;
+      catalog: string;
+      settings: string;
+    };
+    metrics: {
+      totalOrders: string;
+      newRequests: string;
+      inProgress: string;
+      delivered: string;
+    };
+    orders: {
+      searchPlaceholder: string;
+      statusFilterAll: string;
+      emptyTitle: string;
+      emptyBody: string;
+      contactLabel: string;
+      notesLabel: string;
+      whatsappReply: string;
+      statusLabel: string;
+      updatingStatus: string;
+      deleteOrder: string;
+      confirmDelete: string;
+      cancelDelete: string;
+      noPiiNote: string;
+    };
+    catalog: {
+      categoryLabel: string;
+      addNewBtn: string;
+      newFormTitle: string;
+      varietyIdLabel: string;
+      varietyIdPlaceholder: string;
+      nameEnLabel: string;
+      nameArLabel: string;
+      noteEnLabel: string;
+      noteArLabel: string;
+      visibilityLabel: string;
+      visibleStatus: string;
+      hiddenStatus: string;
+      variantsLabel: string;
+      addVariantBtn: string;
+      variantIdLabel: string;
+      variantEnLabel: string;
+      variantArLabel: string;
+      variantPriceLabel: string;
+      saveBtn: string;
+      savingBtn: string;
+      savedToast: string;
+      resetDefaultBtn: string;
+      cancelBtn: string;
+      customBadge: string;
+      overrideBadge: string;
+      validationError: string;
+    };
+    settings: {
+      sectionTitle: string;
+      sectionBody: string;
+      whatsappNumberLabel: string;
+      whatsappDisplayLabel: string;
+      announcementEnLabel: string;
+      announcementArLabel: string;
+      saveSettingsBtn: string;
+      savingSettingsBtn: string;
+      savedSettingsToast: string;
+      adminsTitle: string;
+      adminsBody: string;
+      adminUidLabel: string;
+      adminUidPlaceholder: string;
+      adminEmailLabel: string;
+      addAdminBtn: string;
+      removeAdminBtn: string;
+      ownerBadge: string;
+    };
+  };
 };
 
 export const translations: Record<Language, CopyShape> = {
@@ -340,6 +430,7 @@ export const translations: Record<Language, CopyShape> = {
       about: "About Alkhaleyah",
       trackOrder: "Track order",
       enquiries: "Enquiries",
+      adminPortal: "Admin",
       tagline: "Food products · Made for sharing",
     },
     hero: {
@@ -682,6 +773,102 @@ export const translations: Record<Language, CopyShape> = {
         "Sorry, the page you are looking for doesn't exist. It may have been moved or deleted.",
       goHome: "Go Home",
     },
+    admin: {
+      backToStore: "Back to storefront",
+      eyebrow: "Private workspace",
+      titleLead: "Alkhaleyah",
+      titleAccent: "admin dashboard.",
+      subtitle:
+        "Manage live order progress, customer inquiries, product varieties, EGP pricing, and store contact details.",
+      signInTitle: "Sign in to manage Alkhaleyah",
+      signInBody:
+        "This private area is restricted to authorized Alkhaleyah administrators. Sign in with your verified Google account to continue.",
+      signInGoogle: "Sign in with Google",
+      signingIn: "Signing in...",
+      signInFailed: "Google sign-in could not be completed. Please try again.",
+      unauthorizedTitle: "Access restricted",
+      unauthorizedBody:
+        "This Google account does not have administrator permission for Alkhaleyah.",
+      signedInAs: "Signed in as",
+      signOut: "Sign out",
+      tabs: {
+        orders: "Orders & inquiries",
+        catalog: "Catalog & prices",
+        settings: "Store settings",
+      },
+      metrics: {
+        totalOrders: "Total records",
+        newRequests: "New received",
+        inProgress: "In fulfilment",
+        delivered: "Delivered",
+      },
+      orders: {
+        searchPlaceholder: "Search ALK reference ID or customer...",
+        statusFilterAll: "All statuses",
+        emptyTitle: "No matching orders yet",
+        emptyBody:
+          "Customer orders sent via WhatsApp checkout or the inquiry form will appear here automatically.",
+        contactLabel: "Customer contact",
+        notesLabel: "Notes",
+        whatsappReply: "Message on WhatsApp",
+        statusLabel: "Progress status",
+        updatingStatus: "Saving...",
+        deleteOrder: "Delete",
+        confirmDelete: "Confirm delete",
+        cancelDelete: "Cancel",
+        noPiiNote: "No private contact details attached.",
+      },
+      catalog: {
+        categoryLabel: "Product category",
+        addNewBtn: "Add variety",
+        newFormTitle: "Add new variety",
+        varietyIdLabel: "Variety ID slug",
+        varietyIdPlaceholder: "e.g. citrus-honey",
+        nameEnLabel: "Name (English)",
+        nameArLabel: "Name (Arabic)",
+        noteEnLabel: "Description (English)",
+        noteArLabel: "Description (Arabic)",
+        visibilityLabel: "Visibility",
+        visibleStatus: "Visible on store",
+        hiddenStatus: "Hidden",
+        variantsLabel: "Pack sizes & EGP prices",
+        addVariantBtn: "Add pack size",
+        variantIdLabel: "Size key (e.g. 1kg, 0.5l)",
+        variantEnLabel: "English label",
+        variantArLabel: "Arabic label",
+        variantPriceLabel: "Price (EGP)",
+        saveBtn: "Save variety",
+        savingBtn: "Saving...",
+        savedToast: "Saved to catalog",
+        resetDefaultBtn: "Reset to default",
+        cancelBtn: "Cancel",
+        customBadge: "Custom variety",
+        overrideBadge: "Edited",
+        validationError:
+          "Please fill English & Arabic names and at least one valid pack size with a price.",
+      },
+      settings: {
+        sectionTitle: "Storefront contact & announcement",
+        sectionBody:
+          "Changes saved here update the WhatsApp checkout destination and top announcement banner across the storefront.",
+        whatsappNumberLabel: "WhatsApp digits (for wa.me link)",
+        whatsappDisplayLabel: "WhatsApp display format",
+        announcementEnLabel: "Announcement bar (English)",
+        announcementArLabel: "Announcement bar (Arabic)",
+        saveSettingsBtn: "Save settings",
+        savingSettingsBtn: "Saving...",
+        savedSettingsToast: "Store settings saved",
+        adminsTitle: "Authorized admin accounts",
+        adminsBody:
+          "Only the owner admin can authorize additional team Firebase UIDs to access this dashboard.",
+        adminUidLabel: "User Firebase UID",
+        adminUidPlaceholder: "Paste Firebase Auth UID",
+        adminEmailLabel: "Team member email",
+        addAdminBtn: "Grant admin access",
+        removeAdminBtn: "Revoke",
+        ownerBadge: "Owner admin",
+      },
+    },
   },
   ar: {
     brandName: "الخلية",
@@ -715,6 +902,7 @@ export const translations: Record<Language, CopyShape> = {
       about: "عن الخلية",
       trackOrder: "تتبع الطلب",
       enquiries: "الاستفسارات",
+      adminPortal: "الإدارة",
       tagline: "منتجات غذائية · صُنعت للمشاركة",
     },
     hero: {
@@ -1055,6 +1243,102 @@ export const translations: Record<Language, CopyShape> = {
       description:
         "عذراً، الصفحة التي تبحث عنها غير موجودة. ربما تم نقلها أو حذفها.",
       goHome: "العودة للرئيسية",
+    },
+    admin: {
+      backToStore: "العودة للمتجر",
+      eyebrow: "لوحة تحكم خاصة",
+      titleLead: "إدارة متجر",
+      titleAccent: "الخلية.",
+      subtitle:
+        "تابع حالات الطلبات والاستفسارات، وحدّث الأصناف والأسعار بالجنيه المصري وإعدادات المتجر مباشرة.",
+      signInTitle: "تسجيل الدخول لإدارة الخلية",
+      signInBody:
+        "هذه اللوحة مخصّصة لمديري متجر الخلية المصرح لهم فقط. سجّل الدخول بحساب Google الموثّق للمتابعة.",
+      signInGoogle: "تسجيل الدخول عبر Google",
+      signingIn: "جاري تسجيل الدخول...",
+      signInFailed: "تعذّر إتمام تسجيل الدخول عبر Google. يُرجى المحاولة مرة أخرى.",
+      unauthorizedTitle: "وصول غير مصرح به",
+      unauthorizedBody:
+        "هذا الحساب لا يملك صلاحية إدارة متجر الخلية.",
+      signedInAs: "مسجّل الدخول بحساب",
+      signOut: "تسجيل الخروج",
+      tabs: {
+        orders: "الطلبات والاستفسارات",
+        catalog: "المنتجات والأسعار",
+        settings: "إعدادات المتجر",
+      },
+      metrics: {
+        totalOrders: "إجمالي السجلات",
+        newRequests: "طلبات جديدة",
+        inProgress: "قيد التجهيز والشحن",
+        delivered: "تم تسليمها",
+      },
+      orders: {
+        searchPlaceholder: "ابحث برقم المرجع ALK أو اسم العميل...",
+        statusFilterAll: "جميع الحالات",
+        emptyTitle: "لا توجد طلبات مطابقة بعد",
+        emptyBody:
+          "ستظهر هنا تلقائياً جميع الطلبات المرسلة عبر سلة الواتساب أو نموذج الاستفسار.",
+        contactLabel: "بيانات التواصل",
+        notesLabel: "ملاحظات",
+        whatsappReply: "مراسلة عبر واتساب",
+        statusLabel: "تحديث مرحلة التنفيذ",
+        updatingStatus: "جاري الحفظ...",
+        deleteOrder: "حذف",
+        confirmDelete: "تأكيد الحذف",
+        cancelDelete: "إلغاء",
+        noPiiNote: "لا توجد بيانات تواصل إضافية.",
+      },
+      catalog: {
+        categoryLabel: "فئة المنتجات",
+        addNewBtn: "إضافة صنف جديد",
+        newFormTitle: "إضافة صنف جديد",
+        varietyIdLabel: "معرّف الصنف (بالإنجليزية)",
+        varietyIdPlaceholder: "مثال: citrus-honey",
+        nameEnLabel: "الاسم (بالإنجليزية)",
+        nameArLabel: "الاسم (بالعربية)",
+        noteEnLabel: "الوصف (بالإنجليزية)",
+        noteArLabel: "الوصف (بالعربية)",
+        visibilityLabel: "الظهور في المتجر",
+        visibleStatus: "ظاهر للعملاء",
+        hiddenStatus: "مخفي",
+        variantsLabel: "الأحجام والأسعار (ج.م)",
+        addVariantBtn: "إضافة حجم جديد",
+        variantIdLabel: "المعرّف (مثل 1kg أو 0.5l)",
+        variantEnLabel: "التسمية بالإنجليزية",
+        variantArLabel: "التسمية بالعربية",
+        variantPriceLabel: "السعر (ج.م)",
+        saveBtn: "حفظ التغييرات",
+        savingBtn: "جاري الحفظ...",
+        savedToast: "تم الحفظ في الكتالوج",
+        resetDefaultBtn: "استعادة الافتراضي",
+        cancelBtn: "إلغاء",
+        customBadge: "صنف مضاف",
+        overrideBadge: "معدّل",
+        validationError:
+          "يُرجى إدخال الاسم بالعربية والإنجليزية وإضافة حجم واحد بسعر صحيح على الأقل.",
+      },
+      settings: {
+        sectionTitle: "بيانات الواتساب والشريط العلوي",
+        sectionBody:
+          "تحدّث هذه الإعدادات رقم الواتساب المعتمد في السلة والروابط، ونص الشريط العلوي في المتجر.",
+        whatsappNumberLabel: "رقم الواتساب (للرابط wa.me)",
+        whatsappDisplayLabel: "صيغة عرض الرقم",
+        announcementEnLabel: "نص الشريط العلوي (بالإنجليزية)",
+        announcementArLabel: "نص الشريط العلوي (بالعربية)",
+        saveSettingsBtn: "حفظ الإعدادات",
+        savingSettingsBtn: "جاري الحفظ...",
+        savedSettingsToast: "تم حفظ إعدادات المتجر",
+        adminsTitle: "حسابات الإدارة المصرح لها",
+        adminsBody:
+          "يمكن لمالك المتجر فقط إضافة أو إزالة معرّفات Firebase UID للمديرين الإضافيين.",
+        adminUidLabel: "معرّف Firebase UID",
+        adminUidPlaceholder: "ألصق معرّف المستخدم UID",
+        adminEmailLabel: "البريد الإلكتروني للعضو",
+        addAdminBtn: "منح صلاحية الإدارة",
+        removeAdminBtn: "إزالة الصلاحية",
+        ownerBadge: "المالك الرئيسي",
+      },
     },
   },
 };
