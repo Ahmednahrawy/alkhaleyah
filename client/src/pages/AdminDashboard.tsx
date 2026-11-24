@@ -34,6 +34,7 @@ import {
 } from "@/lib/catalog";
 import {
   db,
+  FIREBASE_PROJECT_ID,
   handleFirestoreError,
   OperationType,
   OWNER_ADMIN_EMAIL,
@@ -1356,14 +1357,35 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   );
 }
 
+function extractAuthErrorCode(error: unknown): string {
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+  ) {
+    return (error as { code: string }).code;
+  }
+  return "";
+}
+
 export default function AdminDashboard() {
   const { lang } = useLanguage();
-  const { user, authReady, isAdmin, signInWithGoogle, signOutUser } = useAuth();
+  const {
+    user,
+    authReady,
+    isAdmin,
+    redirectError,
+    signInWithGoogle,
+    signInWithGoogleRedirect,
+    signOutUser,
+  } = useAuth();
   const a = translations[lang].admin;
 
   const [activeTab, setActiveTab] = useState<AdminTab>("orders");
   const [signingIn, setSigningIn] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [authErrorCode, setAuthErrorCode] = useState<string>("");
+  const [authErrorFlag, setAuthErrorFlag] = useState(false);
   const [fatalError, setFatalError] = useState<Error | null>(null);
 
   const reportFatalFirestoreError = useCallback<FatalErrorReporter>(
@@ -1383,16 +1405,100 @@ export default function AdminDashboard() {
     throw fatalError;
   }
 
+  const effectiveErrorCode =
+    authErrorCode || extractAuthErrorCode(redirectError);
+  const hasAuthError = authErrorFlag || Boolean(redirectError);
+
   const handleGoogleLogin = async () => {
-    setAuthError(null);
+    setAuthErrorCode("");
+    setAuthErrorFlag(false);
     setSigningIn(true);
     try {
       await signInWithGoogle();
-    } catch {
-      setAuthError(a.signInFailed);
+    } catch (error) {
+      const code = extractAuthErrorCode(error);
+      setAuthErrorCode(code);
+      setAuthErrorFlag(true);
+      console.error("Admin Google sign-in error:", error);
     } finally {
       setSigningIn(false);
     }
+  };
+
+  const handleGoogleRedirectLogin = async () => {
+    setAuthErrorCode("");
+    setAuthErrorFlag(false);
+    setSigningIn(true);
+    try {
+      await signInWithGoogleRedirect();
+    } catch (error) {
+      setAuthErrorCode(extractAuthErrorCode(error));
+      setAuthErrorFlag(true);
+      setSigningIn(false);
+    }
+  };
+
+  const isTopLevelWindow =
+    typeof window !== "undefined" && window.self === window.top;
+  const currentHost =
+    typeof window !== "undefined" ? window.location.hostname : "";
+  const firebaseAuthSettingsUrl = `https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/authentication/settings`;
+
+  const renderAuthError = () => {
+    if (!hasAuthError) return null;
+    if (effectiveErrorCode === "auth/unauthorized-domain") {
+      return (
+        <div className="admin-auth-error-box" role="alert">
+          <p className="inquiry-error">{a.signInUnauthorizedDomain}</p>
+          {currentHost && (
+            <code className="admin-host-code" dir="ltr">
+              {currentHost}
+            </code>
+          )}
+          <a
+            href={firebaseAuthSettingsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-link"
+          >
+            <span>{a.signInAuthorizedDomainsLink}</span>
+          </a>
+        </div>
+      );
+    }
+
+    let message = a.signInFailed;
+    if (effectiveErrorCode === "auth/popup-blocked") {
+      message = a.signInPopupBlocked;
+    } else if (
+      effectiveErrorCode === "auth/popup-closed-by-user" ||
+      effectiveErrorCode === "auth/cancelled-popup-request"
+    ) {
+      message = a.signInPopupClosed;
+    } else if (effectiveErrorCode === "auth/operation-not-allowed") {
+      message = a.signInOperationNotAllowed;
+    }
+
+    return (
+      <div className="admin-auth-error-box" role="alert">
+        <p className="inquiry-error">{message}</p>
+        {effectiveErrorCode && (
+          <span className="admin-error-code" dir="ltr">
+            {a.signInErrorCodeLabel}: {effectiveErrorCode}
+          </span>
+        )}
+        {effectiveErrorCode === "auth/popup-blocked" && isTopLevelWindow && (
+          <button
+            type="button"
+            className="admin-ghost-btn"
+            disabled={signingIn}
+            onClick={() => void handleGoogleRedirectLogin()}
+          >
+            <span>{a.signInWithRedirectFallback}</span>
+          </button>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -1444,11 +1550,7 @@ export default function AdminDashboard() {
             </p>
             <h1>{a.signInTitle}</h1>
             <p className="admin-auth-body">{a.signInBody}</p>
-            {authError && (
-              <p className="inquiry-error" role="alert">
-                {authError}
-              </p>
-            )}
+            {renderAuthError()}
             <div className="admin-auth-actions">
               <button
                 type="button"
@@ -1473,13 +1575,33 @@ export default function AdminDashboard() {
             </p>
             <h1>{a.unauthorizedTitle}</h1>
             <p className="admin-auth-body">
-              {a.unauthorizedBody} ({a.signedInAs}:{" "}
-              <strong dir="ltr">{user.email}</strong>)
+              {a.unauthorizedBody}
             </p>
+            <div className="admin-auth-account-meta">
+              <div>
+                <span>{a.signedInAs}:</span>{" "}
+                <strong dir="ltr">{user.email}</strong>
+              </div>
+              <div>
+                <span>{a.uidLabel}:</span>{" "}
+                <code className="tabular-nums" dir="ltr">
+                  {user.uid}
+                </code>
+              </div>
+            </div>
             <div className="admin-auth-actions">
               <button
                 type="button"
                 className="button button-dark"
+                disabled={signingIn}
+                onClick={() => void handleGoogleLogin()}
+              >
+                <ShieldCheck size={15} aria-hidden="true" />
+                <span>{a.switchAccount}</span>
+              </button>
+              <button
+                type="button"
+                className="admin-ghost-btn"
                 onClick={() => void signOutUser()}
               >
                 <LogOut size={15} aria-hidden="true" />

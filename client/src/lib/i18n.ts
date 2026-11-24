@@ -317,9 +317,18 @@ type CopyShape = {
     signInGoogle: string;
     signingIn: string;
     signInFailed: string;
+    signInUnauthorizedDomain: string;
+    signInAuthorizedDomainsLink: string;
+    signInPopupBlocked: string;
+    signInPopupClosed: string;
+    signInOperationNotAllowed: string;
+    signInWithRedirectFallback: string;
+    signInErrorCodeLabel: string;
     unauthorizedTitle: string;
     unauthorizedBody: string;
     signedInAs: string;
+    uidLabel: string;
+    switchAccount: string;
     signOut: string;
     tabs: {
       orders: string;
@@ -786,10 +795,23 @@ export const translations: Record<Language, CopyShape> = {
       signInGoogle: "Sign in with Google",
       signingIn: "Signing in...",
       signInFailed: "Google sign-in could not be completed. Please try again.",
+      signInUnauthorizedDomain:
+        "This website domain is not yet listed under Firebase Authentication → Settings → Authorized domains. Add the domain below in your Firebase Console to enable sign-in here:",
+      signInAuthorizedDomainsLink: "Open Firebase Authorized Domains",
+      signInPopupBlocked:
+        "Your browser blocked the Google sign-in popup. Allow popups for this site or continue using full-page redirect sign-in.",
+      signInPopupClosed:
+        "The Google sign-in window was closed before signing in. Please try again.",
+      signInOperationNotAllowed:
+        "Google sign-in is not enabled in Firebase Authentication. Enable Google under Sign-in method in Firebase Console.",
+      signInWithRedirectFallback: "Continue via full-page Google sign-in",
+      signInErrorCodeLabel: "Error code",
       unauthorizedTitle: "Access restricted",
       unauthorizedBody:
-        "This Google account does not have administrator permission for Alkhaleyah.",
+        "This Google account does not have administrator permission for Alkhaleyah. Sign in with the owner admin account or ask the owner to authorize your Firebase UID.",
       signedInAs: "Signed in as",
+      uidLabel: "User UID",
+      switchAccount: "Switch Google account",
       signOut: "Sign out",
       tabs: {
         orders: "Orders & inquiries",
@@ -1257,10 +1279,23 @@ export const translations: Record<Language, CopyShape> = {
       signInGoogle: "تسجيل الدخول عبر Google",
       signingIn: "جاري تسجيل الدخول...",
       signInFailed: "تعذّر إتمام تسجيل الدخول عبر Google. يُرجى المحاولة مرة أخرى.",
+      signInUnauthorizedDomain:
+        "نطاق هذا الموقع غير مُضاف بعد إلى النطاقات المصرح بها في Firebase Authentication. أضِف النطاق التالي في إعدادات المصادقة بلوحة Firebase Console ثم أعد المحاولة:",
+      signInAuthorizedDomainsLink: "فتح إعدادات النطاقات المصرح بها في Firebase",
+      signInPopupBlocked:
+        "قام المتصفح بحظر نافذة تسجيل الدخول المنبثقة. اسمح بالنوافذ المنبثقة لهذا الموقع أو استخدم خيار تسجيل الدخول بصفحة كاملة.",
+      signInPopupClosed:
+        "تم إغلاق نافذة تسجيل الدخول قبل إتمام العملية. يُرجى المحاولة مرة أخرى.",
+      signInOperationNotAllowed:
+        "خيار تسجيل الدخول عبر Google غير مفعّل في Firebase Authentication. فعّله من لوحة Firebase Console.",
+      signInWithRedirectFallback: "المتابعة عبر صفحة تسجيل الدخول الكاملة",
+      signInErrorCodeLabel: "رمز الخطأ",
       unauthorizedTitle: "وصول غير مصرح به",
       unauthorizedBody:
-        "هذا الحساب لا يملك صلاحية إدارة متجر الخلية.",
+        "هذا الحساب لا يملك صلاحية إدارة متجر الخلية. سجّل الدخول بحساب المالك المعتمد أو اطلب من المالك إضافة معرّف UID الخاص بك.",
       signedInAs: "مسجّل الدخول بحساب",
+      uidLabel: "معرّف المستخدم UID",
+      switchAccount: "تبديل حساب Google",
       signOut: "تسجيل الخروج",
       tabs: {
         orders: "الطلبات والاستفسارات",

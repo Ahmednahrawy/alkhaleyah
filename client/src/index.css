@@ -1143,6 +1143,47 @@ img { display: block; width: 100%; }
   font-size: 15px;
   line-height: 1.65;
 }
+.admin-auth-error-box {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fbf2ef;
+  border: 1px solid rgba(159, 45, 45, .22);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.admin-auth-error-box .inquiry-error {
+  margin: 0;
+}
+.admin-host-code {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--olive-dark);
+  user-select: all;
+}
+.admin-error-code {
+  font-size: 12px;
+  color: var(--muted);
+}
+.admin-auth-account-meta {
+  margin: 0 0 22px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--olive-dark);
+  word-break: break-all;
+}
 .admin-auth-actions {
   display: flex;
   align-items: center;

@@ -6,8 +6,10 @@ import {
   type ReactNode,
 } from "react";
 import {
+  getRedirectResult,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   type User,
 } from "firebase/auth";
@@ -26,7 +28,9 @@ type AuthContextValue = {
   authReady: boolean;
   isOwnerAdmin: boolean;
   isAdmin: boolean;
+  redirectError: unknown;
   signInWithGoogle: () => Promise<void>;
+  signInWithGoogleRedirect: () => Promise<void>;
   signOutUser: () => Promise<void>;
 };
 
@@ -36,9 +40,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isListedAdmin, setIsListedAdmin] = useState(false);
+  const [redirectError, setRedirectError] = useState<unknown>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    void getRedirectResult(auth).catch((error) => {
+      if (!cancelled) {
+        setRedirectError(error);
+      }
+    });
+
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       if (cancelled) return;
       setUser(nextUser);
@@ -66,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const adminDocPath = `admins/${nextUser.uid}`;
       try {
         const snap = await getDoc(doc(db, "admins", nextUser.uid));
         if (!cancelled) {
@@ -100,11 +111,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = Boolean(isOwnerAdmin || (user?.emailVerified && isListedAdmin));
 
   const signInWithGoogle = async () => {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-      throw error;
-    }
+    setRedirectError(null);
+    await signInWithPopup(auth, googleProvider);
+  };
+
+  const signInWithGoogleRedirect = async () => {
+    setRedirectError(null);
+    await signInWithRedirect(auth, googleProvider);
   };
 
   const signOutUser = async () => {
@@ -122,7 +135,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         authReady,
         isOwnerAdmin,
         isAdmin,
+        redirectError,
         signInWithGoogle,
+        signInWithGoogleRedirect,
         signOutUser,
       }}
     >
