@@ -796,7 +796,7 @@ export const translations: Record<Language, CopyShape> = {
       signingIn: "Signing in...",
       signInFailed: "Google sign-in could not be completed. Please try again.",
       signInUnauthorizedDomain:
-        "This website domain is not yet listed under Firebase Authentication → Settings → Authorized domains. Add the domain below in your Firebase Console to enable sign-in here:",
+        "This website domain is not yet listed in Firebase Authentication. Open Firebase Console below, click Domains → Authorized domains → Add domain, and enter:",
       signInAuthorizedDomainsLink: "Open Firebase Authorized Domains",
       signInPopupBlocked:
         "Your browser blocked the Google sign-in popup. Allow popups for this site or continue using full-page redirect sign-in.",
@@ -1280,7 +1280,7 @@ export const translations: Record<Language, CopyShape> = {
       signingIn: "جاري تسجيل الدخول...",
       signInFailed: "تعذّر إتمام تسجيل الدخول عبر Google. يُرجى المحاولة مرة أخرى.",
       signInUnauthorizedDomain:
-        "نطاق هذا الموقع غير مُضاف بعد إلى النطاقات المصرح بها في Firebase Authentication. أضِف النطاق التالي في إعدادات المصادقة بلوحة Firebase Console ثم أعد المحاولة:",
+        "نطاق هذا الموقع غير مُضاف بعد في Firebase Authentication. افتح الرابط بالأسفل، ثم اختر Domains ← Authorized domains ← Add domain وأضف النطاق التالي:",
       signInAuthorizedDomainsLink: "فتح إعدادات النطاقات المصرح بها في Firebase",
       signInPopupBlocked:
         "قام المتصفح بحظر نافذة تسجيل الدخول المنبثقة. اسمح بالنوافذ المنبثقة لهذا الموقع أو استخدم خيار تسجيل الدخول بصفحة كاملة.",
