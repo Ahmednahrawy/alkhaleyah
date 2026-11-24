@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowUpRight, Check, Copy, MessageCircle, ShoppingBag } from "lucide-react";
+import { Check, Copy, Send, ShoppingBag } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -26,7 +26,7 @@ type SubmittedSummary = {
 
 export function ContactInquiryForm() {
   const { lang } = useLanguage();
-  const { ranges, findRange, buildStoreWhatsAppUrl } = useStore();
+  const { ranges, findRange } = useStore();
   const { totalCount, openCart } = useCart();
   const f = translations[lang].contactSection.form;
 
@@ -103,7 +103,7 @@ export function ContactInquiryForm() {
       .join(", ");
 
     return [
-      f.whatsappGreeting,
+      f.summaryGreeting,
       `${f.referenceLabel}: ${summary.referenceId}`,
       `${f.inquiryTypeLabel}: ${
         summary.inquiryType === "trade" ? f.typeTrade : f.typeHome
@@ -122,9 +122,9 @@ export function ContactInquiryForm() {
 
     setSubmitting(true);
     let referenceId = createClientReferenceId();
-    let serverOrder: TrackedOrder | undefined;
 
     const payload = {
+      referenceId,
       name: name.trim(),
       email: email.trim(),
       phone: phone.trim(),
@@ -148,12 +148,9 @@ export function ContactInquiryForm() {
         if (data.referenceId) {
           referenceId = data.referenceId;
         }
-        if (data.order) {
-          serverOrder = data.order;
-        }
       }
     } catch {
-      // Static hosting (e.g. GitHub Pages) falls back gracefully to client-side confirmation.
+      // Static hosting falls back gracefully to Firestore + local confirmation.
     } finally {
       setSubmitting(false);
     }
@@ -172,10 +169,6 @@ export function ContactInquiryForm() {
       itemsSummary,
       notes: payload.message,
     });
-
-    if (serverOrder && serverOrder.status !== "received") {
-      // keep local synced if Express responded with an updated order
-    }
 
     setSubmitted({
       referenceId,
@@ -216,18 +209,20 @@ export function ContactInquiryForm() {
       const range = findRange(slug);
       return range ? getRangeCopy(range, lang).title : slug;
     });
-    const whatsappUrl = buildStoreWhatsAppUrl(buildSummaryText(submitted));
 
     return (
       <div className="inquiry-card inquiry-success" aria-live="polite">
         <div className="inquiry-success-head">
           <span className="inquiry-success-icon" aria-hidden="true">
-            <MessageCircle size={18} />
+            <Check size={18} />
           </span>
           <div>
             <h3>{f.successTitle}</h3>
             <p className="inquiry-ref">
-              {f.referenceLabel}: <strong>{submitted.referenceId}</strong>
+              {f.referenceLabel}:{" "}
+              <strong className="tabular-nums" dir="ltr">
+                {submitted.referenceId}
+              </strong>
             </p>
           </div>
         </div>
@@ -267,30 +262,20 @@ export function ContactInquiryForm() {
           )}
         </dl>
         <div className="inquiry-success-actions">
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="button button-whatsapp"
-          >
-            <MessageCircle size={16} />
-            {f.whatsappSendButton}
-            <ArrowUpRight size={15} className="rtl-flip" />
-          </a>
           <button
             type="button"
             className="button button-dark"
+            onClick={() => selectOrderForTracking(submitted.referenceId)}
+          >
+            {f.trackOrderButton}
+          </button>
+          <button
+            type="button"
+            className="button button-accent"
             onClick={handleCopySummary}
           >
             {copied ? <Check size={15} /> : <Copy size={15} />}
             {copied ? f.copiedButton : f.copyButton}
-          </button>
-          <button
-            type="button"
-            className="text-link"
-            onClick={() => selectOrderForTracking(submitted.referenceId)}
-          >
-            {f.trackOrderButton}
           </button>
           <button
             type="button"
@@ -480,10 +465,10 @@ export function ContactInquiryForm() {
 
       <button
         type="submit"
-        className="button button-whatsapp inquiry-submit"
+        className="button button-dark inquiry-submit"
         disabled={submitting}
       >
-        <MessageCircle size={17} />
+        <Send size={16} aria-hidden="true" />
         {submitting ? f.submittingButton : f.submitButton}
       </button>
     </form>

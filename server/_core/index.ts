@@ -10,12 +10,18 @@ import {
   getOrderRecord,
   saveOrderRecord,
 } from "../orders";
+import {
+  dispatchExternalAlerts,
+  getServerNotificationCapabilities,
+  verifyAdminBearerToken,
+} from "../notifications";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 
 const inquirySchema = z
   .object({
+    referenceId: z.string().trim().min(3).max(64).optional(),
     name: z.string().trim().min(1).max(120),
     email: z.string().trim().email().max(180).or(z.literal("")).optional().default(""),
     phone: z.string().trim().max(40).optional().default(""),
@@ -28,7 +34,7 @@ const inquirySchema = z
   });
 
 const orderSchema = z.object({
-  referenceId: z.string().trim().min(3).max(40).optional(),
+  referenceId: z.string().trim().min(3).max(64).optional(),
   orderType: z.enum(["home", "trade"]).default("home"),
   customerName: z.string().trim().max(120).optional().default(""),
   phone: z.string().trim().max(40).optional().default(""),
@@ -36,6 +42,16 @@ const orderSchema = z.object({
   items: z.array(z.string().trim().min(1).max(300)).min(1).max(50),
   subtotal: z.number().nonnegative().optional(),
   notes: z.string().trim().max(2000).optional().default(""),
+});
+
+const dispatchAlertSchema = z.object({
+  title: z.string().trim().min(1).max(140),
+  body: z.string().trim().max(1200).optional().default(""),
+  referenceId: z.string().trim().max(64).optional(),
+  eventType: z.string().trim().max(40).optional(),
+  ntfyTopic: z.string().trim().max(120).optional().default(""),
+  webhookUrl: z.string().trim().max(512).optional().default(""),
+  recipientEmail: z.string().trim().max(180).optional().default(""),
 });
 
 async function startServer() {
@@ -54,7 +70,7 @@ async function startServer() {
       return res.status(400).json({ ok: false, error: "Invalid inquiry details" });
     }
     const now = new Date().toISOString();
-    const referenceId = generateReferenceId();
+    const referenceId = parsed.data.referenceId || generateReferenceId();
     const order = saveOrderRecord({
       referenceId,
       kind: "inquiry",
@@ -66,7 +82,20 @@ async function startServer() {
       updatedAt: now,
       notes: parsed.data.message || undefined,
     });
-    return res.status(200).json({ ok: true, referenceId, order });
+    void dispatchExternalAlerts({
+      title: `New Alkhaleyah Inquiry (${order.referenceId})`,
+      body: [
+        `Customer: ${parsed.data.name}`,
+        `Channel: ${parsed.data.inquiryType}`,
+        `Products: ${parsed.data.products.join(", ")}`,
+        ...(parsed.data.phone ? [`Phone: ${parsed.data.phone}`] : []),
+        ...(parsed.data.email ? [`Email: ${parsed.data.email}`] : []),
+        ...(parsed.data.message ? [`Notes: ${parsed.data.message}`] : []),
+      ].join("\n"),
+      referenceId: order.referenceId,
+      eventType: "inquiry_created",
+    });
+    return res.status(200).json({ ok: true, referenceId: order.referenceId, order });
   });
   app.post(["/api/orders", "/alkhaleyah/api/orders"], (req, res) => {
     const parsed = orderSchema.safeParse(req.body);
@@ -75,17 +104,34 @@ async function startServer() {
     }
     const now = new Date().toISOString();
     const referenceId = parsed.data.referenceId || generateReferenceId();
+    const customerLabel = parsed.data.customerName || "Store customer";
     const order = saveOrderRecord({
       referenceId,
       kind: "order",
       orderType: parsed.data.orderType,
-      customerName: parsed.data.customerName || "WhatsApp customer",
+      customerName: customerLabel,
       itemsSummary: parsed.data.items,
       subtotal: parsed.data.subtotal,
       status: "received",
       createdAt: now,
       updatedAt: now,
       notes: parsed.data.notes || undefined,
+    });
+    void dispatchExternalAlerts({
+      title: `New Alkhaleyah Order (${order.referenceId})`,
+      body: [
+        `Customer: ${customerLabel}`,
+        `Channel: ${parsed.data.orderType}`,
+        ...(typeof parsed.data.subtotal === "number"
+          ? [`Subtotal: ${parsed.data.subtotal} EGP`]
+          : []),
+        `Items:\n${parsed.data.items.join("\n")}`,
+        ...(parsed.data.phone ? [`Phone: ${parsed.data.phone}`] : []),
+        ...(parsed.data.email ? [`Email: ${parsed.data.email}`] : []),
+        ...(parsed.data.notes ? [`Notes: ${parsed.data.notes}`] : []),
+      ].join("\n"),
+      referenceId: order.referenceId,
+      eventType: "order_created",
     });
     return res.status(200).json({ ok: true, referenceId: order.referenceId, order });
   });
@@ -97,6 +143,37 @@ async function startServer() {
         return res.status(404).json({ ok: false, error: "Order not found" });
       }
       return res.status(200).json({ ok: true, order });
+    }
+  );
+  app.get(
+    [
+      "/api/admin/notification-capabilities",
+      "/alkhaleyah/api/admin/notification-capabilities",
+    ],
+    async (req, res) => {
+      const admin = await verifyAdminBearerToken(req.headers.authorization);
+      if (!admin) {
+        return res.status(401).json({ ok: false, error: "Admin authorization required" });
+      }
+      return res.status(200).json({
+        ok: true,
+        ...getServerNotificationCapabilities(),
+      });
+    }
+  );
+  app.post(
+    ["/api/admin/dispatch-alert", "/alkhaleyah/api/admin/dispatch-alert"],
+    async (req, res) => {
+      const admin = await verifyAdminBearerToken(req.headers.authorization);
+      if (!admin) {
+        return res.status(401).json({ ok: false, error: "Admin authorization required" });
+      }
+      const parsed = dispatchAlertSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ ok: false, error: "Invalid alert payload" });
+      }
+      const result = await dispatchExternalAlerts(parsed.data);
+      return res.status(200).json({ ok: true, result });
     }
   );
   registerOAuthRoutes(app);

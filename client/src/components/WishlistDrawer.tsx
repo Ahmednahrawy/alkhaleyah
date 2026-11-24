@@ -204,7 +204,7 @@ export function WishlistDrawer() {
                             type="button"
                             className={
                               isJustAdded
-                                ? "button button-whatsapp wishlist-add-btn"
+                                ? "button button-accent wishlist-add-btn"
                                 : "button button-dark wishlist-add-btn"
                             }
                             onClick={() => {
@@ -251,7 +251,7 @@ export function WishlistDrawer() {
           <div className="cart-drawer-foot">
             <button
               type="button"
-              className="button button-whatsapp cart-whatsapp-btn"
+              className="button button-accent cart-submit-btn"
               onClick={() => {
                 closeWishlist();
                 openCart();

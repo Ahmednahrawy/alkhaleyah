@@ -17,7 +17,6 @@ import {
 } from "@/lib/catalog";
 import { db } from "@/lib/firebase";
 import { translations } from "@/lib/i18n";
-import { WHATSAPP_DISPLAY, WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 import {
   MAX_IMAGES_PER_ITEM,
@@ -45,8 +44,8 @@ export type CategoryImageOverrideDoc = {
 };
 
 export type StoreSettingsState = {
-  whatsappNumber: string;
-  whatsappDisplay: string;
+  supportPhone: string;
+  supportEmail: string;
   announcementEn: string;
   announcementAr: string;
 };
@@ -69,12 +68,11 @@ type StoreContextValue = {
   };
   searchRanges: (query: string) => CatalogSearchResult[];
   allSubcategoryEntries: CatalogSearchResult[];
-  buildStoreWhatsAppUrl: (message?: string) => string;
 };
 
 const DEFAULT_SETTINGS: StoreSettingsState = {
-  whatsappNumber: WHATSAPP_NUMBER,
-  whatsappDisplay: WHATSAPP_DISPLAY,
+  supportPhone: "+20 109 185 0076",
+  supportEmail: "",
   announcementEn: translations.en.announcement,
   announcementAr: translations.ar.announcement,
 };
@@ -330,16 +328,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (!snapshot.exists()) return;
         const data = snapshot.data();
         setStoreSettings({
-          whatsappNumber:
-            typeof data.whatsappNumber === "string" &&
-            data.whatsappNumber.trim()
-              ? data.whatsappNumber.replace(/\D/g, "") || WHATSAPP_NUMBER
-              : WHATSAPP_NUMBER,
-          whatsappDisplay:
-            typeof data.whatsappDisplay === "string" &&
-            data.whatsappDisplay.trim()
-              ? data.whatsappDisplay.trim()
-              : WHATSAPP_DISPLAY,
+          supportPhone:
+            typeof data.supportPhone === "string" && data.supportPhone.trim()
+              ? data.supportPhone.trim()
+              : typeof data.whatsappDisplay === "string" &&
+                  data.whatsappDisplay.trim()
+                ? data.whatsappDisplay.trim()
+                : DEFAULT_SETTINGS.supportPhone,
+          supportEmail:
+            typeof data.supportEmail === "string" ? data.supportEmail.trim() : "",
           announcementEn:
             typeof data.announcementEn === "string" &&
             data.announcementEn.trim()
@@ -442,13 +439,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return results;
   };
 
-  const buildStoreWhatsAppUrl = (message?: string) => {
-    const digits = storeSettings.whatsappNumber.replace(/\D/g, "") || WHATSAPP_NUMBER;
-    const base = `https://wa.me/${digits}`;
-    if (!message) return base;
-    return `${base}?text=${encodeURIComponent(message)}`;
-  };
-
   return (
     <StoreContext.Provider
       value={{
@@ -461,7 +451,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         findVariant,
         searchRanges,
         allSubcategoryEntries,
-        buildStoreWhatsAppUrl,
       }}
     >
       {children}

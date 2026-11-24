@@ -400,8 +400,14 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const { lang } = useLanguage();
-  const { storeSettings, buildStoreWhatsAppUrl } = useStore();
+  const { storeSettings } = useStore();
   const t = translations[lang];
+  const phoneHref = storeSettings.supportPhone.trim()
+    ? `tel:${storeSettings.supportPhone.replace(/[^\d+]/g, "")}`
+    : "";
+  const emailHref = storeSettings.supportEmail.trim()
+    ? `mailto:${storeSettings.supportEmail.trim()}`
+    : "";
 
   return (
     <footer className="site-footer">
@@ -415,14 +421,16 @@ export function SiteFooter() {
           <SectionLink hash="our-story">{t.footer.about}</SectionLink>
           <SectionLink hash="order-tracking">{t.footer.trackOrder}</SectionLink>
           <SectionLink hash="contact">{t.footer.enquiries}</SectionLink>
-          <a
-            href={buildStoreWhatsAppUrl()}
-            target="_blank"
-            rel="noopener noreferrer"
-            dir="ltr"
-          >
-            {storeSettings.whatsappDisplay}
-          </a>
+          {phoneHref && (
+            <a href={phoneHref} dir="ltr">
+              {storeSettings.supportPhone}
+            </a>
+          )}
+          {emailHref && (
+            <a href={emailHref} dir="ltr">
+              {storeSettings.supportEmail}
+            </a>
+          )}
           <Link href="/admin" data-testid="footer-admin-link">
             {t.footer.adminPortal}
           </Link>

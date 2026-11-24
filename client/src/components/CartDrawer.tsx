@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import {
-  ArrowUpRight,
   Check,
   Copy,
-  MessageCircle,
   Minus,
   Plus,
+  Send,
   ShoppingBag,
   Trash2,
   X,
@@ -28,6 +27,18 @@ import {
 
 type OrderType = "home" | "trade";
 
+type ConfirmedOrderReceipt = {
+  referenceId: string;
+  orderType: OrderType;
+  customerName: string;
+  phone: string;
+  email: string;
+  notes: string;
+  itemsSummary: string[];
+  subtotal: number;
+  summaryText: string;
+};
+
 export function CartDrawer() {
   const {
     items,
@@ -40,7 +51,7 @@ export function CartDrawer() {
     clearCart,
   } = useCart();
   const { lang } = useLanguage();
-  const { findVariant, buildStoreWhatsAppUrl } = useStore();
+  const { findVariant } = useStore();
   const [location] = useLocation();
   const c = translations[lang].cart;
 
@@ -49,16 +60,23 @@ export function CartDrawer() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<{
+    name?: string;
+    contact?: string;
+    email?: string;
+  }>({});
+  const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [orderRefId, setOrderRefId] = useState(() => createClientReferenceId());
-  const [recordedRefId, setRecordedRefId] = useState<string | null>(null);
+  const [confirmedOrder, setConfirmedOrder] =
+    useState<ConfirmedOrderReceipt | null>(null);
 
   useEffect(() => {
-    if (items.length === 0) {
-      setRecordedRefId(null);
+    if (items.length > 0 && confirmedOrder) {
+      setConfirmedOrder(null);
       setOrderRefId(createClientReferenceId());
     }
-  }, [items.length]);
+  }, [items.length, confirmedOrder]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -104,50 +122,109 @@ export function CartDrawer() {
     return `${numberLabel} ${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]} × ${entry.item.quantity}) = ${formatPrice(entry.lineTotal, lang)}`;
   });
 
-  const whatsappMessage = [
-    c.whatsappGreeting,
-    `${c.orderRefLabel}: ${orderRefId}`,
-    `${c.orderTypeLabel}: ${orderType === "trade" ? c.typeTrade : c.typeHome}`,
-    "",
-    ...itemLines,
-    "",
-    `${c.subtotalLabel}: ${formatPrice(subtotal, lang)}`,
-    ...(name.trim() ? [`${c.nameLabel}: ${name.trim()}`] : []),
-    ...(phone.trim() ? [`${c.phoneLabel}: ${phone.trim()}`] : []),
-    ...(email.trim() ? [`${c.emailLabel}: ${email.trim()}`] : []),
-    ...(notes.trim() ? [`${c.notesLabel}: ${notes.trim()}`] : []),
-    c.noteConfirm,
-  ].join("\n");
+  const buildOrderSummaryText = (refId: string) =>
+    [
+      c.summaryGreeting,
+      `${c.orderRefLabel}: ${refId}`,
+      `${c.orderTypeLabel}: ${orderType === "trade" ? c.typeTrade : c.typeHome}`,
+      "",
+      ...itemLines,
+      "",
+      `${c.subtotalLabel}: ${formatPrice(subtotal, lang)}`,
+      ...(name.trim() ? [`${c.nameLabel}: ${name.trim()}`] : []),
+      ...(phone.trim() ? [`${c.phoneLabel}: ${phone.trim()}`] : []),
+      ...(email.trim() ? [`${c.emailLabel}: ${email.trim()}`] : []),
+      ...(notes.trim() ? [`${c.notesLabel}: ${notes.trim()}`] : []),
+      c.noteConfirm,
+    ].join("\n");
 
-  const whatsappUrl = buildStoreWhatsAppUrl(whatsappMessage);
+  const validateCheckout = () => {
+    const nextErrors: {
+      name?: string;
+      contact?: string;
+      email?: string;
+    } = {};
 
-  const persistCartOrder = () => {
-    if (resolvedItems.length === 0) return;
-    setRecordedRefId(orderRefId);
-    void recordCartOrder({
-      referenceId: orderRefId,
-      orderType,
-      customerName: name,
-      phone,
-      email,
-      itemsSummary: resolvedItems.map(
-        (entry) =>
-          `${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]} × ${entry.item.quantity})`
-      ),
-      subtotal,
-      notes,
-    });
+    if (!name.trim()) {
+      nextErrors.name = c.errors.nameRequired;
+    }
+    const phoneTrimmed = phone.trim();
+    const emailTrimmed = email.trim();
+    if (!phoneTrimmed && !emailTrimmed) {
+      nextErrors.contact = c.errors.contactRequired;
+    }
+    if (emailTrimmed && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+      nextErrors.email = c.errors.emailInvalid;
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
-  const handleCopyOrder = async () => {
-    persistCartOrder();
+  const handlePlaceOrder = async () => {
+    if (resolvedItems.length === 0 || submitting) return;
+    if (!validateCheckout()) return;
+
+    setSubmitting(true);
+    const itemsSummary = resolvedItems.map(
+      (entry) =>
+        `${entry.rangeCopy.title} — ${entry.subcategory[lang].name} (${entry.variant[lang]} × ${entry.item.quantity})`
+    );
+    const currentSubtotal = subtotal;
+    const summaryText = buildOrderSummaryText(orderRefId);
+
     try {
-      await navigator.clipboard.writeText(whatsappMessage);
+      const saved = await recordCartOrder({
+        referenceId: orderRefId,
+        orderType,
+        customerName: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        itemsSummary,
+        subtotal: currentSubtotal,
+        notes: notes.trim(),
+      });
+
+      setConfirmedOrder({
+        referenceId: saved.referenceId,
+        orderType,
+        customerName: name.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        notes: notes.trim(),
+        itemsSummary,
+        subtotal: currentSubtotal,
+        summaryText,
+      });
+      setCopied(false);
+      clearCart();
+      setOrderRefId(createClientReferenceId());
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCopyConfirmed = async () => {
+    if (!confirmedOrder) return;
+    try {
+      await navigator.clipboard.writeText(confirmedOrder.summaryText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2400);
     } catch {
       // Clipboard API unavailable
     }
+  };
+
+  const handleTrackConfirmed = () => {
+    if (!confirmedOrder) return;
+    const refId = confirmedOrder.referenceId;
+    closeCart();
+    selectOrderForTracking(refId);
+  };
+
+  const handleContinueAfterConfirm = () => {
+    setConfirmedOrder(null);
+    closeCart();
   };
 
   return (
@@ -167,7 +244,7 @@ export function CartDrawer() {
           <div>
             <div className="cart-title-row">
               <h2 id="cart-drawer-title">{c.title}</h2>
-              {totalCount > 0 && (
+              {totalCount > 0 && !confirmedOrder && (
                 <span className="cart-count-tag">
                   {totalCount} {c.itemsCountSuffix}
                 </span>
@@ -186,7 +263,94 @@ export function CartDrawer() {
         </div>
 
         <div className="cart-drawer-body">
-          {resolvedItems.length === 0 ? (
+          {confirmedOrder ? (
+            <div
+              className="cart-confirmed-card"
+              aria-live="polite"
+              data-testid="cart-order-confirmed"
+            >
+              <div className="inquiry-success-head">
+                <span className="inquiry-success-icon" aria-hidden="true">
+                  <Check size={18} />
+                </span>
+                <div>
+                  <h3>{c.confirmedTitle}</h3>
+                  <p className="inquiry-ref">
+                    {c.orderRefLabel}:{" "}
+                    <strong className="tabular-nums" dir="ltr">
+                      {confirmedOrder.referenceId}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+              <p className="inquiry-success-body">{c.confirmedBody}</p>
+
+              <dl className="inquiry-summary-list">
+                <div>
+                  <dt>{c.orderTypeLabel}</dt>
+                  <dd>
+                    {confirmedOrder.orderType === "trade"
+                      ? c.typeTrade
+                      : c.typeHome}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{c.nameLabel}</dt>
+                  <dd>{confirmedOrder.customerName}</dd>
+                </div>
+                {confirmedOrder.phone && (
+                  <div>
+                    <dt>{c.phoneLabel}</dt>
+                    <dd dir="ltr">{confirmedOrder.phone}</dd>
+                  </div>
+                )}
+                {confirmedOrder.email && (
+                  <div>
+                    <dt>{c.emailLabel}</dt>
+                    <dd dir="ltr">{confirmedOrder.email}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt>{c.subtotalLabel}</dt>
+                  <dd className="tabular-nums">
+                    <strong>{formatPrice(confirmedOrder.subtotal, lang)}</strong>
+                  </dd>
+                </div>
+              </dl>
+
+              <ul className="tracking-items-list">
+                {confirmedOrder.itemsSummary.map((line, idx) => (
+                  <li key={`confirmed-item-${idx}`}>{line}</li>
+                ))}
+              </ul>
+
+              <div className="cart-confirmed-actions">
+                <button
+                  type="button"
+                  className="button button-dark cart-submit-btn"
+                  onClick={handleTrackConfirmed}
+                >
+                  <ShoppingBag size={15} aria-hidden="true" />
+                  <span>{c.trackOrderButton}</span>
+                </button>
+                <button
+                  type="button"
+                  className="button button-accent cart-copy-btn"
+                  onClick={handleCopyConfirmed}
+                >
+                  {copied ? <Check size={15} /> : <Copy size={15} />}
+                  <span>{copied ? c.copied : c.copyOrder}</span>
+                </button>
+                <button
+                  type="button"
+                  className="text-link cart-continue-link"
+                  onClick={handleContinueAfterConfirm}
+                >
+                  {c.confirmedContinueButton}
+                </button>
+              </div>
+            </div>
+          ) : resolvedItems.length === 0 ? (
             <div className="cart-empty">
               <span className="cart-empty-icon" aria-hidden="true">
                 <ShoppingBag size={26} />
@@ -334,32 +498,69 @@ export function CartDrawer() {
                     <input
                       type="text"
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (errors.name) {
+                          setErrors((prev) => ({ ...prev, name: undefined }));
+                        }
+                      }}
                       placeholder={c.namePlaceholder}
                       autoComplete="name"
                     />
+                    {errors.name && (
+                      <span className="inquiry-error" role="alert">
+                        {errors.name}
+                      </span>
+                    )}
                   </label>
                   <label className="inquiry-field">
                     <span className="inquiry-label">{c.phoneLabel}</span>
                     <input
                       type="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (errors.contact) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            contact: undefined,
+                          }));
+                        }
+                      }}
                       placeholder={c.phonePlaceholder}
                       autoComplete="tel"
                       dir="ltr"
                     />
+                    {errors.contact && (
+                      <span className="inquiry-error" role="alert">
+                        {errors.contact}
+                      </span>
+                    )}
                   </label>
                   <label className="inquiry-field">
                     <span className="inquiry-label">{c.emailLabel}</span>
                     <input
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (errors.contact || errors.email) {
+                          setErrors((prev) => ({
+                            ...prev,
+                            contact: undefined,
+                            email: undefined,
+                          }));
+                        }
+                      }}
                       placeholder={c.emailPlaceholder}
                       autoComplete="email"
                       dir="ltr"
                     />
+                    {errors.email && (
+                      <span className="inquiry-error" role="alert">
+                        {errors.email}
+                      </span>
+                    )}
                   </label>
                   <label className="inquiry-field">
                     <span className="inquiry-label">{c.notesLabel}</span>
@@ -371,7 +572,7 @@ export function CartDrawer() {
                     />
                   </label>
                 </div>
-                {(!name.trim() || !phone.trim()) && (
+                {(!name.trim() || (!phone.trim() && !email.trim())) && (
                   <p className="cart-contact-hint">{c.missingContactHint}</p>
                 )}
               </div>
@@ -379,51 +580,23 @@ export function CartDrawer() {
           )}
         </div>
 
-        {resolvedItems.length > 0 && (
+        {resolvedItems.length > 0 && !confirmedOrder && (
           <div className="cart-drawer-foot">
             <div className="cart-subtotal-row">
               <span>{c.subtotalLabel}</span>
               <strong>{formatPrice(subtotal, lang)}</strong>
             </div>
-            {recordedRefId && (
-              <div className="cart-order-ref-banner" aria-live="polite">
-                <div>
-                  <span>{c.orderRefLabel}:</span>{" "}
-                  <strong className="tabular-nums" dir="ltr">
-                    {recordedRefId}
-                  </strong>
-                  <small>{c.orderSavedNote}</small>
-                </div>
-                <button
-                  type="button"
-                  className="text-link"
-                  onClick={() => {
-                    closeCart();
-                    selectOrderForTracking(recordedRefId);
-                  }}
-                >
-                  {c.trackOrderButton}
-                </button>
-              </div>
-            )}
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="button button-whatsapp cart-whatsapp-btn"
-              onClick={persistCartOrder}
-            >
-              <MessageCircle size={17} />
-              <span>{c.sendWhatsApp}</span>
-              <ArrowUpRight size={15} className="rtl-flip" />
-            </a>
             <button
               type="button"
-              className="button button-dark cart-copy-btn"
-              onClick={handleCopyOrder}
+              className="button button-dark cart-submit-btn"
+              disabled={submitting}
+              onClick={() => void handlePlaceOrder()}
+              data-testid="cart-submit-order-btn"
             >
-              {copied ? <Check size={15} /> : <Copy size={15} />}
-              <span>{copied ? c.copied : c.copyOrder}</span>
+              <Send size={16} aria-hidden="true" />
+              <span>
+                {submitting ? c.submittingOrderButton : c.placeOrderButton}
+              </span>
             </button>
           </div>
         )}

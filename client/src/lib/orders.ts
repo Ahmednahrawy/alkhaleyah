@@ -2,11 +2,12 @@ import {
   doc,
   getDoc,
   serverTimestamp,
-  setDoc,
   Timestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { findProductRange } from "@/lib/catalog";
 import { db } from "@/lib/firebase";
+import { buildOrderNotificationDoc } from "@/lib/notifications";
 
 export type OrderStatusStep =
   | "received"
@@ -165,21 +166,21 @@ async function saveOrderToFirestore(
     email: string;
     notes: string;
   }
-): Promise<void> {
+): Promise<boolean> {
   const refId = normalizeReferenceId(order.referenceId);
-  if (!isValidReferenceId(refId)) return;
+  if (!isValidReferenceId(refId)) return false;
 
   const safeSummary = order.itemsSummary
     .map((item) => String(item).trim())
     .filter(Boolean)
     .slice(0, 30);
-  if (safeSummary.length === 0) return;
+  if (safeSummary.length === 0) return false;
 
   const orderDoc: Record<string, unknown> = {
     referenceId: refId,
     kind: order.kind,
     orderType: order.orderType,
-    customerName: (order.customerName.trim() || "Customer").slice(0, 80),
+    customerName: (order.customerName.trim() || "Store customer").slice(0, 80),
     itemsSummary: safeSummary,
     status: "received",
     createdAt: serverTimestamp(),
@@ -196,19 +197,35 @@ async function saveOrderToFirestore(
   }
 
   try {
+    const batch = writeBatch(db);
     const orderRef = doc(db, "orders", refId);
-    await setDoc(orderRef, orderDoc);
     const contactRef = doc(db, "orders", refId, "private", "contact");
-    await setDoc(contactRef, {
+    const notificationPayload = buildOrderNotificationDoc({
+      referenceId: refId,
+      kind: order.kind,
+      orderType: order.orderType,
+      customerName: privateContact.fullName.trim() || order.customerName,
+      itemsCount: safeSummary.length,
+      subtotal: order.subtotal,
+    });
+    const notificationRef = doc(db, "adminNotifications", notificationPayload.id);
+
+    batch.set(orderRef, orderDoc);
+    batch.set(contactRef, {
       fullName: privateContact.fullName.trim().slice(0, 120),
       phone: privateContact.phone.trim().slice(0, 40),
       email: privateContact.email.trim().slice(0, 180),
       notes: privateContact.notes.trim().slice(0, 2000),
       createdAt: serverTimestamp(),
     });
+    batch.set(notificationRef, notificationPayload);
+
+    await batch.commit();
+    return true;
   } catch (error) {
     // Graceful fallback when running offline or in test environments
     console.warn("Firestore order sync warning:", error);
+    return false;
   }
 }
 
@@ -227,7 +244,7 @@ export async function recordCartOrder(input: {
     referenceId: normalizeReferenceId(input.referenceId),
     kind: "order",
     orderType: input.orderType,
-    customerName: input.customerName.trim() || "WhatsApp customer",
+    customerName: input.customerName.trim() || "Store customer",
     itemsSummary: input.itemsSummary,
     subtotal: input.subtotal,
     status: "received",
@@ -288,7 +305,7 @@ export async function recordInquiryOrder(input: {
     referenceId: normalizeReferenceId(input.referenceId),
     kind: "inquiry",
     orderType: input.orderType,
-    customerName: input.customerName.trim() || "Customer",
+    customerName: input.customerName.trim() || "Store customer",
     itemsSummary: input.itemsSummary,
     status: "received",
     createdAt: now,

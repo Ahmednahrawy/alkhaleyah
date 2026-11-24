@@ -2,10 +2,9 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import {
   doc,
+  enableNetwork,
   getDocFromServer,
   getFirestore,
-  initializeFirestore,
-  type Firestore,
 } from "firebase/firestore";
 import firebaseConfig from "../../../firebase-applet-config.json";
 
@@ -14,18 +13,7 @@ export const FIREBASE_PROJECT_ID = firebaseConfig.projectId;
 
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-let dbInstance: Firestore;
-try {
-  dbInstance = initializeFirestore(
-    app,
-    { experimentalForceLongPolling: true },
-    firebaseConfig.firestoreDatabaseId
-  );
-} catch {
-  dbInstance = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-}
-
-export const db = dbInstance;
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: "select_account" });
@@ -96,5 +84,11 @@ async function testConnection() {
 }
 
 if (typeof window !== "undefined") {
-  void testConnection();
+  window.addEventListener("online", () => {
+    void enableNetwork(db).then(() => testConnection());
+  });
+
+  if (typeof navigator === "undefined" || navigator.onLine !== false) {
+    void testConnection();
+  }
 }

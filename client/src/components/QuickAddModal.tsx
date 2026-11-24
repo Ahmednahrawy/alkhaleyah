@@ -279,7 +279,7 @@ export function QuickAddModal() {
           {justAdded ? (
             <button
               type="button"
-              className="button button-whatsapp"
+              className="button button-accent"
               onClick={handleViewCart}
             >
               <ShoppingBag size={15} />

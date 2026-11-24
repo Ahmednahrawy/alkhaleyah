@@ -2,13 +2,11 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   Check,
   ClipboardCheck,
-  MessageCircle,
   Package,
   Search,
   Truck,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useStore } from "@/contexts/StoreContext";
 import { formatPrice } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import {
@@ -59,7 +57,6 @@ function StepIcon({
 
 export function OrderTrackingSection() {
   const { lang } = useLanguage();
-  const { buildStoreWhatsAppUrl } = useStore();
   const tr = translations[lang].tracking;
 
   const [queryId, setQueryId] = useState(SAMPLE_ORDERS[0].referenceId);
@@ -121,10 +118,6 @@ export function OrderTrackingSection() {
   const currentStepIndex = trackedOrder
     ? Math.max(0, ORDER_STATUS_SEQUENCE.indexOf(trackedOrder.status))
     : -1;
-
-  const whatsappInquiryUrl = buildStoreWhatsAppUrl(
-    `${tr.askWhatsAppMessagePrefix} ${notFoundId || trackedOrder?.referenceId || queryId}`
-  );
 
   return (
     <section
@@ -229,14 +222,8 @@ export function OrderTrackingSection() {
           <div className="tracking-not-found" role="status" aria-live="polite">
             <h3>{tr.notFoundTitle}</h3>
             <p>{tr.notFoundBody}</p>
-            <a
-              href={whatsappInquiryUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="button button-whatsapp"
-            >
-              <MessageCircle size={16} aria-hidden="true" />
-              <span>{tr.askWhatsAppButton}</span>
+            <a href="#contact" className="button button-dark">
+              <span>{tr.contactSupportButton}</span>
             </a>
           </div>
         )}
@@ -328,14 +315,8 @@ export function OrderTrackingSection() {
                     </strong>
                   </div>
                 )}
-                <a
-                  href={whatsappInquiryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-link"
-                >
-                  <MessageCircle size={15} aria-hidden="true" />
-                  <span>{tr.askWhatsAppButton}</span>
+                <a href="#contact" className="text-link">
+                  <span>{tr.contactSupportButton}</span>
                 </a>
               </div>
             </div>

@@ -152,8 +152,7 @@ type CopyShape = {
     sampleBadge: string;
     notFoundTitle: string;
     notFoundBody: string;
-    askWhatsAppButton: string;
-    askWhatsAppMessagePrefix: string;
+    contactSupportButton: string;
     steps: {
       received: { label: string; detail: string };
       confirmed: { label: string; detail: string };
@@ -168,7 +167,8 @@ type CopyShape = {
     titleAccent: string;
     body: string;
     note: string;
-    whatsappDirectLabel: string;
+    phoneDirectLabel: string;
+    emailDirectLabel: string;
     cta: string;
     orbitChar: string;
     form: {
@@ -195,8 +195,7 @@ type CopyShape = {
       };
       successTitle: string;
       successBody: string;
-      whatsappGreeting: string;
-      whatsappSendButton: string;
+      summaryGreeting: string;
       referenceLabel: string;
       selectedProductsLabel: string;
       copyButton: string;
@@ -293,12 +292,21 @@ type CopyShape = {
     orderRefLabel: string;
     orderSavedNote: string;
     trackOrderButton: string;
-    sendWhatsApp: string;
+    placeOrderButton: string;
+    submittingOrderButton: string;
     copyOrder: string;
     copied: string;
-    whatsappGreeting: string;
+    summaryGreeting: string;
     noteConfirm: string;
     missingContactHint: string;
+    errors: {
+      nameRequired: string;
+      contactRequired: string;
+      emailInvalid: string;
+    };
+    confirmedTitle: string;
+    confirmedBody: string;
+    confirmedContinueButton: string;
     closeAria: string;
   };
   notFoundPage: {
@@ -341,6 +349,23 @@ type CopyShape = {
       inProgress: string;
       delivered: string;
     };
+    notifications: {
+      bellAria: string;
+      panelTitle: string;
+      unreadSuffix: string;
+      markAllRead: string;
+      clearRead: string;
+      emptyTitle: string;
+      emptyBody: string;
+      openTabLabel: string;
+      enableDesktopBanner: string;
+      enableDesktopBtn: string;
+      desktopEnabledBadge: string;
+      desktopBlockedHint: string;
+      desktopUnsupportedHint: string;
+      soundOnBtn: string;
+      soundOffBtn: string;
+    };
     orders: {
       searchPlaceholder: string;
       statusFilterAll: string;
@@ -348,7 +373,9 @@ type CopyShape = {
       emptyBody: string;
       contactLabel: string;
       notesLabel: string;
-      whatsappReply: string;
+      callCustomer: string;
+      emailCustomer: string;
+      emailSubjectPrefix: string;
       statusLabel: string;
       updatingStatus: string;
       deleteOrder: string;
@@ -412,13 +439,39 @@ type CopyShape = {
     settings: {
       sectionTitle: string;
       sectionBody: string;
-      whatsappNumberLabel: string;
-      whatsappDisplayLabel: string;
+      supportPhoneLabel: string;
+      supportEmailLabel: string;
       announcementEnLabel: string;
       announcementArLabel: string;
       saveSettingsBtn: string;
       savingSettingsBtn: string;
       savedSettingsToast: string;
+      notificationsTitle: string;
+      notificationsBody: string;
+      soundAlertLabel: string;
+      desktopAlertLabel: string;
+      notifyNewOrderLabel: string;
+      notifyStatusLabel: string;
+      notifyCatalogLabel: string;
+      notifySettingsLabel: string;
+      notifyEmailLabel: string;
+      ntfyTopicLabel: string;
+      ntfyTopicPlaceholder: string;
+      ntfyTopicHint: string;
+      webhookUrlLabel: string;
+      webhookUrlPlaceholder: string;
+      webhookUrlHint: string;
+      serverChannelsLabel: string;
+      serverEmailReady: string;
+      serverEmailNeedsKey: string;
+      serverWebhookReady: string;
+      saveNotifBtn: string;
+      savingNotifBtn: string;
+      savedNotifToast: string;
+      sendTestAlertBtn: string;
+      sendingTestAlertBtn: string;
+      testAlertSentToast: string;
+      testAlertError: string;
       adminsTitle: string;
       adminsBody: string;
       adminUidLabel: string;
@@ -611,7 +664,7 @@ export const translations: Record<Language, CopyShape> = {
       titleLead: "Track your",
       titleAccent: "order or inquiry.",
       asideBody:
-        "Enter your Alkhaleyah reference ID (from a WhatsApp cart order or product inquiry) to check current progress.",
+        "Enter your Alkhaleyah reference ID (from a direct order or product inquiry) to check current progress.",
       inputLabel: "Order or inquiry ID",
       inputPlaceholder: "e.g. ALK-1041",
       submitButton: "Check status",
@@ -621,7 +674,7 @@ export const translations: Record<Language, CopyShape> = {
       orderIdLabel: "Reference ID",
       typeLabel: "Request type",
       typeInquiry: "Product inquiry",
-      typeOrder: "WhatsApp order",
+      typeOrder: "Direct store order",
       channelHome: "Personal / Home",
       channelTrade: "Wholesale / Trade",
       customerLabel: "Customer",
@@ -631,13 +684,12 @@ export const translations: Record<Language, CopyShape> = {
       sampleBadge: "Demo status",
       notFoundTitle: "Reference ID not found",
       notFoundBody:
-        "Double-check your reference (for example ALK-1041), or message our team directly on WhatsApp for live order updates.",
-      askWhatsAppButton: "Ask about this ID on WhatsApp",
-      askWhatsAppMessagePrefix: "Hello Alkhaleyah, could you please share an update on my reference ID:",
+        "Double-check your reference (for example ALK-1041), or send a quick message through the inquiry form below.",
+      contactSupportButton: "Need help with this ID? Contact us",
       steps: {
         received: {
           label: "Received",
-          detail: "Logged in our system and awaiting WhatsApp confirmation.",
+          detail: "Sent directly to the Alkhaleyah dashboard and queued for review.",
         },
         confirmed: {
           label: "Confirmed",
@@ -661,9 +713,10 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "Let's talk food",
       titleLead: "Something on",
       titleAccent: "your mind?",
-      body: "For product details, availability, or wholesale enquiries, select the products you are interested in and send your inquiry directly to our WhatsApp.",
-      note: "Whether for your home table or commercial supply, we confirm pack sizes, availability, and pricing directly on WhatsApp.",
-      whatsappDirectLabel: "Direct WhatsApp",
+      body: "For product details, availability, or wholesale enquiries, select the products you are interested in and submit your request directly to our team.",
+      note: "Every order and inquiry goes straight into our live order desk, where our team confirms pack sizes, availability, and delivery.",
+      phoneDirectLabel: "Direct phone",
+      emailDirectLabel: "Direct email",
       cta: "Browse the food range",
       orbitChar: "A",
       form: {
@@ -676,23 +729,22 @@ export const translations: Record<Language, CopyShape> = {
         namePlaceholder: "Your name",
         emailLabel: "Email (optional)",
         emailPlaceholder: "name@example.com",
-        phoneLabel: "Phone / WhatsApp",
+        phoneLabel: "Phone number",
         phonePlaceholder: "+20 10X XXX XXXX",
         notesLabel: "Order details or questions",
-        notesPlaceholder: "Pack sizes, estimated quantities, or any questions...",
-        submitButton: "Prepare WhatsApp order",
-        submittingButton: "Preparing...",
+        notesPlaceholder: "Pack sizes, estimated quantities, delivery area, or any questions...",
+        submitButton: "Send inquiry to Alkhaleyah",
+        submittingButton: "Sending...",
         errors: {
           productsRequired: "Please select at least one product.",
           nameRequired: "Please enter your name.",
           contactRequired: "Please enter a phone number or email address.",
           emailInvalid: "Please enter a valid email address.",
         },
-        successTitle: "Ready to send on WhatsApp",
+        successTitle: "Request received",
         successBody:
-          "Your inquiry summary is prepared below. Tap the WhatsApp button to send it directly to our team.",
-        whatsappGreeting: "Hello Alkhaleyah, I would like to send an order / inquiry:",
-        whatsappSendButton: "Send via WhatsApp",
+          "Your inquiry has been delivered directly to the Alkhaleyah admin dashboard. Keep your reference ID below to track status updates.",
+        summaryGreeting: "Alkhaleyah Order / Inquiry Summary:",
         referenceLabel: "Reference",
         selectedProductsLabel: "Selected products",
         copyButton: "Copy summary",
@@ -765,10 +817,10 @@ export const translations: Record<Language, CopyShape> = {
     },
     cart: {
       title: "Your order cart",
-      subtitle: "Review your selected varieties and send your order directly via WhatsApp.",
+      subtitle: "Review your selected varieties and send your order directly to the Alkhaleyah team.",
       emptyTitle: "Your cart is empty",
       emptyBody:
-        "Choose a product category, pick your preferred variety and weight or volume, and add items to prepare your WhatsApp order.",
+        "Choose a product category, pick your preferred variety and weight or volume, and add items to place your order directly.",
       browseButton: "Browse our range",
       itemsCountSuffix: "items",
       unitPriceLabel: "Unit price",
@@ -784,21 +836,31 @@ export const translations: Record<Language, CopyShape> = {
       typeTrade: "Wholesale / Trade",
       nameLabel: "Full name",
       namePlaceholder: "Your name",
-      phoneLabel: "Phone / WhatsApp",
+      phoneLabel: "Phone number",
       phonePlaceholder: "+20 10X XXX XXXX",
       emailLabel: "Email (optional)",
       emailPlaceholder: "name@example.com",
       notesLabel: "Delivery area or notes (optional)",
       notesPlaceholder: "City, delivery notes, or any extra requests...",
       orderRefLabel: "Order reference",
-      orderSavedNote: "Saved for order tracking.",
+      orderSavedNote: "Delivered to our order desk and ready to track.",
       trackOrderButton: "Track order",
-      sendWhatsApp: "Send order via WhatsApp",
-      copyOrder: "Copy order",
+      placeOrderButton: "Submit order",
+      submittingOrderButton: "Submitting order...",
+      copyOrder: "Copy order summary",
       copied: "Copied",
-      whatsappGreeting: "Hello Alkhaleyah, I would like to place an order:",
-      noteConfirm: "Delivery details will be confirmed directly on WhatsApp.",
-      missingContactHint: "Adding your name and phone helps our team confirm faster.",
+      summaryGreeting: "Alkhaleyah Order Summary:",
+      noteConfirm: "Our team will review your order and reach out to confirm delivery.",
+      missingContactHint: "Enter your name and phone number or email so our team can confirm your order.",
+      errors: {
+        nameRequired: "Please enter your name.",
+        contactRequired: "Please enter a phone number or email address.",
+        emailInvalid: "Please enter a valid email address.",
+      },
+      confirmedTitle: "Order received by Alkhaleyah",
+      confirmedBody:
+        "Your order has been sent directly to the Alkhaleyah admin dashboard. Save your reference ID below to follow fulfilment progress.",
+      confirmedContinueButton: "Continue browsing",
       closeAria: "Close order cart",
     },
     notFoundPage: {
@@ -813,7 +875,7 @@ export const translations: Record<Language, CopyShape> = {
       titleLead: "Alkhaleyah",
       titleAccent: "admin dashboard.",
       subtitle:
-        "Manage live order progress, customer inquiries, product varieties, EGP pricing, and store contact details.",
+        "Receive customer orders in real time, monitor instant alerts, update fulfilment stages, manage catalog items, and configure notification channels.",
       signInTitle: "Sign in to manage Alkhaleyah",
       signInBody:
         "This private area is restricted to authorized Alkhaleyah administrators. Sign in with your verified Google account to continue.",
@@ -841,7 +903,7 @@ export const translations: Record<Language, CopyShape> = {
       tabs: {
         orders: "Orders & inquiries",
         catalog: "Catalog & prices",
-        settings: "Store settings",
+        settings: "Alerts & settings",
       },
       metrics: {
         totalOrders: "Total records",
@@ -849,15 +911,34 @@ export const translations: Record<Language, CopyShape> = {
         inProgress: "In fulfilment",
         delivered: "Delivered",
       },
+      notifications: {
+        bellAria: "Open notifications feed",
+        panelTitle: "Live notifications",
+        unreadSuffix: "unread",
+        markAllRead: "Mark all read",
+        clearRead: "Clear read",
+        emptyTitle: "All caught up",
+        emptyBody: "New customer orders, inquiries, and admin dashboard updates will alert you here in real time.",
+        openTabLabel: "View",
+        enableDesktopBanner: "Enable desktop push alerts to get notified instantly when orders arrive, even in another tab.",
+        enableDesktopBtn: "Enable desktop alerts",
+        desktopEnabledBadge: "Desktop alerts active",
+        desktopBlockedHint: "Desktop alerts are blocked in browser site settings.",
+        desktopUnsupportedHint: "Desktop alerts are unavailable in this browser context.",
+        soundOnBtn: "Sound on",
+        soundOffBtn: "Sound muted",
+      },
       orders: {
         searchPlaceholder: "Search ALK reference ID or customer...",
         statusFilterAll: "All statuses",
         emptyTitle: "No matching orders yet",
         emptyBody:
-          "Customer orders sent via WhatsApp checkout or the inquiry form will appear here automatically.",
+          "Customer orders submitted from the store cart and inquiry form appear here automatically.",
         contactLabel: "Customer contact",
         notesLabel: "Notes",
-        whatsappReply: "Message on WhatsApp",
+        callCustomer: "Call customer",
+        emailCustomer: "Email customer",
+        emailSubjectPrefix: "Alkhaleyah Order Update",
         statusLabel: "Progress status",
         updatingStatus: "Saving...",
         deleteOrder: "Delete",
@@ -926,14 +1007,44 @@ export const translations: Record<Language, CopyShape> = {
       settings: {
         sectionTitle: "Storefront contact & announcement",
         sectionBody:
-          "Changes saved here update the WhatsApp checkout destination and top announcement banner across the storefront.",
-        whatsappNumberLabel: "WhatsApp digits (for wa.me link)",
-        whatsappDisplayLabel: "WhatsApp display format",
+          "Update customer-facing support contact info and the top announcement banner across the storefront.",
+        supportPhoneLabel: "Store support phone (optional)",
+        supportEmailLabel: "Store support email (optional)",
         announcementEnLabel: "Announcement bar (English)",
         announcementArLabel: "Announcement bar (Arabic)",
         saveSettingsBtn: "Save settings",
         savingSettingsBtn: "Saving...",
         savedSettingsToast: "Store settings saved",
+        notificationsTitle: "Admin notification channels",
+        notificationsBody:
+          "Configure how the dashboard alerts you about new customer orders, inquiries, status updates, and catalog edits.",
+        soundAlertLabel: "Play audible chime for new alerts while dashboard is open",
+        desktopAlertLabel: "Show browser desktop notifications",
+        notifyNewOrderLabel: "Notify on new cart orders & product inquiries",
+        notifyStatusLabel: "Log & notify on order status changes",
+        notifyCatalogLabel: "Log & notify on catalog, pricing & photo updates",
+        notifySettingsLabel: "Log & notify on settings changes",
+        notifyEmailLabel: "Notification email recipient",
+        ntfyTopicLabel: "ntfy.sh mobile/desktop push topic (optional)",
+        ntfyTopicPlaceholder: "e.g. alkhaleyah-orders-private",
+        ntfyTopicHint:
+          "Install the free ntfy app on iOS/Android or open ntfy.sh and subscribe to your private topic name for instant mobile push alerts.",
+        webhookUrlLabel: "Slack, Discord, Zapier or Make webhook URL (optional)",
+        webhookUrlPlaceholder: "https://discord.com/api/webhooks/...",
+        webhookUrlHint:
+          "Supports HTTPS webhooks on discord.com, hooks.slack.com, hooks.zapier.com, make.com, or ntfy.sh.",
+        serverChannelsLabel: "Server offline delivery status",
+        serverEmailReady: "Email relay (Resend) active on server",
+        serverEmailNeedsKey:
+          "For closed-tab email alerts, add RESEND_API_KEY & ADMIN_ALERT_EMAIL in server environment settings.",
+        serverWebhookReady: "Server fallback webhook active",
+        saveNotifBtn: "Save notification preferences",
+        savingNotifBtn: "Saving...",
+        savedNotifToast: "Notification preferences saved",
+        sendTestAlertBtn: "Send test notification",
+        sendingTestAlertBtn: "Sending...",
+        testAlertSentToast: "Test notification sent!",
+        testAlertError: "Please check the topic format or https:// webhook URL.",
         adminsTitle: "Authorized admin accounts",
         adminsBody:
           "Only the owner admin can authorize additional team Firebase UIDs to access this dashboard.",
@@ -1124,7 +1235,7 @@ export const translations: Record<Language, CopyShape> = {
       titleLead: "تتبع حالة",
       titleAccent: "طلبك أو استفسارك.",
       asideBody:
-        "أدخل رقم المرجع الخاص بطلب الخلية (من سلة الواتساب أو نموذج الاستفسار) للاطلاع على حالته الحالية.",
+        "أدخل رقم المرجع الخاص بطلب الخلية (من السلة أو نموذج الاستفسار) للاطلاع على حالته الحالية.",
       inputLabel: "رقم الطلب أو الاستفسار",
       inputPlaceholder: "مثال: ALK-1041",
       submitButton: "عرض الحالة",
@@ -1134,7 +1245,7 @@ export const translations: Record<Language, CopyShape> = {
       orderIdLabel: "رقم المرجع",
       typeLabel: "نوع الطلب",
       typeInquiry: "استفسار منتجات",
-      typeOrder: "طلب عبر واتساب",
+      typeOrder: "طلب مباشر من المتجر",
       channelHome: "طلب منزلي / شخصي",
       channelTrade: "طلب جملة / شركاء",
       customerLabel: "العميل",
@@ -1144,13 +1255,12 @@ export const translations: Record<Language, CopyShape> = {
       sampleBadge: "حالة تجريبية",
       notFoundTitle: "لم يتم العثور على رقم المرجع",
       notFoundBody:
-        "تأكد من كتابة رقم الطلب بشكل صحيح (مثل ALK-1041)، أو تواصل معنا مباشرةً عبر واتساب لمتابعة طلبك.",
-      askWhatsAppButton: "استفسر عن هذا الطلب عبر واتساب",
-      askWhatsAppMessagePrefix: "مرحباً الخلية، أرغب في متابعة حالة الطلب رقم:",
+        "تأكد من كتابة رقم الطلب بشكل صحيح (مثل ALK-1041)، أو تواصل معنا مباشرةً عبر نموذج التواصل بالأسفل.",
+      contactSupportButton: "تحتاج مساعدة حول هذا الطلب؟ تواصل معنا",
       steps: {
         received: {
           label: "تم الاستلام",
-          detail: "تم تسجيل الطلب وبانتظار تأكيده عبر واتساب.",
+          detail: "تم إرسال الطلب مباشرةً إلى لوحة إدارة الخلية وجارٍ مراجعته.",
         },
         confirmed: {
           label: "تم التأكيد",
@@ -1174,9 +1284,10 @@ export const translations: Record<Language, CopyShape> = {
       eyebrow: "لنتحدّث عن الطعام",
       titleLead: "هل لديك",
       titleAccent: "استفسار؟",
-      body: "للاستفسار عن تفاصيل المنتجات أو التوافر أو طلبات الجملة، اختر المنتجات التي تهمّك وأرسل طلبك مباشرةً إلى واتساب الخلية.",
-      note: "سواءً لمائدة منزلك أو لتوريد الأعمال، نؤكّد معك أحجام العبوات والتوافر والأسعار مباشرةً عبر واتساب.",
-      whatsappDirectLabel: "واتساب مباشر",
+      body: "للاستفسار عن تفاصيل المنتجات أو التوافر أو طلبات الجملة، اختر المنتجات التي تهمّك وأرسل طلبك مباشرةً إلى فريق الخلية.",
+      note: "تصل جميع الطلبات والاستفسارات فوراً إلى لوحة إدارة الخلية ليقوم فريقنا بتأكيد الأحجام والتوافر وموعد التوصيل.",
+      phoneDirectLabel: "هاتف التواصل",
+      emailDirectLabel: "البريد الإلكتروني",
       cta: "تصفّح التشكيلة الغذائية",
       orbitChar: "خ",
       form: {
@@ -1189,23 +1300,22 @@ export const translations: Record<Language, CopyShape> = {
         namePlaceholder: "اكتب اسمك",
         emailLabel: "البريد الإلكتروني (اختياري)",
         emailPlaceholder: "name@example.com",
-        phoneLabel: "رقم الهاتف / واتساب",
+        phoneLabel: "رقم الهاتف",
         phonePlaceholder: "+20 10X XXX XXXX",
         notesLabel: "تفاصيل الطلب أو الاستفسار",
-        notesPlaceholder: "أحجام العبوات، الكميات التقديرية، أو أي استفسارات أخرى...",
-        submitButton: "تجهيز الطلب للواتساب",
-        submittingButton: "جاري التجهيز...",
+        notesPlaceholder: "أحجام العبوات، الكميات التقديرية، منطقة التوصيل، أو أي استفسارات أخرى...",
+        submitButton: "إرسال الاستفسار للإدارة",
+        submittingButton: "جاري الإرسال...",
         errors: {
           productsRequired: "يُرجى اختيار منتج واحد على الأقل.",
           nameRequired: "يُرجى إدخال الاسم الكامل.",
           contactRequired: "يُرجى إدخال رقم الهاتف أو البريد الإلكتروني.",
           emailInvalid: "يُرجى إدخال بريد إلكتروني صحيح.",
         },
-        successTitle: "الطلب جاهز للإرسال عبر واتساب",
+        successTitle: "تم استلام طلبك بنجاح",
         successBody:
-          "تم تجهيز ملخص طلبك بالأسفل. اضغط على زر واتساب لإرساله مباشرةً إلى فريقنا.",
-        whatsappGreeting: "مرحباً الخلية، أود إرسال طلب / استفسار جديد:",
-        whatsappSendButton: "إرسال الطلب عبر واتساب",
+          "وصل استفسارك مباشرةً إلى لوحة إدارة الخلية. احتفظ برقم المرجع بالأسفل لمتابعة حالة الطلب.",
+        summaryGreeting: "ملخص طلب / استفسار من الخلية:",
         referenceLabel: "المرجع",
         selectedProductsLabel: "المنتجات المختارة",
         copyButton: "نسخ الملخص",
@@ -1278,10 +1388,10 @@ export const translations: Record<Language, CopyShape> = {
     },
     cart: {
       title: "سلة الطلب",
-      subtitle: "راجع الأصناف والأحجام المختارة وأرسل طلبك مباشرةً عبر واتساب.",
+      subtitle: "راجع الأصناف والأحجام المختارة وأرسل طلبك مباشرةً إلى فريق الخلية.",
       emptyTitle: "سلة الطلب فارغة",
       emptyBody:
-        "تصفّح فئات المنتجات واختر الصنف والوزن أو الحجم المناسب لإضافته وتجهيز طلبك عبر واتساب.",
+        "تصفّح فئات المنتجات واختر الصنف والوزن أو الحجم المناسب لإضافته وإرسال طلبك مباشرةً للإدارة.",
       browseButton: "استكشف المنتجات",
       itemsCountSuffix: "منتجات",
       unitPriceLabel: "سعر الوحدة",
@@ -1297,21 +1407,31 @@ export const translations: Record<Language, CopyShape> = {
       typeTrade: "طلب جملة / شركاء",
       nameLabel: "الاسم الكامل",
       namePlaceholder: "اكتب اسمك",
-      phoneLabel: "رقم الهاتف / واتساب",
+      phoneLabel: "رقم الهاتف",
       phonePlaceholder: "+20 10X XXX XXXX",
       emailLabel: "البريد الإلكتروني (اختياري)",
       emailPlaceholder: "name@example.com",
       notesLabel: "العنوان أو ملاحظات إضافية (اختياري)",
       notesPlaceholder: "المدينة، تفاصيل التوصيل، أو أي ملاحظات أخرى...",
       orderRefLabel: "رقم مرجع الطلب",
-      orderSavedNote: "تم الحفظ لتتبع حالة الطلب.",
+      orderSavedNote: "تم إرسال الطلب للإدارة ويمكنك تتبعه برقم المرجع.",
       trackOrderButton: "تتبع الطلب",
-      sendWhatsApp: "إرسال الطلب عبر واتساب",
-      copyOrder: "نسخ الطلب",
+      placeOrderButton: "تأكيد وإرسال الطلب",
+      submittingOrderButton: "جاري إرسال الطلب...",
+      copyOrder: "نسخ ملخص الطلب",
       copied: "تم النسخ",
-      whatsappGreeting: "مرحباً الخلية، أود إرسال هذا الطلب:",
-      noteConfirm: "سيتم تأكيد تفاصيل التوصيل مباشرةً عبر واتساب.",
-      missingContactHint: "إضافة الاسم ورقم الهاتف يساعدنا على تأكيد طلبك بشكل أسرع.",
+      summaryGreeting: "ملخص طلب من الخلية:",
+      noteConfirm: "سيقوم فريقنا بمراجعة الطلب والتواصل معك لتأكيد التوصيل.",
+      missingContactHint: "يُرجى إدخال الاسم ورقم الهاتف أو البريد الإلكتروني ليتمكن فريقنا من تأكيد الطلب.",
+      errors: {
+        nameRequired: "يُرجى إدخال الاسم الكامل.",
+        contactRequired: "يُرجى إدخال رقم الهاتف أو البريد الإلكتروني.",
+        emailInvalid: "يُرجى إدخال بريد إلكتروني صحيح.",
+      },
+      confirmedTitle: "تم استلام طلبك بنجاح",
+      confirmedBody:
+        "تم إرسال طلبك مباشرةً إلى لوحة إدارة الخلية. احتفظ برقم المرجع بالأسفل لمتابعة مراحل التجهيز والتوصيل.",
+      confirmedContinueButton: "متابعة التسوق",
       closeAria: "إغلاق سلة الطلب",
     },
     notFoundPage: {
@@ -1326,7 +1446,7 @@ export const translations: Record<Language, CopyShape> = {
       titleLead: "إدارة متجر",
       titleAccent: "الخلية.",
       subtitle:
-        "تابع حالات الطلبات والاستفسارات، وحدّث الأصناف والأسعار بالجنيه المصري وإعدادات المتجر مباشرة.",
+        "استقبل طلبات العملاء مباشرةً مع تنبيهات فورية، وتابع مراحل التنفيذ، وحدّث المنتجات والأسعار وقنوات الإشعارات.",
       signInTitle: "تسجيل الدخول لإدارة الخلية",
       signInBody:
         "هذه اللوحة مخصّصة لمديري متجر الخلية المصرح لهم فقط. سجّل الدخول بحساب Google الموثّق للمتابعة.",
@@ -1354,7 +1474,7 @@ export const translations: Record<Language, CopyShape> = {
       tabs: {
         orders: "الطلبات والاستفسارات",
         catalog: "المنتجات والأسعار",
-        settings: "إعدادات المتجر",
+        settings: "التنبيهات والإعدادات",
       },
       metrics: {
         totalOrders: "إجمالي السجلات",
@@ -1362,15 +1482,34 @@ export const translations: Record<Language, CopyShape> = {
         inProgress: "قيد التجهيز والشحن",
         delivered: "تم تسليمها",
       },
+      notifications: {
+        bellAria: "فتح مركز الإشعارات",
+        panelTitle: "التنبيهات المباشرة",
+        unreadSuffix: "غير مقروء",
+        markAllRead: "تحديد الكل كمقروء",
+        clearRead: "مسح المقروءة",
+        emptyTitle: "لا توجد تنبيهات جديدة",
+        emptyBody: "ستصلك هنا تنبيهات فورية عند وصول أي طلب جديد أو استفسار أو تحديث في اللوحة.",
+        openTabLabel: "عرض",
+        enableDesktopBanner: "فعّل إشعارات المتصفح ليصلك تنبيه فوري بالطلبات الجديدة حتى لو كنت في تبويب آخر.",
+        enableDesktopBtn: "تفعيل إشعارات المتصفح",
+        desktopEnabledBadge: "إشعارات المتصفح مفعّلة",
+        desktopBlockedHint: "إشعارات المتصفح محظورة من إعدادات الموقع في المتصفح.",
+        desktopUnsupportedHint: "إشعارات المتصفح غير مدعومة في هذا الإطار.",
+        soundOnBtn: "الصوت مفعّل",
+        soundOffBtn: "الصوت مكتوم",
+      },
       orders: {
         searchPlaceholder: "ابحث برقم المرجع ALK أو اسم العميل...",
         statusFilterAll: "جميع الحالات",
         emptyTitle: "لا توجد طلبات مطابقة بعد",
         emptyBody:
-          "ستظهر هنا تلقائياً جميع الطلبات المرسلة عبر سلة الواتساب أو نموذج الاستفسار.",
+          "ستظهر هنا تلقائياً جميع الطلبات المرسلة من سلة المتجر ونموذج الاستفسار.",
         contactLabel: "بيانات التواصل",
         notesLabel: "ملاحظات",
-        whatsappReply: "مراسلة عبر واتساب",
+        callCustomer: "اتصال بالعميل",
+        emailCustomer: "مراسلة بالبريد",
+        emailSubjectPrefix: "تحديث طلبك من الخلية",
         statusLabel: "تحديث مرحلة التنفيذ",
         updatingStatus: "جاري الحفظ...",
         deleteOrder: "حذف",
@@ -1437,16 +1576,46 @@ export const translations: Record<Language, CopyShape> = {
         nextSlideAria: "الصورة التالية",
       },
       settings: {
-        sectionTitle: "بيانات الواتساب والشريط العلوي",
+        sectionTitle: "بيانات التواصل والشريط العلوي",
         sectionBody:
-          "تحدّث هذه الإعدادات رقم الواتساب المعتمد في السلة والروابط، ونص الشريط العلوي في المتجر.",
-        whatsappNumberLabel: "رقم الواتساب (للرابط wa.me)",
-        whatsappDisplayLabel: "صيغة عرض الرقم",
+          "تحدّث هذه الإعدادات بيانات التواصل المباشر ونص الشريط العلوي في واجهة المتجر.",
+        supportPhoneLabel: "هاتف خدمة العملاء (اختياري)",
+        supportEmailLabel: "البريد الإلكتروني للدعم (اختياري)",
         announcementEnLabel: "نص الشريط العلوي (بالإنجليزية)",
         announcementArLabel: "نص الشريط العلوي (بالعربية)",
         saveSettingsBtn: "حفظ الإعدادات",
         savingSettingsBtn: "جاري الحفظ...",
         savedSettingsToast: "تم حفظ إعدادات المتجر",
+        notificationsTitle: "قنوات تنبيه الإدارة",
+        notificationsBody:
+          "حدّد طريقة تنبيهك فور وصول طلبات جديدة أو استفسارات أو عند حدوث أي تحديث في لوحة التحكم.",
+        soundAlertLabel: "تشغيل نغمة تنبيه صوتية عند وصول إشعار جديد",
+        desktopAlertLabel: "عرض إشعارات سطح المكتب / المتصفح الفورية",
+        notifyNewOrderLabel: "التنبيه عند وصول طلبات سلة أو استفسارات جديدة",
+        notifyStatusLabel: "تسجيل وإرسال تنبيه عند تغيير حالة الطلب",
+        notifyCatalogLabel: "تسجيل وإرسال تنبيه عند تعديل المنتجات أو الأسعار أو الصور",
+        notifySettingsLabel: "تسجيل وإرسال تنبيه عند تحديث الإعدادات",
+        notifyEmailLabel: "البريد الإلكتروني لاستلام التنبيهات",
+        ntfyTopicLabel: "اسم قناة الإشعارات الفورية ntfy.sh (اختياري)",
+        ntfyTopicPlaceholder: "مثال: alkhaleyah-orders-private",
+        ntfyTopicHint:
+          "اشترك في هذا الاسم عبر تطبيق ntfy المجاني على هاتفك أو المتصفح لاستلام إشعارات فورية.",
+        webhookUrlLabel: "رابط Webhook لـ Slack أو Discord أو Zapier أو Make (اختياري)",
+        webhookUrlPlaceholder: "https://discord.com/api/webhooks/...",
+        webhookUrlHint:
+          "يدعم روابط HTTPS المعتمدة على discord.com أو hooks.slack.com أو hooks.zapier.com أو make.com أو ntfy.sh.",
+        serverChannelsLabel: "حالة التوصيل التلقائي من الخادم",
+        serverEmailReady: "خدمة البريد (Resend) مفعّلة على الخادم",
+        serverEmailNeedsKey:
+          "لإرسال رسائل بريد تلقائية حتى عند إغلاق اللوحة، أضف RESEND_API_KEY و ADMIN_ALERT_EMAIL في متغيرات الخادم.",
+        serverWebhookReady: "رابط Webhook الاحتياطي مفعّل على الخادم",
+        saveNotifBtn: "حفظ تفضيلات التنبيه",
+        savingNotifBtn: "جاري الحفظ...",
+        savedNotifToast: "تم حفظ تفضيلات التنبيه",
+        sendTestAlertBtn: "إرسال تنبيه تجريبي",
+        sendingTestAlertBtn: "جاري الإرسال...",
+        testAlertSentToast: "تم إرسال التنبيه التجريبي بنجاح!",
+        testAlertError: "يُرجى التحقق من صيغة اسم القناة أو رابط https:// الصحيح.",
         adminsTitle: "حسابات الإدارة المصرح لها",
         adminsBody:
           "يمكن لمالك المتجر فقط إضافة أو إزالة معرّفات Firebase UID للمديرين الإضافيين.",

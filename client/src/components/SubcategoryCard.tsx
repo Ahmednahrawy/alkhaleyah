@@ -193,7 +193,7 @@ export function SubcategoryCard({
             type="button"
             className={
               justAdded
-                ? "button button-whatsapp subcategory-add-btn"
+                ? "button button-accent subcategory-add-btn"
                 : "button button-dark subcategory-add-btn"
             }
             onClick={handleAdd}

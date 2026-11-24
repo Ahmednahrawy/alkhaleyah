@@ -219,17 +219,25 @@
       "description": "Public storefront operational settings editable by admins.",
       "type": "object",
       "properties": {
+        "supportPhone": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Formatted support phone number displayed in storefront contact details."
+        },
+        "supportEmail": {
+          "type": "string",
+          "maxLength": 180,
+          "description": "Public storefront support email address."
+        },
         "whatsappNumber": {
           "type": "string",
-          "minLength": 6,
           "maxLength": 24,
-          "description": "Digits-only WhatsApp number for wa.me links."
+          "description": "Legacy digits-only contact number."
         },
         "whatsappDisplay": {
           "type": "string",
-          "minLength": 6,
           "maxLength": 32,
-          "description": "Formatted WhatsApp phone number shown in UI."
+          "description": "Legacy display phone number."
         },
         "announcementEn": {
           "type": "string",
@@ -253,10 +261,169 @@
         }
       },
       "required": [
-        "whatsappNumber",
-        "whatsappDisplay",
         "announcementEn",
         "announcementAr",
+        "updatedAt",
+        "updatedBy"
+      ]
+    },
+    "AdminNotification": {
+      "title": "AdminNotification",
+      "description": "Real-time notification feed event delivered to the Alkhaleyah admin dashboard for new orders, inquiries, status updates, catalog edits, and setting changes.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Notification identifier matching the Firestore document ID."
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "order_created",
+            "inquiry_created",
+            "order_status_updated",
+            "catalog_updated",
+            "settings_updated"
+          ],
+          "description": "Event category that triggered the notification."
+        },
+        "titleEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140,
+          "description": "English notification headline."
+        },
+        "titleAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140,
+          "description": "Arabic notification headline."
+        },
+        "bodyEn": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "English notification detail summary."
+        },
+        "bodyAr": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Arabic notification detail summary."
+        },
+        "targetTab": {
+          "type": "string",
+          "enum": ["orders", "catalog", "settings"],
+          "description": "Admin dashboard tab linked to this notification."
+        },
+        "referenceId": {
+          "type": "string",
+          "maxLength": 64,
+          "description": "Associated order reference ID or entity key."
+        },
+        "actor": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Customer display name or admin email who triggered the event."
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Whether the notification has been acknowledged in the admin dashboard."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "titleEn",
+        "titleAr",
+        "bodyEn",
+        "bodyAr",
+        "targetTab",
+        "referenceId",
+        "actor",
+        "isRead",
+        "createdAt"
+      ]
+    },
+    "AdminNotificationConfig": {
+      "title": "AdminNotificationConfig",
+      "description": "Admin-only notification channel and alert preferences.",
+      "type": "object",
+      "properties": {
+        "configId": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Configuration document identifier (notifications)."
+        },
+        "soundEnabled": {
+          "type": "boolean",
+          "description": "Play an audible chime in the admin dashboard when a new alert arrives."
+        },
+        "desktopAlertsEnabled": {
+          "type": "boolean",
+          "description": "Show browser desktop notifications when permitted."
+        },
+        "notifyOnNewOrder": {
+          "type": "boolean",
+          "description": "Send alerts for new customer orders and product inquiries."
+        },
+        "notifyOnStatusChange": {
+          "type": "boolean",
+          "description": "Log and notify when order fulfillment status is updated."
+        },
+        "notifyOnCatalogUpdate": {
+          "type": "boolean",
+          "description": "Log and notify when catalog items, prices, or photos are changed."
+        },
+        "notifyOnSettingsUpdate": {
+          "type": "boolean",
+          "description": "Log and notify when storefront or team settings are saved."
+        },
+        "notifyEmail": {
+          "type": "string",
+          "maxLength": 180,
+          "description": "Admin email address for email alert routing."
+        },
+        "ntfyTopic": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Optional ntfy.sh topic channel name for mobile/desktop push alerts."
+        },
+        "webhookUrl": {
+          "type": "string",
+          "maxLength": 512,
+          "description": "Optional HTTPS Slack or Discord webhook URL for real-time team alerts."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who updated notification settings."
+        }
+      },
+      "required": [
+        "configId",
+        "soundEnabled",
+        "desktopAlertsEnabled",
+        "notifyOnNewOrder",
+        "notifyOnStatusChange",
+        "notifyOnCatalogUpdate",
+        "notifyOnSettingsUpdate",
+        "notifyEmail",
+        "ntfyTopic",
+        "webhookUrl",
         "updatedAt",
         "updatedBy"
       ]
@@ -308,6 +475,14 @@
     "/orders/{orderId}/private/contact": {
       "schema": { "$ref": "#/entities/OrderContactPii" },
       "description": "Admin-only private customer contact information for each order."
+    },
+    "/adminNotifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/AdminNotification" },
+      "description": "Admin-only real-time notification feed for new orders and dashboard updates."
+    },
+    "/adminConfig/{configId}": {
+      "schema": { "$ref": "#/entities/AdminNotificationConfig" },
+      "description": "Admin-only private notification preferences and push channel configuration."
     },
     "/catalogOverrides/{productKey}": {
       "schema": { "$ref": "#/entities/CatalogOverride" },

@@ -122,6 +122,91 @@ service cloud.firestore {
         data.createdAt == request.time;
     }
 
+    function isValidAdminNotification(data) {
+      return data.keys().hasAll([
+          'id',
+          'type',
+          'titleEn',
+          'titleAr',
+          'bodyEn',
+          'bodyAr',
+          'targetTab',
+          'referenceId',
+          'actor',
+          'isRead',
+          'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id',
+          'type',
+          'titleEn',
+          'titleAr',
+          'bodyEn',
+          'bodyAr',
+          'targetTab',
+          'referenceId',
+          'actor',
+          'isRead',
+          'createdAt'
+        ]) &&
+        isValidId(data.id) && data.id.size() >= 4 &&
+        data.type in ['order_created', 'inquiry_created', 'order_status_updated', 'catalog_updated', 'settings_updated'] &&
+        data.titleEn is string && data.titleEn.size() >= 1 && data.titleEn.size() <= 140 &&
+        data.titleAr is string && data.titleAr.size() >= 1 && data.titleAr.size() <= 140 &&
+        data.bodyEn is string && data.bodyEn.size() <= 400 &&
+        data.bodyAr is string && data.bodyAr.size() <= 400 &&
+        data.targetTab in ['orders', 'catalog', 'settings'] &&
+        data.referenceId is string && data.referenceId.size() <= 64 &&
+        data.actor is string && data.actor.size() <= 120 &&
+        data.isRead is bool &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidAdminNotificationConfig(data) {
+      return data.keys().hasAll([
+          'configId',
+          'soundEnabled',
+          'desktopAlertsEnabled',
+          'notifyOnNewOrder',
+          'notifyOnStatusChange',
+          'notifyOnCatalogUpdate',
+          'notifyOnSettingsUpdate',
+          'notifyEmail',
+          'ntfyTopic',
+          'webhookUrl',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        data.keys().hasOnly([
+          'configId',
+          'soundEnabled',
+          'desktopAlertsEnabled',
+          'notifyOnNewOrder',
+          'notifyOnStatusChange',
+          'notifyOnCatalogUpdate',
+          'notifyOnSettingsUpdate',
+          'notifyEmail',
+          'ntfyTopic',
+          'webhookUrl',
+          'updatedAt',
+          'updatedBy'
+        ]) &&
+        data.configId == 'notifications' &&
+        data.soundEnabled is bool &&
+        data.desktopAlertsEnabled is bool &&
+        data.notifyOnNewOrder is bool &&
+        data.notifyOnStatusChange is bool &&
+        data.notifyOnCatalogUpdate is bool &&
+        data.notifyOnSettingsUpdate is bool &&
+        data.notifyEmail is string && data.notifyEmail.size() <= 180 &&
+        data.ntfyTopic is string && data.ntfyTopic.size() <= 120 &&
+        (data.ntfyTopic == '' || data.ntfyTopic.matches('^[a-zA-Z0-9_\\-]{3,120}$')) &&
+        data.webhookUrl is string && data.webhookUrl.size() <= 512 &&
+        (data.webhookUrl == '' || data.webhookUrl.matches('^https://[^\\s]+$')) &&
+        data.updatedAt == request.time &&
+        data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
+    }
+
     function isValidCatalogOverride(data) {
       return data.keys().hasAll([
           'productKey',
@@ -179,14 +264,14 @@ service cloud.firestore {
 
     function isValidStoreSettings(data) {
       return data.keys().hasAll([
-          'whatsappNumber',
-          'whatsappDisplay',
           'announcementEn',
           'announcementAr',
           'updatedAt',
           'updatedBy'
         ]) &&
         data.keys().hasOnly([
+          'supportPhone',
+          'supportEmail',
           'whatsappNumber',
           'whatsappDisplay',
           'announcementEn',
@@ -194,8 +279,10 @@ service cloud.firestore {
           'updatedAt',
           'updatedBy'
         ]) &&
-        data.whatsappNumber is string && data.whatsappNumber.size() >= 6 && data.whatsappNumber.size() <= 24 &&
-        data.whatsappDisplay is string && data.whatsappDisplay.size() >= 6 && data.whatsappDisplay.size() <= 32 &&
+        (!('supportPhone' in data) || (data.supportPhone is string && data.supportPhone.size() <= 32)) &&
+        (!('supportEmail' in data) || (data.supportEmail is string && data.supportEmail.size() <= 180)) &&
+        (!('whatsappNumber' in data) || (data.whatsappNumber is string && data.whatsappNumber.size() <= 24)) &&
+        (!('whatsappDisplay' in data) || (data.whatsappDisplay is string && data.whatsappDisplay.size() <= 32)) &&
         data.announcementEn is string && data.announcementEn.size() <= 160 &&
         data.announcementAr is string && data.announcementAr.size() <= 160 &&
         data.updatedAt == request.time &&
@@ -236,13 +323,63 @@ service cloud.firestore {
         allow list: if false;
         allow create: if isValidId(orderId) &&
           isValidOrderContactPii(incoming()) &&
-          exists(/databases/$(database)/documents/orders/$(orderId));
+          (
+            exists(/databases/$(database)/documents/orders/$(orderId)) ||
+            existsAfter(/databases/$(database)/documents/orders/$(orderId))
+          );
         allow update: if isValidId(orderId) &&
           isAdmin() &&
           isValidOrderContactPii(incoming()) &&
           incoming().createdAt == existing().createdAt;
         allow delete: if isValidId(orderId) && isAdmin();
       }
+    }
+
+    match /adminNotifications/{notificationId} {
+      allow get: if isValidId(notificationId) && isAdmin();
+      allow list: if isAdmin();
+      allow create: if isValidId(notificationId) &&
+        isValidAdminNotification(incoming()) &&
+        incoming().id == notificationId &&
+        incoming().isRead == false &&
+        incoming().createdAt == request.time &&
+        (
+          isAdmin() ||
+          (
+            incoming().type in ['order_created', 'inquiry_created'] &&
+            incoming().targetTab == 'orders' &&
+            incoming().referenceId is string &&
+            isValidId(incoming().referenceId) &&
+            notificationId == 'order_' + incoming().referenceId &&
+            (
+              exists(/databases/$(database)/documents/orders/$(incoming().referenceId)) ||
+              existsAfter(/databases/$(database)/documents/orders/$(incoming().referenceId))
+            )
+          )
+        );
+      allow update: if isValidId(notificationId) &&
+        isAdmin() &&
+        isValidAdminNotification(incoming()) &&
+        incoming().id == existing().id &&
+        incoming().type == existing().type &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['isRead']);
+      allow delete: if isValidId(notificationId) && isAdmin();
+    }
+
+    match /adminConfig/{configId} {
+      allow get: if isValidId(configId) && configId == 'notifications' && isAdmin();
+      allow list: if false;
+      allow create: if isValidId(configId) &&
+        configId == 'notifications' &&
+        isAdmin() &&
+        isValidAdminNotificationConfig(incoming());
+      allow update: if isValidId(configId) &&
+        configId == 'notifications' &&
+        isAdmin() &&
+        isValidAdminNotificationConfig(incoming()) &&
+        incoming().configId == existing().configId;
+      allow delete: if false;
     }
 
     match /catalogOverrides/{productKey} {

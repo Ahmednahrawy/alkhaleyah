@@ -1,22 +1,38 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   ArrowLeft,
+  Bell,
+  BellRing,
   Check,
+  ClipboardCheck,
   Edit3,
   Eye,
   EyeOff,
   LogOut,
-  MessageCircle,
+  Mail,
   Package,
+  Phone,
   Plus,
   RotateCcw,
   Search,
+  Send,
   Settings,
   ShieldCheck,
   ShoppingBag,
   Trash2,
   UserPlus,
+  Volume2,
+  VolumeX,
+  X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "wouter";
 import { AdminImagePicker } from "@/components/AdminImagePicker";
 import { BrandMark, LanguageSwitcher } from "@/components/SiteChrome";
@@ -44,6 +60,18 @@ import {
 import { translations } from "@/lib/i18n";
 import { validateCatalogImageGallery } from "@/lib/imageUtils";
 import {
+  DEFAULT_NOTIFICATION_CONFIG,
+  dispatchExternalAdminAlert,
+  getDesktopNotificationPermission,
+  playNotificationChime,
+  recordAdminUpdateNotification,
+  requestDesktopNotificationPermission,
+  showDesktopNotification,
+  type AdminNotificationConfig,
+  type AdminNotificationItem,
+  type AdminNotificationType,
+} from "@/lib/notifications";
+import {
   ORDER_STATUS_SEQUENCE,
   timestampToIso,
   type OrderStatusStep,
@@ -54,12 +82,14 @@ import {
   deleteDoc,
   doc,
   getDoc,
+  limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 
 type AdminTab = "orders" | "catalog" | "settings";
@@ -90,6 +120,34 @@ type VarietyDraft = {
 };
 
 const VALID_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
+const NTFY_TOPIC_REGEX = /^[a-zA-Z0-9_-]{3,120}$/;
+const ALLOWED_WEBHOOK_HOSTS = new Set([
+  "ntfy.sh",
+  "hooks.slack.com",
+  "discord.com",
+  "discordapp.com",
+  "hooks.zapier.com",
+  "hook.eu1.make.com",
+  "hook.us1.make.com",
+  "hook.eu2.make.com",
+  "hook.us2.make.com",
+]);
+
+function isValidClientWebhookUrl(rawUrl: string): boolean {
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return true;
+  try {
+    const parsed = new URL(trimmed);
+    return (
+      parsed.protocol === "https:" &&
+      !parsed.username &&
+      !parsed.password &&
+      ALLOWED_WEBHOOK_HOSTS.has(parsed.hostname.toLowerCase())
+    );
+  } catch {
+    return false;
+  }
+}
 
 function sanitizeSlug(raw: string): string {
   return raw
@@ -98,21 +156,6 @@ function sanitizeSlug(raw: string): string {
     .replace(/[^a-z0-9_-]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
-}
-
-function buildAdminWhatsAppReplyUrl(
-  rawPhone: string,
-  referenceId: string,
-  customerName: string,
-  lang: "en" | "ar"
-): string | null {
-  const digits = rawPhone.replace(/\D/g, "");
-  if (digits.length < 7) return null;
-  const greeting =
-    lang === "ar"
-      ? `مرحباً ${customerName}، بخصوص طلبك من الخلية رقم (${referenceId}):`
-      : `Hello ${customerName}, following up regarding your Alkhaleyah order (${referenceId}):`;
-  return `https://wa.me/${digits}?text=${encodeURIComponent(greeting)}`;
 }
 
 function formatDateTime(iso: string, lang: "en" | "ar") {
@@ -126,14 +169,56 @@ function formatDateTime(iso: string, lang: "en" | "ar") {
   });
 }
 
+function shouldNotifyForType(
+  type: AdminNotificationType,
+  config: AdminNotificationConfig
+): boolean {
+  switch (type) {
+    case "order_created":
+    case "inquiry_created":
+      return config.notifyOnNewOrder;
+    case "order_status_updated":
+      return config.notifyOnStatusChange;
+    case "catalog_updated":
+      return config.notifyOnCatalogUpdate;
+    case "settings_updated":
+      return config.notifyOnSettingsUpdate;
+    default:
+      return true;
+  }
+}
+
+function NotificationTypeIcon({ type }: { type: AdminNotificationType }) {
+  switch (type) {
+    case "order_created":
+      return <ShoppingBag size={15} aria-hidden="true" />;
+    case "inquiry_created":
+      return <Mail size={15} aria-hidden="true" />;
+    case "order_status_updated":
+      return <ClipboardCheck size={15} aria-hidden="true" />;
+    case "catalog_updated":
+      return <Package size={15} aria-hidden="true" />;
+    case "settings_updated":
+    default:
+      return <Settings size={15} aria-hidden="true" />;
+  }
+}
+
 type FatalErrorReporter = (
   error: unknown,
   op: OperationType,
   path: string | null
 ) => void;
 
-function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
+function OrdersTab({
+  onFatalError,
+  notifConfig,
+}: {
+  onFatalError: FatalErrorReporter;
+  notifConfig: AdminNotificationConfig;
+}) {
   const { lang } = useLanguage();
+  const { user } = useAuth();
   const tr = translations[lang].tracking;
   const a = translations[lang].admin;
 
@@ -169,7 +254,7 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
             referenceId: String(data.referenceId || docSnap.id),
             kind: data.kind === "inquiry" ? "inquiry" : "order",
             orderType: data.orderType === "trade" ? "trade" : "home",
-            customerName: String(data.customerName || "Customer"),
+            customerName: String(data.customerName || "Store customer"),
             itemsSummary: Array.isArray(data.itemsSummary)
               ? data.itemsSummary.map((line) => String(line))
               : [],
@@ -274,16 +359,46 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   }, [orders, statusFilter, searchQuery, contactsByOrder]);
 
   const handleStatusChange = async (
-    referenceId: string,
+    order: TrackedOrder,
     nextStatus: OrderStatusStep
   ) => {
-    setSavingOrderId(referenceId);
-    const path = `orders/${referenceId}`;
+    if (order.status === nextStatus) return;
+    setSavingOrderId(order.referenceId);
+    const path = `orders/${order.referenceId}`;
     try {
-      await updateDoc(doc(db, "orders", referenceId), {
+      await updateDoc(doc(db, "orders", order.referenceId), {
         status: nextStatus,
         updatedAt: serverTimestamp(),
       });
+
+      const statusEn = translations.en.tracking.steps[nextStatus].label;
+      const statusAr = translations.ar.tracking.steps[nextStatus].label;
+      const titleEn = `Order ${order.referenceId} → ${statusEn}`;
+      const titleAr = `الطلب ${order.referenceId} ← ${statusAr}`;
+      const bodyEn = `${order.customerName} · updated to "${statusEn}"`;
+      const bodyAr = `${order.customerName} · تم التحديث إلى «${statusAr}»`;
+
+      if (notifConfig.notifyOnStatusChange) {
+        void recordAdminUpdateNotification({
+          type: "order_status_updated",
+          titleEn,
+          titleAr,
+          bodyEn,
+          bodyAr,
+          targetTab: "orders",
+          referenceId: order.referenceId,
+          actorEmail: user?.email,
+        });
+        if (notifConfig.ntfyTopic.trim() || notifConfig.webhookUrl.trim()) {
+          void dispatchExternalAdminAlert({
+            title: lang === "ar" ? titleAr : titleEn,
+            body: lang === "ar" ? bodyAr : bodyEn,
+            referenceId: order.referenceId,
+            eventType: "order_status_updated",
+            config: notifConfig,
+          });
+        }
+      }
     } catch (error) {
       onFatalError(error, OperationType.UPDATE, path);
     } finally {
@@ -369,13 +484,16 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         <div className="admin-orders-list">
           {filteredOrders.map((order) => {
             const contact = contactsByOrder[order.referenceId];
-            const replyUrl = contact?.phone
-              ? buildAdminWhatsAppReplyUrl(
-                  contact.phone,
-                  order.referenceId,
-                  contact.fullName || order.customerName,
-                  lang
-                )
+            const cleanPhone = contact?.phone
+              ? contact.phone.replace(/[^\d+]/g, "")
+              : "";
+            const callHref = cleanPhone.length >= 6 ? `tel:${cleanPhone}` : null;
+            const emailHref = contact?.email?.trim()
+              ? `mailto:${encodeURIComponent(
+                  contact.email.trim()
+                )}?subject=${encodeURIComponent(
+                  `${a.orders.emailSubjectPrefix} (${order.referenceId})`
+                )}`
               : null;
             const isSaving = savingOrderId === order.referenceId;
             const isConfirmingDelete = confirmDeleteId === order.referenceId;
@@ -460,9 +578,7 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                             key={step}
                             type="button"
                             disabled={isSaving}
-                            onClick={() =>
-                              void handleStatusChange(order.referenceId, step)
-                            }
+                            onClick={() => void handleStatusChange(order, step)}
                             className={
                               isActive
                                 ? "admin-status-btn is-active"
@@ -477,15 +593,16 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                   </div>
 
                   <div className="admin-order-actions">
-                    {replyUrl && (
-                      <a
-                        href={replyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="button button-whatsapp admin-action-btn"
-                      >
-                        <MessageCircle size={14} aria-hidden="true" />
-                        <span>{a.orders.whatsappReply}</span>
+                    {callHref && (
+                      <a href={callHref} className="admin-ghost-btn">
+                        <Phone size={14} aria-hidden="true" />
+                        <span>{a.orders.callCustomer}</span>
+                      </a>
+                    )}
+                    {emailHref && (
+                      <a href={emailHref} className="admin-ghost-btn">
+                        <Mail size={14} aria-hidden="true" />
+                        <span>{a.orders.emailCustomer}</span>
                       </a>
                     )}
                     {isConfirmingDelete ? (
@@ -527,7 +644,13 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   );
 }
 
-function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
+function CatalogTab({
+  onFatalError,
+  notifConfig,
+}: {
+  onFatalError: FatalErrorReporter;
+  notifConfig: AdminNotificationConfig;
+}) {
   const { lang } = useLanguage();
   const { user } = useAuth();
   const { allRangesWithHidden, overridesByKey, categoryImageOverrides } =
@@ -560,6 +683,35 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   );
 
   const currentCategoryOverride = categoryImageOverrides[selectedCategory];
+
+  const emitCatalogNotification = (
+    titleEn: string,
+    titleAr: string,
+    bodyEn: string,
+    bodyAr: string,
+    referenceId: string
+  ) => {
+    if (!notifConfig.notifyOnCatalogUpdate) return;
+    void recordAdminUpdateNotification({
+      type: "catalog_updated",
+      titleEn,
+      titleAr,
+      bodyEn,
+      bodyAr,
+      targetTab: "catalog",
+      referenceId,
+      actorEmail: user?.email,
+    });
+    if (notifConfig.ntfyTopic.trim() || notifConfig.webhookUrl.trim()) {
+      void dispatchExternalAdminAlert({
+        title: lang === "ar" ? titleAr : titleEn,
+        body: lang === "ar" ? bodyAr : bodyEn,
+        referenceId,
+        eventType: "catalog_updated",
+        config: notifConfig,
+      });
+    }
+  };
 
   const openCategoryPicEditor = () => {
     setCategoryPicError(null);
@@ -608,6 +760,13 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       }
       setEditingCategoryPic(false);
       setStatusMessage(a.savedToast);
+      emitCatalogNotification(
+        `Category photos updated (${selectedCategory})`,
+        `تم تحديث صور الفئة (${selectedCategory})`,
+        `${validation.normalized.length} photo(s) active for category.`,
+        `تم اعتماد ${validation.normalized.length} صورة للفئة.`,
+        selectedCategory
+      );
     } catch (error) {
       onFatalError(
         error,
@@ -627,6 +786,13 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       setCategoryPicsDraft([]);
       setEditingCategoryPic(false);
       setStatusMessage(a.savedToast);
+      emitCatalogNotification(
+        `Category photos reset (${selectedCategory})`,
+        `استعادة صور الفئة الافتراضية (${selectedCategory})`,
+        "Restored built-in category gallery.",
+        "تمت استعادة الصور الافتراضية للفئة.",
+        selectedCategory
+      );
     } catch (error) {
       onFatalError(
         error,
@@ -812,6 +978,13 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         updatedBy: user.uid,
       });
       setStatusMessage(a.savedToast);
+      emitCatalogNotification(
+        `Catalog updated: ${nameEn}`,
+        `تحديث الكتالوج: ${nameAr}`,
+        `${selectedCategory} · ${cleanVariants.length} pack option(s)`,
+        `${selectedCategory} · ${cleanVariants.length} خيارات تعبئة`,
+        productKey
+      );
       setCreatingNew(false);
       setEditingKey(null);
       setDraft(null);
@@ -835,6 +1008,13 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         closeEditor();
       }
       setStatusMessage(a.savedToast);
+      emitCatalogNotification(
+        `Variety reset to default (${subcategoryId})`,
+        `استعادة الصنف للافتراضي (${subcategoryId})`,
+        `Category: ${selectedCategory}`,
+        `الفئة: ${selectedCategory}`,
+        productKey
+      );
     } catch (error) {
       onFatalError(
         error,
@@ -1359,18 +1539,21 @@ function CatalogEditorFields({
   );
 }
 
-function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
+function SettingsTab({
+  onFatalError,
+  notifConfig,
+}: {
+  onFatalError: FatalErrorReporter;
+  notifConfig: AdminNotificationConfig;
+}) {
   const { lang } = useLanguage();
   const { user, isOwnerAdmin } = useAuth();
   const { storeSettings } = useStore();
   const s = translations[lang].admin.settings;
+  const aNotif = translations[lang].admin.notifications;
 
-  const [whatsappNumber, setWhatsappNumber] = useState(
-    storeSettings.whatsappNumber
-  );
-  const [whatsappDisplay, setWhatsappDisplay] = useState(
-    storeSettings.whatsappDisplay
-  );
+  const [supportPhone, setSupportPhone] = useState(storeSettings.supportPhone);
+  const [supportEmail, setSupportEmail] = useState(storeSettings.supportEmail);
   const [announcementEn, setAnnouncementEn] = useState(
     storeSettings.announcementEn
   );
@@ -1380,17 +1563,67 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const [savingSettings, setSavingSettings] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
 
+  const [notifDraft, setNotifDraft] =
+    useState<AdminNotificationConfig>(notifConfig);
+  const [savingNotif, setSavingNotif] = useState(false);
+  const [savedNotifToast, setSavedNotifToast] = useState(false);
+  const [notifError, setNotifError] = useState<string | null>(null);
+  const [sendingTestAlert, setSendingTestAlert] = useState(false);
+  const [testAlertStatus, setTestAlertStatus] = useState<string | null>(null);
+  const [serverCapabilities, setServerCapabilities] = useState<{
+    emailReady: boolean;
+    envWebhookReady: boolean;
+  } | null>(null);
+  const [desktopPerm, setDesktopPerm] = useState(() =>
+    getDesktopNotificationPermission()
+  );
+
   const [admins, setAdmins] = useState<AdminAccountEntry[]>([]);
   const [newUid, setNewUid] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [savingAdmin, setSavingAdmin] = useState(false);
 
   useEffect(() => {
-    setWhatsappNumber(storeSettings.whatsappNumber);
-    setWhatsappDisplay(storeSettings.whatsappDisplay);
+    setSupportPhone(storeSettings.supportPhone);
+    setSupportEmail(storeSettings.supportEmail);
     setAnnouncementEn(storeSettings.announcementEn);
     setAnnouncementAr(storeSettings.announcementAr);
   }, [storeSettings]);
+
+  useEffect(() => {
+    setNotifDraft(notifConfig);
+  }, [notifConfig]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchCapabilities = async () => {
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const endpoint = `${import.meta.env.BASE_URL}api/admin/notification-capabilities`;
+        const res = await fetch(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok || !active) return;
+        const data = (await res.json()) as {
+          emailReady?: boolean;
+          envWebhookReady?: boolean;
+        };
+        if (active) {
+          setServerCapabilities({
+            emailReady: Boolean(data.emailReady),
+            envWebhookReady: Boolean(data.envWebhookReady),
+          });
+        }
+      } catch {
+        // Optional capabilities check on static hosting
+      }
+    };
+    void fetchCapabilities();
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     const unsub = onSnapshot(
@@ -1418,16 +1651,13 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const handleSaveSettings = async (e: FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const cleanDigits = whatsappNumber.replace(/\D/g, "").slice(0, 24);
-    const cleanDisplay = whatsappDisplay.trim().slice(0, 32);
-    if (cleanDigits.length < 6 || cleanDisplay.length < 6) return;
 
     setSavingSettings(true);
     setSavedToast(false);
     try {
       await setDoc(doc(db, "storeSettings", "public"), {
-        whatsappNumber: cleanDigits,
-        whatsappDisplay: cleanDisplay,
+        supportPhone: supportPhone.trim().slice(0, 32),
+        supportEmail: supportEmail.trim().slice(0, 180),
         announcementEn: announcementEn.trim().slice(0, 160),
         announcementAr: announcementAr.trim().slice(0, 160),
         updatedAt: serverTimestamp(),
@@ -1435,10 +1665,145 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       });
       setSavedToast(true);
       setTimeout(() => setSavedToast(false), 3000);
+      if (notifConfig.notifyOnSettingsUpdate) {
+        void recordAdminUpdateNotification({
+          type: "settings_updated",
+          titleEn: "Storefront contact & banner updated",
+          titleAr: "تم تحديث بيانات المتجر والشريط العلوي",
+          bodyEn: announcementEn.trim() || "Storefront settings saved.",
+          bodyAr: announcementAr.trim() || "تم حفظ إعدادات المتجر.",
+          targetTab: "settings",
+          actorEmail: user.email,
+        });
+      }
     } catch (error) {
       onFatalError(error, OperationType.WRITE, "storeSettings/public");
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const handleToggleDesktopAlerts = async (checked: boolean) => {
+    if (!checked) {
+      setNotifDraft((prev) => ({ ...prev, desktopAlertsEnabled: false }));
+      return;
+    }
+    const perm = getDesktopNotificationPermission();
+    setDesktopPerm(perm);
+    if (perm === "default") {
+      const nextPerm = await requestDesktopNotificationPermission();
+      setDesktopPerm(nextPerm);
+      setNotifDraft((prev) => ({
+        ...prev,
+        desktopAlertsEnabled: nextPerm === "granted",
+      }));
+      return;
+    }
+    setNotifDraft((prev) => ({
+      ...prev,
+      desktopAlertsEnabled: perm === "granted",
+    }));
+  };
+
+  const validateNotifDraft = (): boolean => {
+    const cleanTopic = notifDraft.ntfyTopic.trim();
+    const cleanWebhook = notifDraft.webhookUrl.trim();
+    if (cleanTopic && !NTFY_TOPIC_REGEX.test(cleanTopic)) {
+      setNotifError(s.testAlertError);
+      return false;
+    }
+    if (cleanWebhook && !isValidClientWebhookUrl(cleanWebhook)) {
+      setNotifError(s.testAlertError);
+      return false;
+    }
+    setNotifError(null);
+    return true;
+  };
+
+  const handleSaveNotificationConfig = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!validateNotifDraft()) return;
+
+    const cleanDraft: AdminNotificationConfig = {
+      configId: "notifications",
+      soundEnabled: Boolean(notifDraft.soundEnabled),
+      desktopAlertsEnabled: Boolean(notifDraft.desktopAlertsEnabled),
+      notifyOnNewOrder: Boolean(notifDraft.notifyOnNewOrder),
+      notifyOnStatusChange: Boolean(notifDraft.notifyOnStatusChange),
+      notifyOnCatalogUpdate: Boolean(notifDraft.notifyOnCatalogUpdate),
+      notifyOnSettingsUpdate: Boolean(notifDraft.notifyOnSettingsUpdate),
+      notifyEmail: notifDraft.notifyEmail.trim().slice(0, 180),
+      ntfyTopic: notifDraft.ntfyTopic.trim().slice(0, 120),
+      webhookUrl: notifDraft.webhookUrl.trim().slice(0, 512),
+    };
+
+    setSavingNotif(true);
+    setSavedNotifToast(false);
+    try {
+      await setDoc(doc(db, "adminConfig", "notifications"), {
+        ...cleanDraft,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+      setSavedNotifToast(true);
+      setTimeout(() => setSavedNotifToast(false), 3000);
+      if (cleanDraft.notifyOnSettingsUpdate) {
+        void recordAdminUpdateNotification({
+          type: "settings_updated",
+          titleEn: "Notification preferences updated",
+          titleAr: "تم تحديث تفضيلات التنبيه",
+          bodyEn: cleanDraft.ntfyTopic
+            ? `ntfy topic: ${cleanDraft.ntfyTopic}`
+            : "Live dashboard alerts configured.",
+          bodyAr: cleanDraft.ntfyTopic
+            ? `قناة ntfy: ${cleanDraft.ntfyTopic}`
+            : "تم حفظ تفضيلات تنبيهات اللوحة.",
+          targetTab: "settings",
+          actorEmail: user.email,
+        });
+      }
+    } catch (error) {
+      onFatalError(error, OperationType.WRITE, "adminConfig/notifications");
+    } finally {
+      setSavingNotif(false);
+    }
+  };
+
+  const handleSendTestAlert = async () => {
+    if (!validateNotifDraft()) return;
+    setSendingTestAlert(true);
+    setTestAlertStatus(null);
+    try {
+      if (notifDraft.soundEnabled) {
+        playNotificationChime();
+      }
+      const testTitle =
+        lang === "ar"
+          ? "تنبيه تجريبي من لوحة إدارة الخلية"
+          : "Test Alert from Alkhaleyah Dashboard";
+      const testBody =
+        lang === "ar"
+          ? "قنوات التنبيه الفورية تعمل بنجاح."
+          : "Your live order and update alerts are working properly.";
+      toast.info(testTitle, { description: testBody });
+      if (notifDraft.desktopAlertsEnabled) {
+        showDesktopNotification({
+          title: testTitle,
+          body: testBody,
+          tag: "alkhaleyah-test",
+        });
+      }
+      await dispatchExternalAdminAlert({
+        title: testTitle,
+        body: testBody,
+        eventType: "test",
+        config: notifDraft,
+      });
+      setTestAlertStatus(s.testAlertSentToast);
+      setTimeout(() => setTestAlertStatus(null), 3500);
+    } finally {
+      setSendingTestAlert(false);
     }
   };
 
@@ -1466,6 +1831,17 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       });
       setNewUid("");
       setNewEmail("");
+      if (notifConfig.notifyOnSettingsUpdate) {
+        void recordAdminUpdateNotification({
+          type: "settings_updated",
+          titleEn: `Admin access granted: ${cleanEmail}`,
+          titleAr: `تم منح صلاحية الإدارة: ${cleanEmail}`,
+          bodyEn: `UID: ${cleanUid}`,
+          bodyAr: `المعرّف: ${cleanUid}`,
+          targetTab: "settings",
+          actorEmail: user.email,
+        });
+      }
     } catch (error) {
       onFatalError(error, OperationType.WRITE, `admins/${cleanUid}`);
     } finally {
@@ -1477,6 +1853,17 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
     if (!isOwnerAdmin) return;
     try {
       await deleteDoc(doc(db, "admins", uid));
+      if (notifConfig.notifyOnSettingsUpdate) {
+        void recordAdminUpdateNotification({
+          type: "settings_updated",
+          titleEn: `Admin access revoked (${uid})`,
+          titleAr: `تمت إزالة صلاحية الإدارة (${uid})`,
+          bodyEn: "Authorized team list updated.",
+          bodyAr: "تم تحديث قائمة المديرين المصرح لهم.",
+          targetTab: "settings",
+          actorEmail: user?.email,
+        });
+      }
     } catch (error) {
       onFatalError(error, OperationType.DELETE, `admins/${uid}`);
     }
@@ -1484,140 +1871,328 @@ function SettingsTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
 
   return (
     <div className="admin-tab-panel admin-settings-grid">
-      <form className="admin-settings-card" onSubmit={handleSaveSettings}>
-        <h3>{s.sectionTitle}</h3>
-        <p className="admin-settings-lead">{s.sectionBody}</p>
+      <form
+        className="admin-settings-card"
+        onSubmit={handleSaveNotificationConfig}
+        data-testid="admin-notification-settings-card"
+      >
+        <h3>{s.notificationsTitle}</h3>
+        <p className="admin-settings-lead">{s.notificationsBody}</p>
+
+        <div className="admin-notif-checkboxes">
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.soundEnabled}
+              onChange={(e) =>
+                setNotifDraft({ ...notifDraft, soundEnabled: e.target.checked })
+              }
+            />
+            <span>{s.soundAlertLabel}</span>
+          </label>
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.desktopAlertsEnabled}
+              onChange={(e) => void handleToggleDesktopAlerts(e.target.checked)}
+            />
+            <span>{s.desktopAlertLabel}</span>
+          </label>
+          {desktopPerm === "denied" && (
+            <p className="admin-muted-note">{aNotif.desktopBlockedHint}</p>
+          )}
+          {desktopPerm === "unsupported" && (
+            <p className="admin-muted-note">{aNotif.desktopUnsupportedHint}</p>
+          )}
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.notifyOnNewOrder}
+              onChange={(e) =>
+                setNotifDraft({
+                  ...notifDraft,
+                  notifyOnNewOrder: e.target.checked,
+                })
+              }
+            />
+            <span>{s.notifyNewOrderLabel}</span>
+          </label>
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.notifyOnStatusChange}
+              onChange={(e) =>
+                setNotifDraft({
+                  ...notifDraft,
+                  notifyOnStatusChange: e.target.checked,
+                })
+              }
+            />
+            <span>{s.notifyStatusLabel}</span>
+          </label>
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.notifyOnCatalogUpdate}
+              onChange={(e) =>
+                setNotifDraft({
+                  ...notifDraft,
+                  notifyOnCatalogUpdate: e.target.checked,
+                })
+              }
+            />
+            <span>{s.notifyCatalogLabel}</span>
+          </label>
+          <label className="admin-visibility-toggle">
+            <input
+              type="checkbox"
+              checked={notifDraft.notifyOnSettingsUpdate}
+              onChange={(e) =>
+                setNotifDraft({
+                  ...notifDraft,
+                  notifyOnSettingsUpdate: e.target.checked,
+                })
+              }
+            />
+            <span>{s.notifySettingsLabel}</span>
+          </label>
+        </div>
 
         <div className="admin-editor-grid">
           <label className="inquiry-field">
-            <span className="inquiry-label">{s.whatsappNumberLabel}</span>
+            <span className="inquiry-label">{s.notifyEmailLabel}</span>
             <input
-              type="text"
-              value={whatsappNumber}
-              onChange={(e) => setWhatsappNumber(e.target.value)}
+              type="email"
+              value={notifDraft.notifyEmail}
+              onChange={(e) =>
+                setNotifDraft({ ...notifDraft, notifyEmail: e.target.value })
+              }
               dir="ltr"
-              required
+              placeholder={OWNER_ADMIN_EMAIL}
             />
           </label>
           <label className="inquiry-field">
-            <span className="inquiry-label">{s.whatsappDisplayLabel}</span>
+            <span className="inquiry-label">{s.ntfyTopicLabel}</span>
             <input
               type="text"
-              value={whatsappDisplay}
-              onChange={(e) => setWhatsappDisplay(e.target.value)}
+              value={notifDraft.ntfyTopic}
+              onChange={(e) =>
+                setNotifDraft({ ...notifDraft, ntfyTopic: e.target.value })
+              }
               dir="ltr"
-              required
+              placeholder={s.ntfyTopicPlaceholder}
             />
-          </label>
-          <label className="inquiry-field">
-            <span className="inquiry-label">{s.announcementEnLabel}</span>
-            <input
-              type="text"
-              value={announcementEn}
-              onChange={(e) => setAnnouncementEn(e.target.value)}
-              dir="ltr"
-            />
-          </label>
-          <label className="inquiry-field">
-            <span className="inquiry-label">{s.announcementArLabel}</span>
-            <input
-              type="text"
-              value={announcementAr}
-              onChange={(e) => setAnnouncementAr(e.target.value)}
-              dir="rtl"
-            />
+            <small className="admin-muted-note">{s.ntfyTopicHint}</small>
           </label>
         </div>
+
+        <label className="inquiry-field">
+          <span className="inquiry-label">{s.webhookUrlLabel}</span>
+          <input
+            type="url"
+            value={notifDraft.webhookUrl}
+            onChange={(e) =>
+              setNotifDraft({ ...notifDraft, webhookUrl: e.target.value })
+            }
+            dir="ltr"
+            placeholder={s.webhookUrlPlaceholder}
+          />
+          <small className="admin-muted-note">{s.webhookUrlHint}</small>
+        </label>
+
+        {serverCapabilities && (
+          <div className="admin-server-capabilities">
+            <span className="inquiry-label">{s.serverChannelsLabel}</span>
+            <p className="admin-muted-note">
+              {serverCapabilities.emailReady
+                ? s.serverEmailReady
+                : s.serverEmailNeedsKey}
+            </p>
+            {serverCapabilities.envWebhookReady && (
+              <p className="admin-muted-note">{s.serverWebhookReady}</p>
+            )}
+          </div>
+        )}
+
+        {notifError && (
+          <p className="inquiry-error" role="alert">
+            {notifError}
+          </p>
+        )}
 
         <div className="admin-settings-foot">
           <button
             type="submit"
             className="button button-dark"
-            disabled={savingSettings}
-            data-testid="admin-save-settings-btn"
+            disabled={savingNotif}
+            data-testid="admin-save-notif-btn"
           >
             <Check size={15} aria-hidden="true" />
-            <span>{savingSettings ? s.savingSettingsBtn : s.saveSettingsBtn}</span>
+            <span>{savingNotif ? s.savingNotifBtn : s.saveNotifBtn}</span>
           </button>
-          {savedToast && (
+          <button
+            type="button"
+            className="admin-ghost-btn"
+            disabled={sendingTestAlert}
+            onClick={() => void handleSendTestAlert()}
+            data-testid="admin-test-alert-btn"
+          >
+            <Send size={14} aria-hidden="true" />
+            <span>
+              {sendingTestAlert ? s.sendingTestAlertBtn : s.sendTestAlertBtn}
+            </span>
+          </button>
+          {savedNotifToast && (
             <span className="admin-saved-inline" role="status">
-              {s.savedSettingsToast}
+              {s.savedNotifToast}
+            </span>
+          )}
+          {testAlertStatus && (
+            <span className="admin-saved-inline" role="status">
+              {testAlertStatus}
             </span>
           )}
         </div>
       </form>
 
-      <div className="admin-settings-card">
-        <h3>{s.adminsTitle}</h3>
-        <p className="admin-settings-lead">{s.adminsBody}</p>
+      <div className="admin-settings-stack">
+        <form className="admin-settings-card" onSubmit={handleSaveSettings}>
+          <h3>{s.sectionTitle}</h3>
+          <p className="admin-settings-lead">{s.sectionBody}</p>
 
-        <div className="admin-accounts-list">
-          <div className="admin-account-row">
-            <div>
-              <strong dir="ltr">{OWNER_ADMIN_EMAIL}</strong>
-            </div>
-            <span className="admin-badge admin-badge-visible">
-              {s.ownerBadge}
-            </span>
+          <div className="admin-editor-grid">
+            <label className="inquiry-field">
+              <span className="inquiry-label">{s.supportPhoneLabel}</span>
+              <input
+                type="tel"
+                value={supportPhone}
+                onChange={(e) => setSupportPhone(e.target.value)}
+                dir="ltr"
+                placeholder="+20 10X XXX XXXX"
+              />
+            </label>
+            <label className="inquiry-field">
+              <span className="inquiry-label">{s.supportEmailLabel}</span>
+              <input
+                type="email"
+                value={supportEmail}
+                onChange={(e) => setSupportEmail(e.target.value)}
+                dir="ltr"
+                placeholder="orders@alkhaleyah.com"
+              />
+            </label>
+            <label className="inquiry-field">
+              <span className="inquiry-label">{s.announcementEnLabel}</span>
+              <input
+                type="text"
+                value={announcementEn}
+                onChange={(e) => setAnnouncementEn(e.target.value)}
+                dir="ltr"
+              />
+            </label>
+            <label className="inquiry-field">
+              <span className="inquiry-label">{s.announcementArLabel}</span>
+              <input
+                type="text"
+                value={announcementAr}
+                onChange={(e) => setAnnouncementAr(e.target.value)}
+                dir="rtl"
+              />
+            </label>
           </div>
 
-          {admins.map((entry) => (
-            <div key={entry.uid} className="admin-account-row">
-              <div>
-                <strong dir="ltr">{entry.email}</strong>
-                <span className="admin-uid-text tabular-nums" dir="ltr">
-                  {entry.uid}
-                </span>
-              </div>
-              {isOwnerAdmin && (
-                <button
-                  type="button"
-                  className="admin-danger-btn"
-                  onClick={() => void handleRevokeAdmin(entry.uid)}
-                >
-                  {s.removeAdminBtn}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {isOwnerAdmin && (
-          <form className="admin-add-admin-form" onSubmit={handleAddAdmin}>
-            <div className="admin-editor-grid">
-              <label className="inquiry-field">
-                <span className="inquiry-label">{s.adminUidLabel}</span>
-                <input
-                  type="text"
-                  value={newUid}
-                  onChange={(e) => setNewUid(e.target.value)}
-                  placeholder={s.adminUidPlaceholder}
-                  dir="ltr"
-                  required
-                />
-              </label>
-              <label className="inquiry-field">
-                <span className="inquiry-label">{s.adminEmailLabel}</span>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="member@example.com"
-                  dir="ltr"
-                  required
-                />
-              </label>
-            </div>
+          <div className="admin-settings-foot">
             <button
               type="submit"
               className="button button-dark"
-              disabled={savingAdmin}
+              disabled={savingSettings}
+              data-testid="admin-save-settings-btn"
             >
-              <UserPlus size={15} aria-hidden="true" />
-              <span>{s.addAdminBtn}</span>
+              <Check size={15} aria-hidden="true" />
+              <span>
+                {savingSettings ? s.savingSettingsBtn : s.saveSettingsBtn}
+              </span>
             </button>
-          </form>
-        )}
+            {savedToast && (
+              <span className="admin-saved-inline" role="status">
+                {s.savedSettingsToast}
+              </span>
+            )}
+          </div>
+        </form>
+
+        <div className="admin-settings-card">
+          <h3>{s.adminsTitle}</h3>
+          <p className="admin-settings-lead">{s.adminsBody}</p>
+
+          <div className="admin-accounts-list">
+            <div className="admin-account-row">
+              <div>
+                <strong dir="ltr">{OWNER_ADMIN_EMAIL}</strong>
+              </div>
+              <span className="admin-badge admin-badge-visible">
+                {s.ownerBadge}
+              </span>
+            </div>
+
+            {admins.map((entry) => (
+              <div key={entry.uid} className="admin-account-row">
+                <div>
+                  <strong dir="ltr">{entry.email}</strong>
+                  <span className="admin-uid-text tabular-nums" dir="ltr">
+                    {entry.uid}
+                  </span>
+                </div>
+                {isOwnerAdmin && (
+                  <button
+                    type="button"
+                    className="admin-danger-btn"
+                    onClick={() => void handleRevokeAdmin(entry.uid)}
+                  >
+                    {s.removeAdminBtn}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {isOwnerAdmin && (
+            <form className="admin-add-admin-form" onSubmit={handleAddAdmin}>
+              <div className="admin-editor-grid">
+                <label className="inquiry-field">
+                  <span className="inquiry-label">{s.adminUidLabel}</span>
+                  <input
+                    type="text"
+                    value={newUid}
+                    onChange={(e) => setNewUid(e.target.value)}
+                    placeholder={s.adminUidPlaceholder}
+                    dir="ltr"
+                    required
+                  />
+                </label>
+                <label className="inquiry-field">
+                  <span className="inquiry-label">{s.adminEmailLabel}</span>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="member@example.com"
+                    dir="ltr"
+                    required
+                  />
+                </label>
+              </div>
+              <button
+                type="submit"
+                className="button button-dark"
+                disabled={savingAdmin}
+              >
+                <UserPlus size={15} aria-hidden="true" />
+                <span>{s.addAdminBtn}</span>
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1654,6 +2229,28 @@ export default function AdminDashboard() {
   const [authErrorFlag, setAuthErrorFlag] = useState(false);
   const [fatalError, setFatalError] = useState<Error | null>(null);
 
+  const [notifications, setNotifications] = useState<AdminNotificationItem[]>(
+    []
+  );
+  const [notifPanelOpen, setNotifPanelOpen] = useState(false);
+  const [notifConfig, setNotifConfig] = useState<AdminNotificationConfig>(
+    DEFAULT_NOTIFICATION_CONFIG
+  );
+  const [desktopPerm, setDesktopPerm] = useState(() =>
+    getDesktopNotificationPermission()
+  );
+
+  const notifConfigRef = useRef(notifConfig);
+  notifConfigRef.current = notifConfig;
+  const langRef = useRef(lang);
+  langRef.current = lang;
+  const initializedNotifsRef = useRef(false);
+  const seenNotifIdsRef = useRef<Set<string>>(new Set());
+  const notifContainerRef = useRef<HTMLDivElement | null>(null);
+  const baseTitleRef = useRef<string>(
+    typeof document !== "undefined" ? document.title : "Alkhaleyah"
+  );
+
   const reportFatalFirestoreError = useCallback<FatalErrorReporter>(
     (error, op, path) => {
       try {
@@ -1667,9 +2264,313 @@ export default function AdminDashboard() {
     []
   );
 
+  useEffect(() => {
+    if (!authReady || !isAdmin || !user) return;
+    const unsubConfig = onSnapshot(
+      doc(db, "adminConfig", "notifications"),
+      (snapshot) => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.data();
+        setNotifConfig({
+          configId: "notifications",
+          soundEnabled:
+            typeof data.soundEnabled === "boolean"
+              ? data.soundEnabled
+              : DEFAULT_NOTIFICATION_CONFIG.soundEnabled,
+          desktopAlertsEnabled:
+            typeof data.desktopAlertsEnabled === "boolean"
+              ? data.desktopAlertsEnabled
+              : DEFAULT_NOTIFICATION_CONFIG.desktopAlertsEnabled,
+          notifyOnNewOrder:
+            typeof data.notifyOnNewOrder === "boolean"
+              ? data.notifyOnNewOrder
+              : DEFAULT_NOTIFICATION_CONFIG.notifyOnNewOrder,
+          notifyOnStatusChange:
+            typeof data.notifyOnStatusChange === "boolean"
+              ? data.notifyOnStatusChange
+              : DEFAULT_NOTIFICATION_CONFIG.notifyOnStatusChange,
+          notifyOnCatalogUpdate:
+            typeof data.notifyOnCatalogUpdate === "boolean"
+              ? data.notifyOnCatalogUpdate
+              : DEFAULT_NOTIFICATION_CONFIG.notifyOnCatalogUpdate,
+          notifyOnSettingsUpdate:
+            typeof data.notifyOnSettingsUpdate === "boolean"
+              ? data.notifyOnSettingsUpdate
+              : DEFAULT_NOTIFICATION_CONFIG.notifyOnSettingsUpdate,
+          notifyEmail:
+            typeof data.notifyEmail === "string"
+              ? data.notifyEmail
+              : OWNER_ADMIN_EMAIL,
+          ntfyTopic: typeof data.ntfyTopic === "string" ? data.ntfyTopic : "",
+          webhookUrl:
+            typeof data.webhookUrl === "string" ? data.webhookUrl : "",
+        });
+      },
+      (error) => {
+        reportFatalFirestoreError(
+          error,
+          OperationType.GET,
+          "adminConfig/notifications"
+        );
+      }
+    );
+    return () => unsubConfig();
+  }, [authReady, isAdmin, user, reportFatalFirestoreError]);
+
+  useEffect(() => {
+    if (!authReady || !isAdmin || !user) {
+      initializedNotifsRef.current = false;
+      seenNotifIdsRef.current.clear();
+      setNotifications([]);
+      return;
+    }
+
+    const notifQuery = query(
+      collection(db, "adminNotifications"),
+      orderBy("createdAt", "desc"),
+      limit(50)
+    );
+
+    const unsubNotifs = onSnapshot(
+      notifQuery,
+      (snapshot) => {
+        const next: AdminNotificationItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          const type = String(data.type || "order_created") as AdminNotificationType;
+          const targetTab =
+            data.targetTab === "catalog" || data.targetTab === "settings"
+              ? data.targetTab
+              : "orders";
+          next.push({
+            id: String(data.id || docSnap.id),
+            type,
+            titleEn: String(data.titleEn || ""),
+            titleAr: String(data.titleAr || ""),
+            bodyEn: String(data.bodyEn || ""),
+            bodyAr: String(data.bodyAr || ""),
+            targetTab,
+            referenceId: String(data.referenceId || ""),
+            actor: String(data.actor || ""),
+            isRead: data.isRead === true,
+            createdAt: timestampToIso(data.createdAt),
+          });
+        });
+
+        setNotifications(next);
+
+        if (!initializedNotifsRef.current) {
+          for (const item of next) {
+            seenNotifIdsRef.current.add(item.id);
+          }
+          initializedNotifsRef.current = true;
+          return;
+        }
+
+        const cfg = notifConfigRef.current;
+        const currentLang = langRef.current;
+
+        for (const item of next) {
+          if (seenNotifIdsRef.current.has(item.id)) continue;
+          seenNotifIdsRef.current.add(item.id);
+          if (item.isRead) continue;
+          if (!shouldNotifyForType(item.type, cfg)) continue;
+
+          const title =
+            currentLang === "ar"
+              ? item.titleAr || item.titleEn
+              : item.titleEn || item.titleAr;
+          const body =
+            currentLang === "ar"
+              ? item.bodyAr || item.bodyEn
+              : item.bodyEn || item.bodyAr;
+
+          toast.info(title, {
+            description: body,
+            action: {
+              label: translations[currentLang].admin.notifications.openTabLabel,
+              onClick: () => setActiveTab(item.targetTab),
+            },
+          });
+
+          if (cfg.soundEnabled) {
+            playNotificationChime();
+          }
+
+          if (cfg.desktopAlertsEnabled) {
+            showDesktopNotification({
+              title,
+              body,
+              tag: item.id,
+              onClick: () => setActiveTab(item.targetTab),
+            });
+          }
+
+          if (
+            (item.type === "order_created" || item.type === "inquiry_created") &&
+            (cfg.ntfyTopic.trim() || cfg.webhookUrl.trim())
+          ) {
+            void dispatchExternalAdminAlert({
+              title,
+              body,
+              referenceId: item.referenceId,
+              eventType: item.type,
+              config: cfg,
+            });
+          }
+        }
+      },
+      (error) => {
+        reportFatalFirestoreError(
+          error,
+          OperationType.LIST,
+          "adminNotifications"
+        );
+      }
+    );
+
+    return () => unsubNotifs();
+  }, [authReady, isAdmin, user, reportFatalFirestoreError]);
+
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => !item.isRead).length,
+    [notifications]
+  );
+
+  useEffect(() => {
+    const baseTitle = baseTitleRef.current;
+    if (!isAdmin) {
+      document.title = baseTitle;
+      return;
+    }
+    document.title = unreadCount > 0 ? `(${unreadCount}) ${baseTitle}` : baseTitle;
+    return () => {
+      document.title = baseTitle;
+    };
+  }, [isAdmin, unreadCount]);
+
+  useEffect(() => {
+    if (!notifPanelOpen) return;
+    const handlePointerDown = (e: MouseEvent) => {
+      if (
+        notifContainerRef.current &&
+        !notifContainerRef.current.contains(e.target as Node)
+      ) {
+        setNotifPanelOpen(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setNotifPanelOpen(false);
+    };
+    window.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleKey);
+    return () => {
+      window.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [notifPanelOpen]);
+
   if (fatalError) {
     throw fatalError;
   }
+
+  const handleMarkNotificationRead = async (item: AdminNotificationItem) => {
+    setActiveTab(item.targetTab);
+    setNotifPanelOpen(false);
+    if (item.isRead) return;
+    try {
+      await updateDoc(doc(db, "adminNotifications", item.id), {
+        isRead: true,
+      });
+    } catch (error) {
+      reportFatalFirestoreError(
+        error,
+        OperationType.UPDATE,
+        `adminNotifications/${item.id}`
+      );
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    const unread = notifications.filter((item) => !item.isRead);
+    if (unread.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      for (const item of unread) {
+        batch.update(doc(db, "adminNotifications", item.id), { isRead: true });
+      }
+      await batch.commit();
+    } catch (error) {
+      reportFatalFirestoreError(
+        error,
+        OperationType.UPDATE,
+        "adminNotifications"
+      );
+    }
+  };
+
+  const handleClearRead = async () => {
+    const readItems = notifications.filter((item) => item.isRead);
+    if (readItems.length === 0) return;
+    try {
+      const batch = writeBatch(db);
+      for (const item of readItems) {
+        batch.delete(doc(db, "adminNotifications", item.id));
+      }
+      await batch.commit();
+    } catch (error) {
+      reportFatalFirestoreError(
+        error,
+        OperationType.DELETE,
+        "adminNotifications"
+      );
+    }
+  };
+
+  const handleToggleQuickSound = async () => {
+    if (!user) return;
+    const nextConfig: AdminNotificationConfig = {
+      ...notifConfig,
+      soundEnabled: !notifConfig.soundEnabled,
+    };
+    try {
+      await setDoc(doc(db, "adminConfig", "notifications"), {
+        ...nextConfig,
+        updatedAt: serverTimestamp(),
+        updatedBy: user.uid,
+      });
+    } catch (error) {
+      reportFatalFirestoreError(
+        error,
+        OperationType.WRITE,
+        "adminConfig/notifications"
+      );
+    }
+  };
+
+  const handleEnableDesktopFromBanner = async () => {
+    const nextPerm = await requestDesktopNotificationPermission();
+    setDesktopPerm(nextPerm);
+    if (nextPerm === "granted" && user) {
+      const nextConfig: AdminNotificationConfig = {
+        ...notifConfig,
+        desktopAlertsEnabled: true,
+      };
+      try {
+        await setDoc(doc(db, "adminConfig", "notifications"), {
+          ...nextConfig,
+          updatedAt: serverTimestamp(),
+          updatedBy: user.uid,
+        });
+      } catch (error) {
+        reportFatalFirestoreError(
+          error,
+          OperationType.WRITE,
+          "adminConfig/notifications"
+        );
+      }
+    }
+  };
 
   const effectiveErrorCode =
     authErrorCode || extractAuthErrorCode(redirectError);
@@ -1779,6 +2680,166 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className="admin-topbar-right">
+            {authReady && isAdmin && (
+              <div className="admin-notif-wrap" ref={notifContainerRef}>
+                <button
+                  type="button"
+                  className={
+                    unreadCount > 0
+                      ? "admin-notif-bell has-unread"
+                      : "admin-notif-bell"
+                  }
+                  onClick={() => setNotifPanelOpen((open) => !open)}
+                  aria-label={a.notifications.bellAria}
+                  aria-expanded={notifPanelOpen}
+                  data-testid="admin-notif-bell"
+                >
+                  {unreadCount > 0 ? (
+                    <BellRing size={16} aria-hidden="true" />
+                  ) : (
+                    <Bell size={16} aria-hidden="true" />
+                  )}
+                  {unreadCount > 0 && (
+                    <span className="admin-notif-badge tabular-nums">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notifPanelOpen && (
+                  <div
+                    className="admin-notif-panel"
+                    role="dialog"
+                    aria-label={a.notifications.panelTitle}
+                    data-testid="admin-notif-panel"
+                  >
+                    <div className="admin-notif-panel-head">
+                      <div className="admin-notif-panel-title">
+                        <strong>{a.notifications.panelTitle}</strong>
+                        {unreadCount > 0 && (
+                          <span className="admin-badge admin-badge-visible tabular-nums">
+                            {unreadCount} {a.notifications.unreadSuffix}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="admin-notif-close"
+                        onClick={() => setNotifPanelOpen(false)}
+                        aria-label="Close"
+                      >
+                        <X size={15} />
+                      </button>
+                    </div>
+
+                    <div className="admin-notif-toolbar">
+                      <button
+                        type="button"
+                        className="admin-ghost-btn"
+                        onClick={() => void handleToggleQuickSound()}
+                      >
+                        {notifConfig.soundEnabled ? (
+                          <Volume2 size={13} aria-hidden="true" />
+                        ) : (
+                          <VolumeX size={13} aria-hidden="true" />
+                        )}
+                        <span>
+                          {notifConfig.soundEnabled
+                            ? a.notifications.soundOnBtn
+                            : a.notifications.soundOffBtn}
+                        </span>
+                      </button>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="admin-ghost-btn"
+                          onClick={() => void handleMarkAllRead()}
+                        >
+                          <Check size={13} aria-hidden="true" />
+                          <span>{a.notifications.markAllRead}</span>
+                        </button>
+                      )}
+                      {notifications.some((n) => n.isRead) && (
+                        <button
+                          type="button"
+                          className="admin-ghost-btn"
+                          onClick={() => void handleClearRead()}
+                        >
+                          <Trash2 size={13} aria-hidden="true" />
+                          <span>{a.notifications.clearRead}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {desktopPerm === "default" && (
+                      <div className="admin-notif-perm-banner">
+                        <p>{a.notifications.enableDesktopBanner}</p>
+                        <button
+                          type="button"
+                          className="button button-dark"
+                          onClick={() => void handleEnableDesktopFromBanner()}
+                        >
+                          <BellRing size={13} aria-hidden="true" />
+                          <span>{a.notifications.enableDesktopBtn}</span>
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="admin-notif-list">
+                      {notifications.length === 0 ? (
+                        <div className="admin-notif-empty">
+                          <strong>{a.notifications.emptyTitle}</strong>
+                          <p>{a.notifications.emptyBody}</p>
+                        </div>
+                      ) : (
+                        notifications.map((item) => {
+                          const title =
+                            lang === "ar"
+                              ? item.titleAr || item.titleEn
+                              : item.titleEn || item.titleAr;
+                          const body =
+                            lang === "ar"
+                              ? item.bodyAr || item.bodyEn
+                              : item.bodyEn || item.bodyAr;
+
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              className={
+                                item.isRead
+                                  ? "admin-notif-item"
+                                  : "admin-notif-item is-unread"
+                              }
+                              onClick={() => void handleMarkNotificationRead(item)}
+                            >
+                              <span className="admin-notif-item-icon">
+                                <NotificationTypeIcon type={item.type} />
+                              </span>
+                              <div className="admin-notif-item-copy">
+                                <div className="admin-notif-item-top">
+                                  <strong>{title}</strong>
+                                  {!item.isRead && (
+                                    <span
+                                      className="admin-notif-dot"
+                                      aria-hidden="true"
+                                    />
+                                  )}
+                                </div>
+                                {body && <p>{body}</p>}
+                                <time className="tabular-nums">
+                                  {formatDateTime(item.createdAt, lang)}
+                                </time>
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {user && (
               <div className="admin-user-pill">
                 <ShieldCheck size={14} aria-hidden="true" />
@@ -1840,9 +2901,7 @@ export default function AdminDashboard() {
               <span /> {a.eyebrow}
             </p>
             <h1>{a.unauthorizedTitle}</h1>
-            <p className="admin-auth-body">
-              {a.unauthorizedBody}
-            </p>
+            <p className="admin-auth-body">{a.unauthorizedBody}</p>
             <div className="admin-auth-account-meta">
               <div>
                 <span>{a.signedInAs}:</span>{" "}
@@ -1936,13 +2995,22 @@ export default function AdminDashboard() {
             </div>
 
             {activeTab === "orders" && (
-              <OrdersTab onFatalError={reportFatalFirestoreError} />
+              <OrdersTab
+                onFatalError={reportFatalFirestoreError}
+                notifConfig={notifConfig}
+              />
             )}
             {activeTab === "catalog" && (
-              <CatalogTab onFatalError={reportFatalFirestoreError} />
+              <CatalogTab
+                onFatalError={reportFatalFirestoreError}
+                notifConfig={notifConfig}
+              />
             )}
             {activeTab === "settings" && (
-              <SettingsTab onFatalError={reportFatalFirestoreError} />
+              <SettingsTab
+                onFatalError={reportFatalFirestoreError}
+                notifConfig={notifConfig}
+              />
             )}
           </div>
         )}

@@ -4,8 +4,9 @@ import {
   ArrowRight,
   ArrowUpRight,
   Leaf,
-  MessageCircle,
+  Mail,
   Package,
+  Phone,
   RotateCcw,
   ShoppingBag,
   SlidersHorizontal,
@@ -60,8 +61,7 @@ const WEIGHT_FILTER_IDS: WeightFilterId[] = [
 
 export default function Home() {
   const { lang } = useLanguage();
-  const { ranges, allSubcategoryEntries, storeSettings, buildStoreWhatsAppUrl } =
-    useStore();
+  const { ranges, allSubcategoryEntries, storeSettings } = useStore();
   const { openQuickAdd } = useCart();
   const t = translations[lang];
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -471,15 +471,29 @@ export default function Home() {
               <p className="contact-lead">{t.contactSection.body}</p>
               <p className="contact-note">{t.contactSection.note}</p>
               <div className="contact-direct-links">
-                <a
-                  className="contact-whatsapp-link"
-                  href={buildStoreWhatsAppUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageCircle size={17} aria-hidden="true" />
-                  <span>{t.contactSection.whatsappDirectLabel}:</span>
-                  <strong dir="ltr">{storeSettings.whatsappDisplay}</strong>
+                {storeSettings.supportPhone.trim() && (
+                  <a
+                    className="contact-direct-link"
+                    href={`tel:${storeSettings.supportPhone.replace(/[^\d+]/g, "")}`}
+                  >
+                    <Phone size={16} aria-hidden="true" />
+                    <span>{t.contactSection.phoneDirectLabel}:</span>
+                    <strong dir="ltr">{storeSettings.supportPhone}</strong>
+                  </a>
+                )}
+                {storeSettings.supportEmail.trim() && (
+                  <a
+                    className="contact-direct-link"
+                    href={`mailto:${storeSettings.supportEmail.trim()}`}
+                  >
+                    <Mail size={16} aria-hidden="true" />
+                    <span>{t.contactSection.emailDirectLabel}:</span>
+                    <strong dir="ltr">{storeSettings.supportEmail}</strong>
+                  </a>
+                )}
+                <a className="text-link light-link" href="#order-tracking">
+                  {t.nav.trackOrder}{" "}
+                  <ArrowRight size={15} className="rtl-flip" />
                 </a>
                 <a className="text-link light-link" href="#our-range">
                   {t.contactSection.cta}{" "}
