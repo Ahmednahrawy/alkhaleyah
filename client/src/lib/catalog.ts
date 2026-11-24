@@ -23,6 +23,34 @@ import herbMarinatedOlivesImage from "@/assets/images/herb_marinated_olives_1795
 import extraVirginOilImage from "@/assets/images/extra_virgin_oil_1795501230937.jpg";
 import earlyHarvestOilImage from "@/assets/images/early_harvest_oil_1795501230810.jpg";
 import everydayOliveOilImage from "@/assets/images/everyday_olive_oil_1795501231465.jpg";
+import honeyCatAlt1 from "@/assets/images/honey_cat_alt1_1795505391061.jpg";
+import honeyCatAlt2 from "@/assets/images/honey_cat_alt2_1795505391571.jpg";
+import blackHoneyCatAlt1 from "@/assets/images/black_honey_cat_alt1_1795505392010.jpg";
+import blackHoneyCatAlt2 from "@/assets/images/black_honey_cat_alt2_1795505391498.jpg";
+import datesCatAlt1 from "@/assets/images/dates_cat_alt1_1795505392173.jpg";
+import datesCatAlt2 from "@/assets/images/dates_cat_alt2_1795505392012.jpg";
+import dateSyrupCatAlt1 from "@/assets/images/date_syrup_cat_alt1_1795505393263.jpg";
+import dateSyrupCatAlt2 from "@/assets/images/date_syrup_cat_alt2_1795505497890.jpg";
+import olivesCatAlt1 from "@/assets/images/olives_cat_alt1_1795505498149.jpg";
+import olivesCatAlt2 from "@/assets/images/olives_cat_alt2_1795505497892.jpg";
+import oliveOilCatAlt1 from "@/assets/images/olive_oil_cat_alt1_1795505498278.jpg";
+import oliveOilCatAlt2 from "@/assets/images/olive_oil_cat_alt2_1795505498667.jpg";
+import sidrHoneyAlt1 from "@/assets/images/sidr_honey_alt1_1795505499383.jpg";
+import sidrHoneyAlt2 from "@/assets/images/sidr_honey_alt2_1795505499517.jpg";
+import wildflowerHoneyAlt1 from "@/assets/images/wildflower_honey_alt1_1795505499979.jpg";
+import wildflowerHoneyAlt2 from "@/assets/images/wildflower_honey_alt2_1795505396641.jpg";
+import cloverHoneyAlt1 from "@/assets/images/clover_honey_alt1_1795505396939.jpg";
+import cloverHoneyAlt2 from "@/assets/images/clover_honey_alt2_1795505500430.jpg";
+import rawHoneycombAlt1 from "@/assets/images/raw_honeycomb_alt1_1795505466505.jpg";
+import rawHoneycombAlt2 from "@/assets/images/raw_honeycomb_alt2_1795505588261.jpg";
+import egyptianBlackHoneyAlt1 from "@/assets/images/egyptian_black_honey_alt1_1795505398130.jpg";
+import egyptianBlackHoneyAlt2 from "@/assets/images/egyptian_black_honey_alt2_1795505589512.jpg";
+import reserveBlackHoneyAlt1 from "@/assets/images/reserve_black_honey_alt1_1795505589431.jpg";
+import reserveBlackHoneyAlt2 from "@/assets/images/reserve_black_honey_alt2_1795505589735.jpg";
+import medjoolDatesAlt1 from "@/assets/images/medjool_dates_alt1_1795505590085.jpg";
+import medjoolDatesAlt2 from "@/assets/images/medjool_dates_alt2_1795505589430.jpg";
+import sukkaryDatesAlt1 from "@/assets/images/sukkary_dates_alt1_1795505590738.jpg";
+import storyAltHarvest from "@/assets/images/story_alt_harvest_1795505389016.jpg";
 
 export type LocalizedRangeCopy = {
   title: string;
@@ -70,6 +98,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "honey",
     image: honeyImage,
+    images: [honeyImage, honeyCatAlt1, honeyCatAlt2],
     tone: "sage",
     en: {
       title: "Natural honey",
@@ -97,6 +126,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "sidr-honey",
         image: sidrHoneyImage,
+        images: [sidrHoneyImage, sidrHoneyAlt1, sidrHoneyAlt2],
         en: {
           name: "Sidr Honey",
           note: "Rich amber floral aroma with a smooth, lingering finish.",
@@ -115,6 +145,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "mountain-wildflower",
         image: wildflowerHoneyImage,
+        images: [wildflowerHoneyImage, wildflowerHoneyAlt1, wildflowerHoneyAlt2],
         en: {
           name: "Mountain Wildflower Honey",
           note: "Balanced seasonal blossom harvest for daily table use.",
@@ -133,6 +164,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "clover-honey",
         image: cloverHoneyImage,
+        images: [cloverHoneyImage, cloverHoneyAlt1, cloverHoneyAlt2],
         en: {
           name: "Clover Blossom Honey",
           note: "Light golden colour and delicate sweetness for tea and baking.",
@@ -151,6 +183,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "raw-honeycomb",
         image: rawHoneycombImage,
+        images: [rawHoneycombImage, rawHoneycombAlt1, rawHoneycombAlt2],
         en: {
           name: "Raw Honeycomb",
           note: "Unprocessed natural comb filled with pure golden honey.",
@@ -169,6 +202,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "black-honey",
     image: blackHoneyImage,
+    images: [blackHoneyImage, blackHoneyCatAlt1, blackHoneyCatAlt2],
     tone: "clay",
     en: {
       title: "Black honey",
@@ -196,6 +230,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "upper-egypt-black-honey",
         image: egyptianBlackHoneyImage,
+        images: [egyptianBlackHoneyImage, egyptianBlackHoneyAlt1, egyptianBlackHoneyAlt2],
         en: {
           name: "Traditional Upper-Egypt Black Honey",
           note: "Pure slow-simmered sugarcane molasses with authentic depth.",
@@ -214,6 +249,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "extra-thick-black-honey",
         image: reserveBlackHoneyImage,
+        images: [reserveBlackHoneyImage, reserveBlackHoneyAlt1, reserveBlackHoneyAlt2],
         en: {
           name: "Rich Reserve Black Honey",
           note: "Extra-thick consistency suited for tahini pairings and breakfast spreads.",
@@ -234,6 +270,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "dates",
     image: datesImage,
+    images: [datesImage, datesCatAlt1, datesCatAlt2],
     tone: "olive",
     en: {
       title: "Fine dates",
@@ -261,6 +298,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "medjool-dates",
         image: medjoolDatesImage,
+        images: [medjoolDatesImage, medjoolDatesAlt1, medjoolDatesAlt2],
         en: {
           name: "Medjool Dates",
           note: "Large, tender, caramel-rich dates ideal for gifting and hosting.",
@@ -280,6 +318,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "sukkary-dates",
         image: sukkaryDatesImage,
+        images: [sukkaryDatesImage, sukkaryDatesAlt1, datesCatAlt2],
         en: {
           name: "Sukkary Dates",
           note: "Golden-amber, melt-in-the-mouth sweetness loved alongside Arabic coffee.",
@@ -299,6 +338,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "ajwa-dates",
         image: ajwaDatesImage,
+        images: [ajwaDatesImage, datesCatAlt1, datesImage],
         en: {
           name: "Ajwa Dates",
           note: "Dark, soft-textured classic dates with a subtle balanced sweetness.",
@@ -318,6 +358,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "siwi-dates",
         image: siwiDatesImage,
+        images: [siwiDatesImage, datesCatAlt2, datesCatAlt1],
         en: {
           name: "Siwi / Saidi Dates",
           note: "Firm-soft desert dates rich in natural flavour for everyday enjoyment.",
@@ -339,6 +380,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "date-syrup",
     image: dateSyrupImage,
+    images: [dateSyrupImage, dateSyrupCatAlt1, dateSyrupCatAlt2],
     tone: "sand",
     en: {
       title: "Date syrup",
@@ -366,6 +408,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "pure-date-dibs",
         image: pureDateSyrupImage,
+        images: [pureDateSyrupImage, dateSyrupCatAlt1, dateSyrupCatAlt2],
         en: {
           name: "Pure Cold-Pressed Date Syrup",
           note: "100% pure date extract with clean, rounded fruit sweetness.",
@@ -383,6 +426,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "dark-roast-dibs",
         image: darkDateSyrupImage,
+        images: [darkDateSyrupImage, dateSyrupCatAlt2, dateSyrupImage],
         en: {
           name: "Dark Reserve Date Syrup",
           note: "Deeper caramelized finish suited for desserts, marinades, and tahini.",
@@ -402,6 +446,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "olives",
     image: olivesImage,
+    images: [olivesImage, olivesCatAlt1, olivesCatAlt2],
     tone: "clay",
     en: {
       title: "Cured olives",
@@ -429,6 +474,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "green-table-olives",
         image: greenTableOlivesImage,
+        images: [greenTableOlivesImage, olivesCatAlt1, olivesCatAlt2],
         en: {
           name: "Whole Green Olives",
           note: "Crisp, bright brine-cured green olives with subtle citrus notes.",
@@ -447,6 +493,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "kalamata-black-olives",
         image: kalamataBlackOlivesImage,
+        images: [kalamataBlackOlivesImage, olivesCatAlt2, olivesImage],
         en: {
           name: "Kalamata & Black Olives",
           note: "Plump, deeply flavoured dark olives cured in traditional brine.",
@@ -465,6 +512,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "herb-marinated-olives",
         image: herbMarinatedOlivesImage,
+        images: [herbMarinatedOlivesImage, olivesCatAlt1, olivesCatAlt2],
         en: {
           name: "Herb & Olive-Oil Marinated Olives",
           note: "Finished with aromatic thyme, rosemary, and extra virgin olive oil.",
@@ -485,6 +533,7 @@ export const productRanges: ProductRange[] = [
   {
     slug: "olive-oil",
     image: oliveOilImage,
+    images: [oliveOilImage, oliveOilCatAlt1, oliveOilCatAlt2],
     tone: "sand",
     en: {
       title: "Olive oil",
@@ -512,6 +561,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "extra-virgin-cold-press",
         image: extraVirginOilImage,
+        images: [extraVirginOilImage, oliveOilCatAlt1, oliveOilCatAlt2],
         en: {
           name: "Extra Virgin First Cold Press",
           note: "Low-acidity, vibrant green-gold oil ideal for dipping and salads.",
@@ -528,6 +578,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "early-harvest-unfiltered",
         image: earlyHarvestOilImage,
+        images: [earlyHarvestOilImage, storyAltHarvest, oliveOilCatAlt1],
         en: {
           name: "Early Harvest Unfiltered",
           note: "Peppery, aromatic young-olive oil pressed within hours of picking.",
@@ -544,6 +595,7 @@ export const productRanges: ProductRange[] = [
       {
         id: "culinary-virgin-oil",
         image: everydayOliveOilImage,
+        images: [everydayOliveOilImage, oliveOilCatAlt2, oliveOilImage],
         en: {
           name: "Everyday Virgin Olive Oil",
           note: "Smooth, balanced olive oil crafted for daily cooking and roasting.",

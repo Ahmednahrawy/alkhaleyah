@@ -955,6 +955,9 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                 label={a.categoryPictureTitle}
                 values={categoryPicsDraft}
                 defaultSrc={baseRange?.image ?? activeRange.image}
+                defaultImages={
+                  baseRange?.images ?? [baseRange?.image ?? activeRange.image]
+                }
                 onChange={setCategoryPicsDraft}
                 testIdPrefix="admin-category-pic"
               />
@@ -1011,6 +1014,12 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
             draft={draft}
             setDraft={setDraft}
             defaultImageSrc={baseRange?.image ?? activeRange?.image ?? ""}
+            defaultImagesGallery={
+              baseRange?.images ??
+              (baseRange?.image || activeRange?.image
+                ? [baseRange?.image ?? activeRange?.image ?? ""]
+                : [])
+            }
             isNew
             saving={savingKey !== null}
             errorMessage={errorMessage}
@@ -1123,6 +1132,11 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                     draft={draft}
                     setDraft={setDraft}
                     defaultImageSrc={defaultSubImage}
+                    defaultImagesGallery={
+                      baseSub?.images ??
+                      baseRange?.images ??
+                      (defaultSubImage ? [defaultSubImage] : [])
+                    }
                     isNew={false}
                     saving={savingKey === key}
                     errorMessage={errorMessage}
@@ -1145,6 +1159,7 @@ function CatalogEditorFields({
   draft,
   setDraft,
   defaultImageSrc,
+  defaultImagesGallery,
   isNew,
   saving,
   errorMessage,
@@ -1156,6 +1171,7 @@ function CatalogEditorFields({
   draft: VarietyDraft;
   setDraft: (next: VarietyDraft) => void;
   defaultImageSrc: string;
+  defaultImagesGallery?: string[];
   isNew: boolean;
   saving: boolean;
   errorMessage: string | null;
@@ -1229,6 +1245,7 @@ function CatalogEditorFields({
         label={a.pictureLabel}
         values={draft.imageUrls}
         defaultSrc={defaultImageSrc}
+        defaultImages={defaultImagesGallery}
         onChange={(imageUrls) => setDraft({ ...draft, imageUrls })}
         testIdPrefix={`admin-variety-pic-${draft.subcategoryId || "new"}`}
       />

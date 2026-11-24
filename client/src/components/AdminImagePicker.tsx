@@ -25,6 +25,7 @@ export function AdminImagePicker({
   label,
   values,
   defaultSrc,
+  defaultImages,
   onChange,
   maxImages = MAX_IMAGES_PER_ITEM,
   testIdPrefix = "admin-image",
@@ -32,6 +33,7 @@ export function AdminImagePicker({
   label: string;
   values: string[];
   defaultSrc: string;
+  defaultImages?: string[];
   onChange: (nextValues: string[]) => void;
   maxImages?: number;
   testIdPrefix?: string;
@@ -50,8 +52,10 @@ export function AdminImagePicker({
       .map((val) => resolveCatalogImageValue(val, ""))
       .filter(Boolean);
     if (resolved.length > 0) return resolved;
+    const defaults = defaultImages?.filter(Boolean) ?? [];
+    if (defaults.length > 0) return defaults;
     return defaultSrc ? [defaultSrc] : [];
-  }, [values, defaultSrc]);
+  }, [values, defaultSrc, defaultImages]);
 
   const isCustom = values.length > 0;
   const remainingSlots = Math.max(0, maxImages - values.length);

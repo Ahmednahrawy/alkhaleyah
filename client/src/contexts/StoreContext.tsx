@@ -100,11 +100,21 @@ function mergeCatalog(
 ): ProductRange[] {
   return baseProductRanges.map((baseRange) => {
     const categoryDoc = categoryImageOverrides[baseRange.slug];
-    const resolvedRangeImages = resolveCatalogImageGallery(
-      categoryDoc?.imageUrls,
-      categoryDoc?.imageUrl,
-      baseRange.image
+    const hasCustomCategoryImages = Boolean(
+      (categoryDoc?.imageUrls && categoryDoc.imageUrls.length > 0) ||
+        categoryDoc?.imageUrl?.trim()
     );
+    const baseRangeGallery =
+      baseRange.images && baseRange.images.length > 0
+        ? baseRange.images
+        : [baseRange.image];
+    const resolvedRangeImages = hasCustomCategoryImages
+      ? resolveCatalogImageGallery(
+          categoryDoc?.imageUrls,
+          categoryDoc?.imageUrl,
+          baseRange.image
+        )
+      : baseRangeGallery;
     const resolvedRangeImage = resolvedRangeImages[0] ?? baseRange.image;
     const baseSubIds = new Set(baseRange.subcategories.map((sub) => sub.id));
     const mergedSubs: ProductSubcategory[] = [];
@@ -119,11 +129,21 @@ function mergeCatalog(
       if (!includeHidden && !override.isActive) {
         continue;
       }
-      const subGallery = resolveCatalogImageGallery(
-        override.imageUrls,
-        override.imageUrl,
-        sub.image || resolvedRangeImage
+      const hasCustomSubImages = Boolean(
+        (override.imageUrls && override.imageUrls.length > 0) ||
+          override.imageUrl?.trim()
       );
+      const baseSubGallery =
+        sub.images && sub.images.length > 0
+          ? sub.images
+          : [sub.image || resolvedRangeImage];
+      const subGallery = hasCustomSubImages
+        ? resolveCatalogImageGallery(
+            override.imageUrls,
+            override.imageUrl,
+            sub.image || resolvedRangeImage
+          )
+        : baseSubGallery;
       mergedSubs.push({
         id: sub.id,
         image: subGallery[0] ?? sub.image ?? resolvedRangeImage,

@@ -19,27 +19,40 @@ export function getCatalogImagePresets(): CatalogImagePreset[] {
   const seenSrc = new Set<string>();
 
   for (const range of productRanges) {
-    if (range.image && !seenSrc.has(range.image)) {
-      seenSrc.add(range.image);
+    const rangePhotos = range.images?.length ? range.images : [range.image];
+    rangePhotos.forEach((src, index) => {
+      if (!src || seenSrc.has(src)) return;
+      seenSrc.add(src);
+      const suffixId = index === 0 ? "" : `-${index + 1}`;
+      const suffixLabel = index === 0 ? "" : ` · ${index + 1}`;
       presets.push({
-        id: `range-${range.slug}`,
-        token: `preset:range-${range.slug}`,
-        src: range.image,
-        labelEn: range.en.title,
-        labelAr: range.ar.title,
+        id: `range-${range.slug}${suffixId}`,
+        token: `preset:range-${range.slug}${suffixId}`,
+        src,
+        labelEn: `${range.en.title}${suffixLabel}`,
+        labelAr: `${range.ar.title}${suffixLabel}`,
       });
-    }
+    });
+
     for (const sub of range.subcategories) {
-      if (sub.image && !seenSrc.has(sub.image)) {
-        seenSrc.add(sub.image);
+      const subPhotos = sub.images?.length
+        ? sub.images
+        : sub.image
+          ? [sub.image]
+          : [];
+      subPhotos.forEach((src, index) => {
+        if (!src || seenSrc.has(src)) return;
+        seenSrc.add(src);
+        const suffixId = index === 0 ? "" : `-${index + 1}`;
+        const suffixLabel = index === 0 ? "" : ` · ${index + 1}`;
         presets.push({
-          id: sub.id,
-          token: `preset:${sub.id}`,
-          src: sub.image,
-          labelEn: sub.en.name,
-          labelAr: sub.ar.name,
+          id: `${sub.id}${suffixId}`,
+          token: `preset:${sub.id}${suffixId}`,
+          src,
+          labelEn: `${sub.en.name}${suffixLabel}`,
+          labelAr: `${sub.ar.name}${suffixLabel}`,
         });
-      }
+      });
     }
   }
 

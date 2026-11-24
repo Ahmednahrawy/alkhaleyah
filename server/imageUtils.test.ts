@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  getRangeImages,
+  getSubcategoryImages,
+  productRanges,
+} from "../client/src/lib/catalog";
+import {
   getCatalogImagePresets,
   MAX_COMBINED_GALLERY_CHARS,
   MAX_GALLERY_ITEM_DATA_URL_LENGTH,
@@ -12,11 +17,28 @@ import {
 } from "../client/src/lib/imageUtils";
 
 describe("catalog image utilities", () => {
-  it("builds presets for built-in categories and varieties", () => {
+  it("builds presets for built-in categories and varieties including alternatives", () => {
     const presets = getCatalogImagePresets();
-    expect(presets.length).toBeGreaterThanOrEqual(24);
+    expect(presets.length).toBeGreaterThanOrEqual(45);
     expect(presets.some((p) => p.token === "preset:sidr-honey")).toBe(true);
+    expect(presets.some((p) => p.token === "preset:sidr-honey-2")).toBe(true);
     expect(presets.some((p) => p.token === "preset:range-honey")).toBe(true);
+    expect(presets.some((p) => p.token === "preset:range-honey-2")).toBe(true);
+  });
+
+  it("provides 3 distinct images for every category and every product variety", () => {
+    expect(productRanges).toHaveLength(6);
+    for (const range of productRanges) {
+      const rangeImages = getRangeImages(range);
+      expect(rangeImages).toHaveLength(3);
+      expect(new Set(rangeImages).size).toBe(3);
+
+      for (const sub of range.subcategories) {
+        const subImages = getSubcategoryImages(range, sub);
+        expect(subImages).toHaveLength(3);
+        expect(new Set(subImages).size).toBe(3);
+      }
+    }
   });
 
   it("validates empty, preset tokens, https URLs, and compressed data URIs", () => {

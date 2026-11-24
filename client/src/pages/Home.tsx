@@ -31,6 +31,15 @@ import {
   type WeightFilterId,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
+import heroPrimaryImg from "@/assets/images/alkhaleyah_hero_1795293710991.jpg";
+import heroAltPantryImg from "@/assets/images/hero_alt_pantry_1795505389159.jpg";
+import heroAltTableImg from "@/assets/images/hero_alt_table_1795505389521.jpg";
+import storyPrimaryImg from "@/assets/images/alkhaleyah_olive_oil_1795293711836.jpg";
+import storyAltHarvestImg from "@/assets/images/story_alt_harvest_1795505389016.jpg";
+import storyAltCraftImg from "@/assets/images/story_alt_craft_1795505389525.jpg";
+
+const HERO_IMAGES = [heroPrimaryImg, heroAltPantryImg, heroAltTableImg];
+const STORY_IMAGES = [storyPrimaryImg, storyAltHarvestImg, storyAltCraftImg];
 
 const PRICE_FILTER_IDS: PriceFilterId[] = [
   "all",
@@ -114,11 +123,15 @@ export default function Home() {
               </a>
             </div>
           </div>
-          <div
-            className="hero-image"
-            role="img"
-            aria-label={t.hero.imageAria}
-          />
+          <div className="hero-image">
+            <DynamicImageSlider
+              images={HERO_IMAGES}
+              alt={t.hero.imageAria}
+              loading="eager"
+              showControls={false}
+              intervalMs={4600}
+            />
+          </div>
         </section>
 
         <section className="range-section section-pad" id="our-range">
@@ -372,11 +385,15 @@ export default function Home() {
         </section>
 
         <section className="story-section" id="our-story">
-          <div
-            className="story-image"
-            role="img"
-            aria-label={t.storySection.imageAria}
-          />
+          <div className="story-image">
+            <DynamicImageSlider
+              images={STORY_IMAGES}
+              alt={t.storySection.imageAria}
+              loading="lazy"
+              showControls={false}
+              intervalMs={5000}
+            />
+          </div>
           <div className="story-copy">
             <p className="eyebrow">
               <span /> {t.storySection.eyebrow}
