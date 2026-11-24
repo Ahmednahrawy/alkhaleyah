@@ -285,7 +285,10 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="subcategory-grid">
+                <div
+                  className="subcategory-grid"
+                  data-count={filteredEntries.length}
+                >
                   {filteredEntries.map(({ range, subcategory }) => (
                     <SubcategoryCard
                       key={`${range.slug}-${subcategory.id}`}
@@ -293,6 +296,7 @@ export default function Home() {
                       categoryLabel={
                         selectedRange ? undefined : getRangeCopy(range, lang).title
                       }
+                      rangeImage={range.image}
                       subcategory={subcategory}
                       activePriceFilter={priceFilter}
                       activeWeightFilter={weightFilter}

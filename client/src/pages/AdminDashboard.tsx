@@ -28,6 +28,7 @@ import {
 import {
   formatPrice,
   getRangeCopy,
+  getSubcategoryImage,
   productRanges as baseProductRanges,
   type ProductSubcategory,
   type ProductVariant,
@@ -815,33 +816,43 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
           return (
             <article key={key} className="admin-variety-card">
               <div className="admin-variety-head">
-                <div>
-                  <div className="admin-variety-badges">
-                    {!isBuiltIn && (
-                      <span className="admin-badge admin-badge-accent">
-                        {a.customBadge}
-                      </span>
-                    )}
-                    {isBuiltIn && override && (
-                      <span className="admin-badge">{a.overrideBadge}</span>
-                    )}
-                    <span
-                      className={
-                        isVisible
-                          ? "admin-badge admin-badge-visible"
-                          : "admin-badge admin-badge-hidden"
-                      }
-                    >
-                      {isVisible ? (
-                        <Eye size={12} aria-hidden="true" />
-                      ) : (
-                        <EyeOff size={12} aria-hidden="true" />
+                <div className="admin-variety-identity">
+                  {activeRange && (
+                    <img
+                      src={getSubcategoryImage(activeRange, sub)}
+                      alt={sub[lang].name}
+                      className="admin-variety-thumb"
+                      referrerPolicy="no-referrer"
+                    />
+                  )}
+                  <div>
+                    <div className="admin-variety-badges">
+                      {!isBuiltIn && (
+                        <span className="admin-badge admin-badge-accent">
+                          {a.customBadge}
+                        </span>
                       )}
-                      <span>{isVisible ? a.visibleStatus : a.hiddenStatus}</span>
-                    </span>
+                      {isBuiltIn && override && (
+                        <span className="admin-badge">{a.overrideBadge}</span>
+                      )}
+                      <span
+                        className={
+                          isVisible
+                            ? "admin-badge admin-badge-visible"
+                            : "admin-badge admin-badge-hidden"
+                        }
+                      >
+                        {isVisible ? (
+                          <Eye size={12} aria-hidden="true" />
+                        ) : (
+                          <EyeOff size={12} aria-hidden="true" />
+                        )}
+                        <span>{isVisible ? a.visibleStatus : a.hiddenStatus}</span>
+                      </span>
+                    </div>
+                    <h3>{sub[lang].name}</h3>
+                    <p className="admin-variety-note">{sub[lang].note}</p>
                   </div>
-                  <h3>{sub[lang].name}</h3>
-                  <p className="admin-variety-note">{sub[lang].note}</p>
                 </div>
 
                 <div className="admin-variety-actions">

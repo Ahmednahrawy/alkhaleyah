@@ -16,6 +16,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
+  getSubcategoryImage,
   getSubcategoryMinPrice,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
@@ -122,8 +123,8 @@ export function QuickAddModal() {
         <div className="quick-add-head">
           <div className="quick-add-category-row">
             <img
-              src={range.image}
-              alt={rangeCopy.title}
+              src={getSubcategoryImage(range, currentSub)}
+              alt={currentSub ? currentSub[lang].name : rangeCopy.title}
               className="quick-add-thumb"
               referrerPolicy="no-referrer"
             />
@@ -183,13 +184,21 @@ export function QuickAddModal() {
                     }
                     onClick={() => handleSelectSub(sub.id)}
                   >
-                    <div className="quick-add-sub-top">
-                      <strong>{sub[lang].name}</strong>
-                      <em className="quick-add-sub-price">
-                        {r.fromPricePrefix} {formatPrice(minPrice, lang)}
-                      </em>
+                    <img
+                      src={getSubcategoryImage(range, sub)}
+                      alt=""
+                      className="quick-add-sub-thumb"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="quick-add-sub-copy">
+                      <div className="quick-add-sub-top">
+                        <strong>{sub[lang].name}</strong>
+                        <em className="quick-add-sub-price tabular-nums">
+                          {r.fromPricePrefix} {formatPrice(minPrice, lang)}
+                        </em>
+                      </div>
+                      <span>{sub[lang].note}</span>
                     </div>
-                    <span>{sub[lang].note}</span>
                   </button>
                 );
               })}

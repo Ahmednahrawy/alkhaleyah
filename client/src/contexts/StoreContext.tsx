@@ -99,6 +99,7 @@ function mergeCatalog(
       }
       mergedSubs.push({
         id: sub.id,
+        image: sub.image,
         en: {
           name: override.nameEn || sub.en.name,
           note: override.noteEn ?? sub.en.note,
@@ -124,6 +125,7 @@ function mergeCatalog(
       }
       mergedSubs.push({
         id: override.subcategoryId,
+        image: baseRange.image,
         en: {
           name: override.nameEn,
           note: override.noteEn,

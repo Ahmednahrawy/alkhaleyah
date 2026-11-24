@@ -234,11 +234,15 @@ export default function ProductRange() {
               </button>
             </div>
           ) : (
-            <div className="subcategory-grid">
+            <div
+              className="subcategory-grid"
+              data-count={visibleSubcategories.length}
+            >
               {visibleSubcategories.map((subcategory) => (
                 <SubcategoryCard
                   key={`${range.slug}-${subcategory.id}`}
                   categorySlug={range.slug}
+                  rangeImage={range.image}
                   subcategory={subcategory}
                   activePriceFilter={priceFilter}
                   activeWeightFilter={weightFilter}

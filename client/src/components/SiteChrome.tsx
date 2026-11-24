@@ -17,6 +17,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
+  getSubcategoryImage,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 
@@ -212,7 +213,7 @@ function HeaderSearch({
                       }}
                     >
                       <img
-                        src={range.image}
+                        src={getSubcategoryImage(range, subcategory)}
                         alt=""
                         className="header-search-thumb"
                         referrerPolicy="no-referrer"

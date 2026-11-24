@@ -8,6 +8,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import {
   formatPrice,
   getRangeCopy,
+  getSubcategoryImage,
   getSubcategoryMinPrice,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
@@ -143,7 +144,7 @@ export function WishlistDrawer() {
                       <div key={entry.key} className="wishlist-item">
                         <div className="wishlist-item-top">
                           <img
-                            src={range.image}
+                            src={getSubcategoryImage(range, subcategory)}
                             alt={subcategory[lang].name}
                             className="cart-item-thumb"
                             referrerPolicy="no-referrer"

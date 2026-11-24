@@ -873,8 +873,54 @@ img { display: block; width: 100%; }
 .detail-image img { height: 100%; object-fit: cover; }
 
 .subcategories-section { border-top: 1px solid var(--line); padding: 56px 0 64px; }
-.subcategory-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.subcategory-card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+.subcategory-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.subcategory-grid[data-count="2"],
+.subcategory-grid[data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.subcategory-grid[data-count="1"] { grid-template-columns: minmax(0, 560px); }
+.subcategory-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s cubic-bezier(.16, 1, .3, 1), box-shadow .2s ease;
+}
+.subcategory-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(23, 56, 40, .09);
+}
+.subcategory-card-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--surface) 0%, #dce9db 100%);
+  border-bottom: 1px solid rgba(23, 56, 40, .08);
+}
+.subcategory-card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s cubic-bezier(.2, .7, .2, 1);
+}
+.subcategory-card:hover .subcategory-card-media img {
+  transform: scale(1.03);
+}
+.subcategory-card-media-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--olive);
+  opacity: .55;
+}
+.subcategory-card-body {
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
 .subcategory-card-head { display: flex; flex-direction: column; gap: 6px; }
 .subcategory-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .subcategory-starting-price { font-size: 12px; font-weight: 600; color: var(--olive); }
@@ -893,7 +939,7 @@ img { display: block; width: 100%; }
 }
 .wishlist-heart-btn:hover { color: #b5483a; border-color: rgba(181, 72, 58, .38); background: #fdf4f2; }
 .wishlist-heart-btn.is-saved { color: #b5483a; background: #fdf1ef; border-color: rgba(181, 72, 58, .42); }
-.subcategory-card-head h3 { margin: 0; font-family: var(--serif); font-size: 24px; font-weight: 600; letter-spacing: -.02em; color: var(--olive-dark); }
+.subcategory-card-head h3 { margin: 0; font-family: var(--serif); font-size: 22px; font-weight: 600; letter-spacing: -.02em; color: var(--olive-dark); }
 .subcategory-card-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
 .subcategory-variants { display: flex; flex-direction: column; gap: 8px; }
 .variant-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -929,7 +975,9 @@ img { display: block; width: 100%; }
 .quick-add-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 18px; }
 .quick-add-group { display: flex; flex-direction: column; gap: 9px; }
 .quick-add-sub-list { display: grid; grid-template-columns: 1fr; gap: 8px; }
-.quick-add-sub-btn { text-align: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); cursor: pointer; display: flex; flex-direction: column; gap: 3px; transition: border-color .16s ease, background .16s ease; }
+.quick-add-sub-btn { text-align: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--cream); cursor: pointer; display: flex; align-items: center; gap: 12px; transition: border-color .16s ease, background .16s ease; }
+.quick-add-sub-thumb { width: 56px; height: 42px; object-fit: cover; border-radius: 7px; flex-shrink: 0; background: var(--surface); }
+.quick-add-sub-copy { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .quick-add-sub-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .quick-add-sub-price { font-style: normal; font-size: 12px; font-weight: 600; color: var(--olive); white-space: nowrap; }
 .quick-add-sub-btn strong { font-size: 14px; font-weight: 600; color: var(--olive-dark); }
@@ -1559,6 +1607,22 @@ img { display: block; width: 100%; }
   gap: 16px;
   flex-wrap: wrap;
 }
+.admin-variety-identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+.admin-variety-thumb {
+  width: 72px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
 .admin-variety-head h3 {
   margin: 4px 0 4px;
   font-family: var(--serif);
@@ -1777,6 +1841,7 @@ img { display: block; width: 100%; }
   .hero { min-height: 480px; grid-template-columns: .96fr 1.04fr; }
   .hero-copy { padding-left: 8%; padding-right: 6%; }
   .range-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .subcategory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .testimonials-grid, .testimonials-grid[data-count="2"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .tracking-meta-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tracking-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1841,8 +1906,11 @@ img { display: block; width: 100%; }
   .detail-layout { padding: 28px 0 44px; display: flex; flex-direction: column-reverse; align-items: stretch; gap: 24px; }
   .detail-image { min-height: 250px; height: 60vw; max-height: 360px; }
   .subcategories-section { padding: 40px 0 48px; }
-  .subcategory-grid { grid-template-columns: 1fr; gap: 14px; }
-  .subcategory-card { padding: 20px 18px; }
+  .subcategory-grid,
+  .subcategory-grid[data-count="2"],
+  .subcategory-grid[data-count="4"],
+  .subcategory-grid[data-count="1"] { grid-template-columns: 1fr; gap: 14px; }
+  .subcategory-card-body { padding: 18px 18px 20px; }
   .cart-drawer-head, .cart-drawer-body, .cart-drawer-foot { padding-left: 18px; padding-right: 18px; }
   .more-ranges { grid-template-columns: 1fr; gap: 16px; padding: 44px 0 52px; }
   .not-found { min-height: 67vh; padding: 64px 6%; }

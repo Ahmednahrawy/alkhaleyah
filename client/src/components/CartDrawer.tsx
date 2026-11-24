@@ -17,6 +17,7 @@ import { useStore } from "@/contexts/StoreContext";
 import {
   formatPrice,
   getRangeCopy,
+  getSubcategoryImage,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
 import {
@@ -224,7 +225,7 @@ export function CartDrawer() {
                   }) => (
                     <div key={item.key} className="cart-item">
                       <img
-                        src={range.image}
+                        src={getSubcategoryImage(range, subcategory)}
                         alt={subcategory[lang].name}
                         className="cart-item-thumb"
                         referrerPolicy="no-referrer"
