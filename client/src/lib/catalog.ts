@@ -44,6 +44,7 @@ export type ProductVariant = {
 export type ProductSubcategory = {
   id: string;
   image?: string;
+  images?: string[];
   en: {
     name: string;
     note: string;
@@ -58,6 +59,7 @@ export type ProductSubcategory = {
 export type ProductRange = {
   slug: string;
   image: string;
+  images?: string[];
   tone: string;
   en: LocalizedRangeCopy;
   ar: LocalizedRangeCopy;
@@ -580,7 +582,23 @@ export function getSubcategoryImage(
   range: ProductRange,
   subcategory?: ProductSubcategory | null
 ): string {
-  return subcategory?.image || range.image;
+  return subcategory?.images?.[0] || subcategory?.image || range.images?.[0] || range.image;
+}
+
+export function getRangeImages(range: ProductRange): string[] {
+  const list = range.images?.filter(Boolean) ?? [];
+  if (list.length > 0) return list;
+  return range.image ? [range.image] : [];
+}
+
+export function getSubcategoryImages(
+  range: ProductRange,
+  subcategory?: ProductSubcategory | null
+): string[] {
+  const list = subcategory?.images?.filter(Boolean) ?? [];
+  if (list.length > 0) return list;
+  const single = subcategory?.image || range.images?.[0] || range.image;
+  return single ? [single] : [];
 }
 
 export function findSubcategoryAndVariant(

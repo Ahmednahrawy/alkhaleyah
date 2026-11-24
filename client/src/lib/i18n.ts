@@ -400,6 +400,14 @@ type CopyShape = {
       pictureUrlPlaceholder: string;
       pictureInvalidError: string;
       pictureTooLargeError: string;
+      pictureGalleryHint: string;
+      addUrlBtn: string;
+      maxPicturesError: string;
+      removePictureAria: string;
+      movePictureLeftAria: string;
+      movePictureRightAria: string;
+      prevSlideAria: string;
+      nextSlideAria: string;
     };
     settings: {
       sectionTitle: string;
@@ -902,9 +910,18 @@ export const translations: Record<Language, CopyShape> = {
         uploadedPhotoLabel: "Uploaded photo ready (paste https:// URL to replace)",
         pictureUrlPlaceholder: "Or paste an https:// image URL...",
         pictureInvalidError:
-          "Please upload an image file (JPG/PNG/WebP), choose from the library, or enter a valid https:// URL.",
+          "Please upload JPG/PNG/WebP images, choose from the library, or enter a valid https:// URL.",
         pictureTooLargeError:
-          "Image is too large even after compression. Please pick a smaller photo.",
+          "Selected images exceed the storage limit. Try fewer or smaller photos (up to 6).",
+        pictureGalleryHint:
+          "Add up to 6 pictures. Only one shows at a time and slides dynamically on the store.",
+        addUrlBtn: "Add URL",
+        maxPicturesError: "You can attach up to 6 pictures per item.",
+        removePictureAria: "Remove picture",
+        movePictureLeftAria: "Move picture earlier",
+        movePictureRightAria: "Move picture later",
+        prevSlideAria: "Previous picture",
+        nextSlideAria: "Next picture",
       },
       settings: {
         sectionTitle: "Storefront contact & announcement",
@@ -1406,9 +1423,18 @@ export const translations: Record<Language, CopyShape> = {
         uploadedPhotoLabel: "تم تجهيز الصورة المرفوعة (أو ألصق رابط https:// للاستبدال)",
         pictureUrlPlaceholder: "أو ألصق رابط صورة يبدأ بـ https:// ...",
         pictureInvalidError:
-          "يُرجى رفع ملف صورة (JPG/PNG/WebP)، أو الاختيار من المكتبة، أو إدخال رابط https:// صحيح.",
+          "يُرجى رفع صور (JPG/PNG/WebP)، أو الاختيار من المكتبة، أو إدخال رابط https:// صحيح.",
         pictureTooLargeError:
-          "حجم الصورة كبير جداً حتى بعد الضغط. يُرجى اختيار صورة أصغر.",
+          "تتجاوز الصور المحددة الحد المسموح. جرّب صوراً أصغر أو عدداً أقل (بحد أقصى ٦).",
+        pictureGalleryHint:
+          "يمكنك إضافة حتى ٦ صور. تظهر صورة واحدة فقط في كل مرة وتتحرك تلقائياً بالتتابع في المتجر.",
+        addUrlBtn: "إضافة الرابط",
+        maxPicturesError: "يمكن إضافة ٦ صور كحد أقصى لكل عنصر.",
+        removePictureAria: "حذف الصورة",
+        movePictureLeftAria: "تقديم الصورة",
+        movePictureRightAria: "تأخير الصورة",
+        prevSlideAria: "الصورة السابقة",
+        nextSlideAria: "الصورة التالية",
       },
       settings: {
         sectionTitle: "بيانات الواتساب والشريط العلوي",

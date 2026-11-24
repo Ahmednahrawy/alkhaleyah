@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "wouter";
+import { DynamicImageSlider } from "@/components/DynamicImageSlider";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -17,6 +18,7 @@ import {
   formatPrice,
   getRangeCopy,
   getSubcategoryImage,
+  getSubcategoryImages,
   getSubcategoryMinPrice,
 } from "@/lib/catalog";
 import { translations } from "@/lib/i18n";
@@ -122,12 +124,14 @@ export function QuickAddModal() {
       >
         <div className="quick-add-head">
           <div className="quick-add-category-row">
-            <img
-              src={getSubcategoryImage(range, currentSub)}
-              alt={currentSub ? currentSub[lang].name : rangeCopy.title}
-              className="quick-add-thumb"
-              referrerPolicy="no-referrer"
-            />
+            <div className="quick-add-thumb-wrap">
+              <DynamicImageSlider
+                images={getSubcategoryImages(range, currentSub)}
+                alt={currentSub ? currentSub[lang].name : rangeCopy.title}
+                loading="eager"
+                showControls={false}
+              />
+            </div>
             <div>
               <span className="quick-add-eyebrow">{rangeCopy.title}</span>
               <h2 id="quick-add-title">{q.title}</h2>

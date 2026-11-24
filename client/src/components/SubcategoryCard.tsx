@@ -3,11 +3,11 @@ import {
   ArrowRight,
   Check,
   Heart,
-  Leaf,
   Minus,
   Plus,
   ShoppingBag,
 } from "lucide-react";
+import { DynamicImageSlider } from "@/components/DynamicImageSlider";
 import { useCart } from "@/contexts/CartContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStore } from "@/contexts/StoreContext";
@@ -62,19 +62,19 @@ export function SubcategoryCard({
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
 
-  const fallbackRangeImage = rangeImage ?? findRange(categorySlug)?.image;
-  const resolvedImage = subcategory.image || fallbackRangeImage;
-  const [hasImageError, setHasImageError] = useState(false);
+  const fallbackRange = findRange(categorySlug);
+  const cardImages = useMemo(() => {
+    const fromSub = subcategory.images?.filter(Boolean) ?? [];
+    if (fromSub.length > 0) return fromSub;
+    const single = subcategory.image || rangeImage || fallbackRange?.image;
+    return single ? [single] : [];
+  }, [subcategory, rangeImage, fallbackRange]);
 
   useEffect(() => {
     setVariantId(preferredVariantId);
     setQuantity(1);
     setJustAdded(false);
   }, [categorySlug, subcategory, preferredVariantId]);
-
-  useEffect(() => {
-    setHasImageError(false);
-  }, [resolvedImage]);
 
   const currentVariant =
     subcategory.variants.find((v) => v.id === variantId) ??
@@ -97,19 +97,11 @@ export function SubcategoryCard({
       id={`variety-${subcategory.id}`}
     >
       <div className="subcategory-card-media">
-        {resolvedImage && !hasImageError ? (
-          <img
-            src={resolvedImage}
-            alt={subcategory[lang].name}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={() => setHasImageError(true)}
-          />
-        ) : (
-          <div className="subcategory-card-media-fallback" aria-hidden="true">
-            <Leaf size={26} />
-          </div>
-        )}
+        <DynamicImageSlider
+          images={cardImages}
+          alt={subcategory[lang].name}
+          loading="lazy"
+        />
       </div>
 
       <div className="subcategory-card-body">

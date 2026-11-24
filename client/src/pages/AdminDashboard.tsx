@@ -42,7 +42,7 @@ import {
   OWNER_ADMIN_EMAIL,
 } from "@/lib/firebase";
 import { translations } from "@/lib/i18n";
-import { validateCatalogImageValue } from "@/lib/imageUtils";
+import { validateCatalogImageGallery } from "@/lib/imageUtils";
 import {
   ORDER_STATUS_SEQUENCE,
   timestampToIso,
@@ -85,7 +85,7 @@ type VarietyDraft = {
   noteEn: string;
   noteAr: string;
   isActive: boolean;
-  imageUrl: string;
+  imageUrls: string[];
   variants: ProductVariant[];
 };
 
@@ -545,7 +545,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [editingCategoryPic, setEditingCategoryPic] = useState(false);
-  const [categoryPicDraft, setCategoryPicDraft] = useState("");
+  const [categoryPicsDraft, setCategoryPicsDraft] = useState<string[]>([]);
   const [categoryPicError, setCategoryPicError] = useState<string | null>(null);
   const [savingCategoryPic, setSavingCategoryPic] = useState(false);
 
@@ -564,7 +564,12 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const openCategoryPicEditor = () => {
     setCategoryPicError(null);
     setStatusMessage(null);
-    setCategoryPicDraft(currentCategoryOverride?.imageUrl ?? "");
+    const initialGallery = currentCategoryOverride?.imageUrls?.length
+      ? currentCategoryOverride.imageUrls
+      : currentCategoryOverride?.imageUrl
+        ? [currentCategoryOverride.imageUrl]
+        : [];
+    setCategoryPicsDraft(initialGallery);
     setEditingCategoryPic(true);
   };
 
@@ -574,26 +579,29 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
     setCategoryPicError(null);
     setStatusMessage(null);
 
-    const validation = validateCatalogImageValue(categoryPicDraft);
+    const validation = validateCatalogImageGallery(categoryPicsDraft);
     if (!validation.valid) {
       setCategoryPicError(
-        validation.reason === "size"
-          ? a.pictureTooLargeError
-          : a.pictureInvalidError
+        validation.reason === "count"
+          ? a.maxPicturesError
+          : validation.reason === "size"
+            ? a.pictureTooLargeError
+            : a.pictureInvalidError
       );
       return;
     }
 
     setSavingCategoryPic(true);
     try {
-      if (!validation.normalized) {
+      if (validation.normalized.length === 0) {
         if (currentCategoryOverride) {
           await deleteDoc(doc(db, "categoryImages", selectedCategory));
         }
       } else {
         await setDoc(doc(db, "categoryImages", selectedCategory), {
           categorySlug: selectedCategory,
-          imageUrl: validation.normalized,
+          imageUrl: validation.normalized[0] ?? "",
+          imageUrls: validation.normalized,
           updatedAt: serverTimestamp(),
           updatedBy: user.uid,
         });
@@ -616,7 +624,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
     setCategoryPicError(null);
     try {
       await deleteDoc(doc(db, "categoryImages", selectedCategory));
-      setCategoryPicDraft("");
+      setCategoryPicsDraft([]);
       setEditingCategoryPic(false);
       setStatusMessage(a.savedToast);
     } catch (error) {
@@ -635,6 +643,12 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
     setErrorMessage(null);
     setStatusMessage(null);
     const key = buildCatalogOverrideKey(selectedCategory, sub.id);
+    const override = overridesByKey[key];
+    const initialGallery = override?.imageUrls?.length
+      ? override.imageUrls
+      : override?.imageUrl
+        ? [override.imageUrl]
+        : [];
     setEditingKey(key);
     setDraft({
       subcategoryId: sub.id,
@@ -643,7 +657,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       noteEn: sub.en.note,
       noteAr: sub.ar.note,
       isActive: !(key in overridesByKey) || overridesByKey[key].isActive,
-      imageUrl: overridesByKey[key]?.imageUrl ?? "",
+      imageUrls: initialGallery,
       variants: sub.variants.map((v) => ({ ...v })),
     });
   };
@@ -660,7 +674,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       noteEn: "",
       noteAr: "",
       isActive: true,
-      imageUrl: "",
+      imageUrls: [],
       variants: [
         {
           id: "500g",
@@ -766,12 +780,14 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       return;
     }
 
-    const imageValidation = validateCatalogImageValue(draft.imageUrl);
+    const imageValidation = validateCatalogImageGallery(draft.imageUrls);
     if (!imageValidation.valid) {
       setErrorMessage(
-        imageValidation.reason === "size"
-          ? a.pictureTooLargeError
-          : a.pictureInvalidError
+        imageValidation.reason === "count"
+          ? a.maxPicturesError
+          : imageValidation.reason === "size"
+            ? a.pictureTooLargeError
+            : a.pictureInvalidError
       );
       return;
     }
@@ -789,7 +805,8 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         noteEn: draft.noteEn.trim().slice(0, 400),
         noteAr: draft.noteAr.trim().slice(0, 400),
         isActive: Boolean(draft.isActive),
-        imageUrl: imageValidation.normalized,
+        imageUrl: imageValidation.normalized[0] ?? "",
+        imageUrls: imageValidation.normalized,
         variants: cleanVariants,
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
@@ -871,12 +888,19 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         <div className="admin-category-cover-card">
           <div className="admin-category-cover-head">
             <div className="admin-category-cover-info">
-              <img
-                src={activeRange.image}
-                alt={getRangeCopy(activeRange, lang).title}
-                className="admin-variety-thumb"
-                referrerPolicy="no-referrer"
-              />
+              <div className="admin-variety-thumb-wrap">
+                <img
+                  src={activeRange.image}
+                  alt={getRangeCopy(activeRange, lang).title}
+                  className="admin-variety-thumb"
+                  referrerPolicy="no-referrer"
+                />
+                {activeRange.images && activeRange.images.length > 1 && (
+                  <span className="admin-thumb-count tabular-nums">
+                    {activeRange.images.length}
+                  </span>
+                )}
+              </div>
               <div>
                 <div className="admin-variety-badges">
                   <span className="admin-badge">
@@ -929,9 +953,9 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
             >
               <AdminImagePicker
                 label={a.categoryPictureTitle}
-                value={categoryPicDraft}
+                values={categoryPicsDraft}
                 defaultSrc={baseRange?.image ?? activeRange.image}
-                onChange={setCategoryPicDraft}
+                onChange={setCategoryPicsDraft}
                 testIdPrefix="admin-category-pic"
               />
               {categoryPicError && (
@@ -1014,12 +1038,19 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
               <div className="admin-variety-head">
                 <div className="admin-variety-identity">
                   {activeRange && (
-                    <img
-                      src={getSubcategoryImage(activeRange, sub)}
-                      alt={sub[lang].name}
-                      className="admin-variety-thumb"
-                      referrerPolicy="no-referrer"
-                    />
+                    <div className="admin-variety-thumb-wrap">
+                      <img
+                        src={getSubcategoryImage(activeRange, sub)}
+                        alt={sub[lang].name}
+                        className="admin-variety-thumb"
+                        referrerPolicy="no-referrer"
+                      />
+                      {sub.images && sub.images.length > 1 && (
+                        <span className="admin-thumb-count tabular-nums">
+                          {sub.images.length}
+                        </span>
+                      )}
+                    </div>
                   )}
                   <div>
                     <div className="admin-variety-badges">
@@ -1196,9 +1227,9 @@ function CatalogEditorFields({
 
       <AdminImagePicker
         label={a.pictureLabel}
-        value={draft.imageUrl}
+        values={draft.imageUrls}
         defaultSrc={defaultImageSrc}
-        onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
+        onChange={(imageUrls) => setDraft({ ...draft, imageUrls })}
         testIdPrefix={`admin-variety-pic-${draft.subcategoryId || "new"}`}
       />
 

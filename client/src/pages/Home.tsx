@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { ContactInquiryForm } from "@/components/ContactInquiryForm";
+import { DynamicImageSlider } from "@/components/DynamicImageSlider";
 import { OrderTrackingSection } from "@/components/OrderTrackingSection";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SubcategoryCard } from "@/components/SubcategoryCard";
@@ -23,6 +24,7 @@ import { useStore } from "@/contexts/StoreContext";
 import {
   formatPrice,
   getRangeCopy,
+  getRangeImages,
   getRangeMinPrice,
   matchesSubcategoryFilters,
   type PriceFilterId,
@@ -250,12 +252,13 @@ export default function Home() {
               {selectedRange && (
                 <div className="home-selected-range-bar">
                   <div className="home-selected-range-info">
-                    <img
-                      src={selectedRange.image}
-                      alt={getRangeCopy(selectedRange, lang).imageAlt}
-                      className="home-selected-range-thumb"
-                      referrerPolicy="no-referrer"
-                    />
+                    <div className="home-selected-range-thumb-wrap">
+                      <DynamicImageSlider
+                        images={getRangeImages(selectedRange)}
+                        alt={getRangeCopy(selectedRange, lang).imageAlt}
+                        showControls={false}
+                      />
+                    </div>
                     <div>
                       <h3>{getRangeCopy(selectedRange, lang).title}</h3>
                       <p>{getRangeCopy(selectedRange, lang).detail}</p>
@@ -320,11 +323,10 @@ export default function Home() {
                       className="range-card-link"
                     >
                       <div className="range-image-wrap">
-                        <img
-                          src={range.image}
+                        <DynamicImageSlider
+                          images={getRangeImages(range)}
                           alt={copy.imageAlt}
                           loading="lazy"
-                          referrerPolicy="no-referrer"
                         />
                         <span className="range-arrow" aria-hidden="true">
                           <ArrowUpRight size={18} className="rtl-flip" />

@@ -8,12 +8,14 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Link, useRoute } from "wouter";
+import { DynamicImageSlider } from "@/components/DynamicImageSlider";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { SubcategoryCard } from "@/components/SubcategoryCard";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useStore } from "@/contexts/StoreContext";
 import {
   getRangeCopy,
+  getRangeImages,
   matchesSubcategoryFilters,
   type PriceFilterId,
   type WeightFilterId,
@@ -129,10 +131,10 @@ export default function ProductRange() {
             <p className="detail-disclaimer">{t.productDetail.disclaimer}</p>
           </div>
           <div className="detail-image">
-            <img
-              src={range.image}
+            <DynamicImageSlider
+              images={getRangeImages(range)}
               alt={copy.imageAlt}
-              referrerPolicy="no-referrer"
+              loading="eager"
             />
           </div>
         </div>

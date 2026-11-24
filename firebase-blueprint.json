@@ -179,7 +179,11 @@
         "imageUrl": {
           "type": "string",
           "maxLength": 200000,
-          "description": "Optional custom product image (empty for default, preset:<id>, https:// URL, or compressed JPEG/PNG/WebP data URI)."
+          "description": "Primary or legacy single custom product image."
+        },
+        "imageUrls": {
+          "type": "array",
+          "description": "Ordered list of up to 6 custom product images for dynamic sliding display."
         },
         "variants": {
           "type": "array",
@@ -272,7 +276,11 @@
         "imageUrl": {
           "type": "string",
           "maxLength": 200000,
-          "description": "Custom category cover image (empty for default, preset:<id>, https:// URL, or compressed image data URI)."
+          "description": "Primary category cover image (empty for default, preset:<id>, https:// URL, or compressed image data URI)."
+        },
+        "imageUrls": {
+          "type": "array",
+          "description": "Ordered list of up to 6 category cover images for dynamic sliding display."
         },
         "updatedAt": {
           "type": "string",

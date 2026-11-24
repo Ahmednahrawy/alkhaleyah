@@ -20,6 +20,28 @@ service cloud.firestore {
         );
     }
 
+    function isValidGalleryImageValue(val) {
+      return val is string &&
+        val.size() > 0 &&
+        val.size() <= 140000 &&
+        (
+          val.matches('^preset:[a-zA-Z0-9_\\-]{2,64}$') ||
+          (val.size() <= 2048 && val.matches('^https://[^\\s]+$')) ||
+          val.matches('^data:image/(jpeg|jpg|png|webp);base64,[A-Za-z0-9+/=]+$')
+        );
+    }
+
+    function isValidImageGallery(gallery) {
+      return gallery is list &&
+        gallery.size() <= 6 &&
+        (gallery.size() < 1 || isValidGalleryImageValue(gallery[0])) &&
+        (gallery.size() < 2 || isValidGalleryImageValue(gallery[1])) &&
+        (gallery.size() < 3 || isValidGalleryImageValue(gallery[2])) &&
+        (gallery.size() < 4 || isValidGalleryImageValue(gallery[3])) &&
+        (gallery.size() < 5 || isValidGalleryImageValue(gallery[4])) &&
+        (gallery.size() < 6 || isValidGalleryImageValue(gallery[5]));
+    }
+
     function incoming() {
       return request.resource.data;
     }
@@ -124,6 +146,7 @@ service cloud.firestore {
           'noteAr',
           'isActive',
           'imageUrl',
+          'imageUrls',
           'variants',
           'updatedAt',
           'updatedBy'
@@ -137,6 +160,7 @@ service cloud.firestore {
         data.noteAr is string && data.noteAr.size() <= 400 &&
         data.isActive is bool &&
         (!('imageUrl' in data) || isValidImageValue(data.imageUrl)) &&
+        (!('imageUrls' in data) || isValidImageGallery(data.imageUrls)) &&
         data.variants is list && data.variants.size() >= 1 && data.variants.size() <= 10 &&
         data.variants[0] is map &&
         data.updatedAt == request.time &&
@@ -145,9 +169,10 @@ service cloud.firestore {
 
     function isValidCategoryImageOverride(data) {
       return data.keys().hasAll(['categorySlug', 'imageUrl', 'updatedAt', 'updatedBy']) &&
-        data.keys().hasOnly(['categorySlug', 'imageUrl', 'updatedAt', 'updatedBy']) &&
+        data.keys().hasOnly(['categorySlug', 'imageUrl', 'imageUrls', 'updatedAt', 'updatedBy']) &&
         isValidId(data.categorySlug) && data.categorySlug.size() <= 64 &&
         isValidImageValue(data.imageUrl) &&
+        (!('imageUrls' in data) || isValidImageGallery(data.imageUrls)) &&
         data.updatedAt == request.time &&
         data.updatedBy is string && data.updatedBy == request.auth.uid && data.updatedBy.size() <= 128;
     }
@@ -239,6 +264,7 @@ service cloud.firestore {
           'noteAr',
           'isActive',
           'imageUrl',
+          'imageUrls',
           'variants',
           'updatedAt',
           'updatedBy'
@@ -256,7 +282,7 @@ service cloud.firestore {
         isAdmin() &&
         isValidCategoryImageOverride(incoming()) &&
         incoming().categorySlug == existing().categorySlug &&
-        incoming().diff(existing()).affectedKeys().hasOnly(['imageUrl', 'updatedAt', 'updatedBy']);
+        incoming().diff(existing()).affectedKeys().hasOnly(['imageUrl', 'imageUrls', 'updatedAt', 'updatedBy']);
       allow delete: if isValidId(categorySlug) && isAdmin();
     }
 

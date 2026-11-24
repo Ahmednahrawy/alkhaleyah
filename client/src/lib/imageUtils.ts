@@ -1,6 +1,9 @@
 import { productRanges, type ProductRange } from "@/lib/catalog";
 
+export const MAX_IMAGES_PER_ITEM = 6;
 export const MAX_IMAGE_DATA_URL_LENGTH = 200000;
+export const MAX_GALLERY_ITEM_DATA_URL_LENGTH = 140000;
+export const MAX_COMBINED_GALLERY_CHARS = 700000;
 export const MAX_IMAGE_HTTPS_URL_LENGTH = 2048;
 
 export type CatalogImagePreset = {
@@ -67,7 +70,42 @@ export function resolveCatalogImageValue(
   return fallbackSrc;
 }
 
-export function validateCatalogImageValue(rawValue: string): {
+export function resolveCatalogImageGallery(
+  rawUrls: string[] | undefined,
+  rawSingleUrl: string | undefined,
+  fallbackSrc: string
+): string[] {
+  const rawList =
+    Array.isArray(rawUrls) && rawUrls.length > 0
+      ? rawUrls
+      : rawSingleUrl?.trim()
+        ? [rawSingleUrl.trim()]
+        : [];
+
+  if (rawList.length === 0) {
+    return fallbackSrc ? [fallbackSrc] : [];
+  }
+
+  const resolved: string[] = [];
+  const seen = new Set<string>();
+  for (const item of rawList.slice(0, MAX_IMAGES_PER_ITEM)) {
+    const src = resolveCatalogImageValue(item, "");
+    if (src && !seen.has(src)) {
+      seen.add(src);
+      resolved.push(src);
+    }
+  }
+
+  if (resolved.length === 0 && fallbackSrc) {
+    return [fallbackSrc];
+  }
+  return resolved;
+}
+
+export function validateCatalogImageValue(
+  rawValue: string,
+  maxDataLength = MAX_IMAGE_DATA_URL_LENGTH
+): {
   valid: boolean;
   normalized: string;
   reason?: "url" | "size";
@@ -80,7 +118,7 @@ export function validateCatalogImageValue(rawValue: string): {
     return { valid: true, normalized: trimmed };
   }
   if (trimmed.startsWith("data:image/")) {
-    if (trimmed.length > MAX_IMAGE_DATA_URL_LENGTH) {
+    if (trimmed.length > maxDataLength) {
       return { valid: false, normalized: trimmed, reason: "size" };
     }
     if (DATA_IMAGE_REGEX.test(trimmed)) {
@@ -95,6 +133,42 @@ export function validateCatalogImageValue(rawValue: string): {
     return { valid: true, normalized: trimmed };
   }
   return { valid: false, normalized: trimmed, reason: "url" };
+}
+
+export function validateCatalogImageGallery(rawValues: string[]): {
+  valid: boolean;
+  normalized: string[];
+  reason?: "url" | "size" | "count";
+} {
+  if (rawValues.length > MAX_IMAGES_PER_ITEM) {
+    return { valid: false, normalized: [], reason: "count" };
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  let totalChars = 0;
+
+  for (const raw of rawValues) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const itemCheck = validateCatalogImageValue(
+      trimmed,
+      MAX_GALLERY_ITEM_DATA_URL_LENGTH
+    );
+    if (!itemCheck.valid) {
+      return { valid: false, normalized: [], reason: itemCheck.reason ?? "url" };
+    }
+    if (!seen.has(itemCheck.normalized)) {
+      seen.add(itemCheck.normalized);
+      totalChars += itemCheck.normalized.length;
+      if (totalChars > MAX_COMBINED_GALLERY_CHARS) {
+        return { valid: false, normalized: [], reason: "size" };
+      }
+      normalized.push(itemCheck.normalized);
+    }
+  }
+
+  return { valid: true, normalized };
 }
 
 function loadImageElement(src: string): Promise<HTMLImageElement> {
@@ -143,16 +217,16 @@ export async function processImageFileToDataUrl(file: File): Promise<string> {
   try {
     const img = await loadImageElement(objectUrl);
     const attempts: Array<[number, number, number]> = [
-      [720, 540, 0.82],
-      [640, 480, 0.72],
-      [520, 390, 0.62],
-      [420, 315, 0.52],
+      [680, 510, 0.78],
+      [580, 435, 0.68],
+      [480, 360, 0.58],
+      [400, 300, 0.48],
     ];
 
     for (const [w, h, q] of attempts) {
       const candidate = renderCompressedJpeg(img, w, h, q);
       if (
-        candidate.length <= MAX_IMAGE_DATA_URL_LENGTH - 5000 &&
+        candidate.length <= MAX_GALLERY_ITEM_DATA_URL_LENGTH - 5000 &&
         DATA_IMAGE_REGEX.test(candidate)
       ) {
         return candidate;

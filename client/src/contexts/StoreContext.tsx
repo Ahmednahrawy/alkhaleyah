@@ -20,7 +20,8 @@ import { translations } from "@/lib/i18n";
 import { WHATSAPP_DISPLAY, WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
 import {
-  resolveCatalogImageValue,
+  MAX_IMAGES_PER_ITEM,
+  resolveCatalogImageGallery,
 } from "@/lib/imageUtils";
 
 export type CatalogOverrideDoc = {
@@ -33,12 +34,14 @@ export type CatalogOverrideDoc = {
   noteAr: string;
   isActive: boolean;
   imageUrl?: string;
+  imageUrls?: string[];
   variants: ProductVariant[];
 };
 
 export type CategoryImageOverrideDoc = {
   categorySlug: string;
   imageUrl: string;
+  imageUrls?: string[];
 };
 
 export type StoreSettingsState = {
@@ -96,10 +99,13 @@ function mergeCatalog(
   includeHidden: boolean
 ): ProductRange[] {
   return baseProductRanges.map((baseRange) => {
-    const resolvedRangeImage = resolveCatalogImageValue(
-      categoryImageOverrides[baseRange.slug]?.imageUrl,
+    const categoryDoc = categoryImageOverrides[baseRange.slug];
+    const resolvedRangeImages = resolveCatalogImageGallery(
+      categoryDoc?.imageUrls,
+      categoryDoc?.imageUrl,
       baseRange.image
     );
+    const resolvedRangeImage = resolvedRangeImages[0] ?? baseRange.image;
     const baseSubIds = new Set(baseRange.subcategories.map((sub) => sub.id));
     const mergedSubs: ProductSubcategory[] = [];
 
@@ -113,12 +119,15 @@ function mergeCatalog(
       if (!includeHidden && !override.isActive) {
         continue;
       }
+      const subGallery = resolveCatalogImageGallery(
+        override.imageUrls,
+        override.imageUrl,
+        sub.image || resolvedRangeImage
+      );
       mergedSubs.push({
         id: sub.id,
-        image: resolveCatalogImageValue(
-          override.imageUrl,
-          sub.image || resolvedRangeImage
-        ),
+        image: subGallery[0] ?? sub.image ?? resolvedRangeImage,
+        images: subGallery,
         en: {
           name: override.nameEn || sub.en.name,
           note: override.noteEn ?? sub.en.note,
@@ -142,9 +151,15 @@ function mergeCatalog(
       if (!includeHidden && !override.isActive) {
         continue;
       }
+      const customGallery = resolveCatalogImageGallery(
+        override.imageUrls,
+        override.imageUrl,
+        resolvedRangeImage
+      );
       mergedSubs.push({
         id: override.subcategoryId,
-        image: resolveCatalogImageValue(override.imageUrl, resolvedRangeImage),
+        image: customGallery[0] ?? resolvedRangeImage,
+        images: customGallery,
         en: {
           name: override.nameEn,
           note: override.noteEn,
@@ -160,6 +175,7 @@ function mergeCatalog(
     return {
       ...baseRange,
       image: resolvedRangeImage,
+      images: resolvedRangeImages,
       subcategories: mergedSubs,
     };
   });
@@ -212,6 +228,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 data.categorySlug,
                 data.subcategoryId
               );
+              const parsedUrls = Array.isArray(data.imageUrls)
+                ? data.imageUrls
+                    .filter(
+                      (u): u is string =>
+                        typeof u === "string" && u.trim().length > 0
+                    )
+                    .slice(0, MAX_IMAGES_PER_ITEM)
+                : [];
+              const singleUrl =
+                typeof data.imageUrl === "string" ? data.imageUrl : "";
               next[key] = {
                 productKey: key,
                 categorySlug: data.categorySlug,
@@ -221,8 +247,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 noteEn: String(data.noteEn || ""),
                 noteAr: String(data.noteAr || ""),
                 isActive: data.isActive !== false,
-                imageUrl:
-                  typeof data.imageUrl === "string" ? data.imageUrl : "",
+                imageUrl: singleUrl,
+                imageUrls:
+                  parsedUrls.length > 0
+                    ? parsedUrls
+                    : singleUrl.trim()
+                      ? [singleUrl.trim()]
+                      : [],
                 variants: validVariants,
               };
             }
@@ -246,9 +277,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             typeof data.categorySlug === "string" &&
             typeof data.imageUrl === "string"
           ) {
+            const parsedUrls = Array.isArray(data.imageUrls)
+              ? data.imageUrls
+                  .filter(
+                    (u): u is string =>
+                      typeof u === "string" && u.trim().length > 0
+                  )
+                  .slice(0, MAX_IMAGES_PER_ITEM)
+              : [];
             next[data.categorySlug] = {
               categorySlug: data.categorySlug,
               imageUrl: data.imageUrl,
+              imageUrls:
+                parsedUrls.length > 0
+                  ? parsedUrls
+                  : data.imageUrl.trim()
+                    ? [data.imageUrl.trim()]
+                    : [],
             };
           }
         });
