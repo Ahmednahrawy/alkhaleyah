@@ -176,6 +176,11 @@
           "type": "boolean",
           "description": "Whether this product variety is currently visible in the storefront."
         },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 200000,
+          "description": "Optional custom product image (empty for default, preset:<id>, https:// URL, or compressed JPEG/PNG/WebP data URI)."
+        },
         "variants": {
           "type": "array",
           "description": "Pack size variants and EGP prices (up to 10 variants)."
@@ -251,6 +256,36 @@
         "updatedAt",
         "updatedBy"
       ]
+    },
+    "CategoryImageOverride": {
+      "title": "CategoryImageOverride",
+      "description": "Admin-managed cover image override for a storefront product category.",
+      "type": "object",
+      "properties": {
+        "categorySlug": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Category slug matching the document ID."
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 200000,
+          "description": "Custom category cover image (empty for default, preset:<id>, https:// URL, or compressed image data URI)."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server last-updated timestamp."
+        },
+        "updatedBy": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "UID of admin who updated the category picture."
+        }
+      },
+      "required": ["categorySlug", "imageUrl", "updatedAt", "updatedBy"]
     }
   },
   "firestore": {
@@ -269,6 +304,10 @@
     "/catalogOverrides/{productKey}": {
       "schema": { "$ref": "#/entities/CatalogOverride" },
       "description": "Live admin product catalog overrides and custom varieties."
+    },
+    "/categoryImages/{categorySlug}": {
+      "schema": { "$ref": "#/entities/CategoryImageOverride" },
+      "description": "Live admin category cover picture overrides."
     },
     "/storeSettings/{settingId}": {
       "schema": { "$ref": "#/entities/StoreSettings" },

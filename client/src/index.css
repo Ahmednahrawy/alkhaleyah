@@ -1760,6 +1760,152 @@ img { display: block; width: 100%; }
   gap: 10px;
   flex-wrap: wrap;
 }
+.admin-category-cover-card {
+  padding: 18px 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.admin-category-cover-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.admin-category-cover-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1;
+}
+.admin-category-cover-info h3 {
+  margin: 4px 0 2px;
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--olive-dark);
+}
+.admin-image-picker {
+  padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-image-picker-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.admin-image-picker-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.admin-image-preview {
+  width: 136px;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.admin-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.admin-image-preview-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.admin-image-controls {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-image-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.admin-upload-label {
+  cursor: pointer;
+}
+.admin-image-url-input {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  font-size: 13px;
+}
+.admin-image-url-input:focus {
+  outline: none;
+  border-color: var(--olive);
+  background: #fff;
+}
+.admin-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  max-height: 250px;
+  overflow-y: auto;
+}
+.admin-preset-option {
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: start;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+.admin-preset-option:hover {
+  border-color: var(--olive);
+}
+.admin-preset-option.is-selected {
+  border-color: var(--olive);
+  background: #e3f2e6;
+}
+.admin-preset-option img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 5px;
+  background: var(--surface);
+}
+.admin-preset-option span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--olive-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .admin-settings-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);

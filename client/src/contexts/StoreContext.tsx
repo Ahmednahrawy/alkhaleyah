@@ -19,6 +19,10 @@ import { db } from "@/lib/firebase";
 import { translations } from "@/lib/i18n";
 import { WHATSAPP_DISPLAY, WHATSAPP_NUMBER } from "@/lib/whatsapp";
 
+import {
+  resolveCatalogImageValue,
+} from "@/lib/imageUtils";
+
 export type CatalogOverrideDoc = {
   productKey: string;
   categorySlug: string;
@@ -28,7 +32,13 @@ export type CatalogOverrideDoc = {
   noteEn: string;
   noteAr: string;
   isActive: boolean;
+  imageUrl?: string;
   variants: ProductVariant[];
+};
+
+export type CategoryImageOverrideDoc = {
+  categorySlug: string;
+  imageUrl: string;
 };
 
 export type StoreSettingsState = {
@@ -42,6 +52,7 @@ type StoreContextValue = {
   ranges: ProductRange[];
   allRangesWithHidden: ProductRange[];
   overridesByKey: Record<string, CatalogOverrideDoc>;
+  categoryImageOverrides: Record<string, CategoryImageOverrideDoc>;
   storeSettings: StoreSettingsState;
   findRange: (slug?: string) => ProductRange | undefined;
   findVariant: (
@@ -81,9 +92,14 @@ export function buildCatalogOverrideKey(
 
 function mergeCatalog(
   overrides: Record<string, CatalogOverrideDoc>,
+  categoryImageOverrides: Record<string, CategoryImageOverrideDoc>,
   includeHidden: boolean
 ): ProductRange[] {
   return baseProductRanges.map((baseRange) => {
+    const resolvedRangeImage = resolveCatalogImageValue(
+      categoryImageOverrides[baseRange.slug]?.imageUrl,
+      baseRange.image
+    );
     const baseSubIds = new Set(baseRange.subcategories.map((sub) => sub.id));
     const mergedSubs: ProductSubcategory[] = [];
 
@@ -99,7 +115,10 @@ function mergeCatalog(
       }
       mergedSubs.push({
         id: sub.id,
-        image: sub.image,
+        image: resolveCatalogImageValue(
+          override.imageUrl,
+          sub.image || resolvedRangeImage
+        ),
         en: {
           name: override.nameEn || sub.en.name,
           note: override.noteEn ?? sub.en.note,
@@ -125,7 +144,7 @@ function mergeCatalog(
       }
       mergedSubs.push({
         id: override.subcategoryId,
-        image: baseRange.image,
+        image: resolveCatalogImageValue(override.imageUrl, resolvedRangeImage),
         en: {
           name: override.nameEn,
           note: override.noteEn,
@@ -140,6 +159,7 @@ function mergeCatalog(
 
     return {
       ...baseRange,
+      image: resolvedRangeImage,
       subcategories: mergedSubs,
     };
   });
@@ -150,6 +170,9 @@ const StoreContext = createContext<StoreContextValue | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [overridesByKey, setOverridesByKey] = useState<
     Record<string, CatalogOverrideDoc>
+  >({});
+  const [categoryImageOverrides, setCategoryImageOverrides] = useState<
+    Record<string, CategoryImageOverrideDoc>
   >({});
   const [storeSettings, setStoreSettings] =
     useState<StoreSettingsState>(DEFAULT_SETTINGS);
@@ -198,6 +221,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 noteEn: String(data.noteEn || ""),
                 noteAr: String(data.noteAr || ""),
                 isActive: data.isActive !== false,
+                imageUrl:
+                  typeof data.imageUrl === "string" ? data.imageUrl : "",
                 variants: validVariants,
               };
             }
@@ -207,6 +232,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       (error) => {
         console.warn("Catalog overrides listener:", error);
+      }
+    );
+
+    const unsubCategoryImages = onSnapshot(
+      collection(db, "categoryImages"),
+      (snapshot) => {
+        const next: Record<string, CategoryImageOverrideDoc> = {};
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (
+            data &&
+            typeof data.categorySlug === "string" &&
+            typeof data.imageUrl === "string"
+          ) {
+            next[data.categorySlug] = {
+              categorySlug: data.categorySlug,
+              imageUrl: data.imageUrl,
+            };
+          }
+        });
+        setCategoryImageOverrides(next);
+      },
+      (error) => {
+        console.warn("Category images listener:", error);
       }
     );
 
@@ -245,18 +294,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     return () => {
       unsubCatalog();
+      unsubCategoryImages();
       unsubSettings();
     };
   }, []);
 
   const ranges = useMemo(
-    () => mergeCatalog(overridesByKey, false),
-    [overridesByKey]
+    () => mergeCatalog(overridesByKey, categoryImageOverrides, false),
+    [overridesByKey, categoryImageOverrides]
   );
 
   const allRangesWithHidden = useMemo(
-    () => mergeCatalog(overridesByKey, true),
-    [overridesByKey]
+    () => mergeCatalog(overridesByKey, categoryImageOverrides, true),
+    [overridesByKey, categoryImageOverrides]
   );
 
   const findRange = (slug?: string) => {
@@ -340,6 +390,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ranges,
         allRangesWithHidden,
         overridesByKey,
+        categoryImageOverrides,
         storeSettings,
         findRange,
         findVariant,

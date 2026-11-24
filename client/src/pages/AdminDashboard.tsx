@@ -18,6 +18,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { Link } from "wouter";
+import { AdminImagePicker } from "@/components/AdminImagePicker";
 import { BrandMark, LanguageSwitcher } from "@/components/SiteChrome";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -41,6 +42,7 @@ import {
   OWNER_ADMIN_EMAIL,
 } from "@/lib/firebase";
 import { translations } from "@/lib/i18n";
+import { validateCatalogImageValue } from "@/lib/imageUtils";
 import {
   ORDER_STATUS_SEQUENCE,
   timestampToIso,
@@ -83,6 +85,7 @@ type VarietyDraft = {
   noteEn: string;
   noteAr: string;
   isActive: boolean;
+  imageUrl: string;
   variants: ProductVariant[];
 };
 
@@ -527,7 +530,8 @@ function OrdersTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
 function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const { lang } = useLanguage();
   const { user } = useAuth();
-  const { allRangesWithHidden, overridesByKey } = useStore();
+  const { allRangesWithHidden, overridesByKey, categoryImageOverrides } =
+    useStore();
   const a = translations[lang].admin.catalog;
 
   const [selectedCategory, setSelectedCategory] = useState(
@@ -540,6 +544,11 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [editingCategoryPic, setEditingCategoryPic] = useState(false);
+  const [categoryPicDraft, setCategoryPicDraft] = useState("");
+  const [categoryPicError, setCategoryPicError] = useState<string | null>(null);
+  const [savingCategoryPic, setSavingCategoryPic] = useState(false);
+
   const activeRange =
     allRangesWithHidden.find((r) => r.slug === selectedCategory) ??
     allRangesWithHidden[0];
@@ -549,6 +558,77 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
     () => new Set(baseRange?.subcategories.map((s) => s.id) ?? []),
     [baseRange]
   );
+
+  const currentCategoryOverride = categoryImageOverrides[selectedCategory];
+
+  const openCategoryPicEditor = () => {
+    setCategoryPicError(null);
+    setStatusMessage(null);
+    setCategoryPicDraft(currentCategoryOverride?.imageUrl ?? "");
+    setEditingCategoryPic(true);
+  };
+
+  const handleSaveCategoryPic = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setCategoryPicError(null);
+    setStatusMessage(null);
+
+    const validation = validateCatalogImageValue(categoryPicDraft);
+    if (!validation.valid) {
+      setCategoryPicError(
+        validation.reason === "size"
+          ? a.pictureTooLargeError
+          : a.pictureInvalidError
+      );
+      return;
+    }
+
+    setSavingCategoryPic(true);
+    try {
+      if (!validation.normalized) {
+        if (currentCategoryOverride) {
+          await deleteDoc(doc(db, "categoryImages", selectedCategory));
+        }
+      } else {
+        await setDoc(doc(db, "categoryImages", selectedCategory), {
+          categorySlug: selectedCategory,
+          imageUrl: validation.normalized,
+          updatedAt: serverTimestamp(),
+          updatedBy: user.uid,
+        });
+      }
+      setEditingCategoryPic(false);
+      setStatusMessage(a.savedToast);
+    } catch (error) {
+      onFatalError(
+        error,
+        OperationType.WRITE,
+        `categoryImages/${selectedCategory}`
+      );
+    } finally {
+      setSavingCategoryPic(false);
+    }
+  };
+
+  const handleResetCategoryPic = async () => {
+    setSavingCategoryPic(true);
+    setCategoryPicError(null);
+    try {
+      await deleteDoc(doc(db, "categoryImages", selectedCategory));
+      setCategoryPicDraft("");
+      setEditingCategoryPic(false);
+      setStatusMessage(a.savedToast);
+    } catch (error) {
+      onFatalError(
+        error,
+        OperationType.DELETE,
+        `categoryImages/${selectedCategory}`
+      );
+    } finally {
+      setSavingCategoryPic(false);
+    }
+  };
 
   const startEdit = (sub: ProductSubcategory) => {
     setCreatingNew(false);
@@ -563,6 +643,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       noteEn: sub.en.note,
       noteAr: sub.ar.note,
       isActive: !(key in overridesByKey) || overridesByKey[key].isActive,
+      imageUrl: overridesByKey[key]?.imageUrl ?? "",
       variants: sub.variants.map((v) => ({ ...v })),
     });
   };
@@ -579,6 +660,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       noteEn: "",
       noteAr: "",
       isActive: true,
+      imageUrl: "",
       variants: [
         {
           id: "500g",
@@ -684,6 +766,16 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
       return;
     }
 
+    const imageValidation = validateCatalogImageValue(draft.imageUrl);
+    if (!imageValidation.valid) {
+      setErrorMessage(
+        imageValidation.reason === "size"
+          ? a.pictureTooLargeError
+          : a.pictureInvalidError
+      );
+      return;
+    }
+
     const productKey = buildCatalogOverrideKey(selectedCategory, subId);
     setSavingKey(productKey);
 
@@ -697,6 +789,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         noteEn: draft.noteEn.trim().slice(0, 400),
         noteAr: draft.noteAr.trim().slice(0, 400),
         isActive: Boolean(draft.isActive),
+        imageUrl: imageValidation.normalized,
         variants: cleanVariants,
         updatedAt: serverTimestamp(),
         updatedBy: user.uid,
@@ -753,6 +846,8 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                 onClick={() => {
                   setSelectedCategory(range.slug);
                   closeEditor();
+                  setEditingCategoryPic(false);
+                  setCategoryPicError(null);
                   setStatusMessage(null);
                 }}
               >
@@ -771,6 +866,103 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
           <span>{a.addNewBtn}</span>
         </button>
       </div>
+
+      {activeRange && (
+        <div className="admin-category-cover-card">
+          <div className="admin-category-cover-head">
+            <div className="admin-category-cover-info">
+              <img
+                src={activeRange.image}
+                alt={getRangeCopy(activeRange, lang).title}
+                className="admin-variety-thumb"
+                referrerPolicy="no-referrer"
+              />
+              <div>
+                <div className="admin-variety-badges">
+                  <span className="admin-badge">
+                    {getRangeCopy(activeRange, lang).title}
+                  </span>
+                  {currentCategoryOverride && (
+                    <span className="admin-badge admin-badge-visible">
+                      {a.pictureCustomBadge}
+                    </span>
+                  )}
+                </div>
+                <h3>{a.categoryPictureTitle}</h3>
+                <p className="admin-variety-note">{a.categoryPictureHint}</p>
+              </div>
+            </div>
+            <div className="admin-variety-actions">
+              <button
+                type="button"
+                className="admin-ghost-btn"
+                onClick={() =>
+                  editingCategoryPic
+                    ? setEditingCategoryPic(false)
+                    : openCategoryPicEditor()
+                }
+                data-testid="admin-edit-category-pic-btn"
+              >
+                <Edit3 size={14} aria-hidden="true" />
+                <span>
+                  {editingCategoryPic ? a.cancelBtn : a.changePictureBtn}
+                </span>
+              </button>
+              {currentCategoryOverride && (
+                <button
+                  type="button"
+                  className="admin-ghost-btn"
+                  disabled={savingCategoryPic}
+                  onClick={() => void handleResetCategoryPic()}
+                >
+                  <RotateCcw size={14} aria-hidden="true" />
+                  <span>{a.resetPictureBtn}</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {editingCategoryPic && (
+            <form
+              className="admin-catalog-editor admin-catalog-editor-inline"
+              onSubmit={handleSaveCategoryPic}
+            >
+              <AdminImagePicker
+                label={a.categoryPictureTitle}
+                value={categoryPicDraft}
+                defaultSrc={baseRange?.image ?? activeRange.image}
+                onChange={setCategoryPicDraft}
+                testIdPrefix="admin-category-pic"
+              />
+              {categoryPicError && (
+                <p className="inquiry-error" role="alert">
+                  {categoryPicError}
+                </p>
+              )}
+              <div className="admin-editor-foot" style={{ marginTop: 12 }}>
+                <button
+                  type="submit"
+                  className="button button-dark"
+                  disabled={savingCategoryPic}
+                  data-testid="admin-save-category-pic-btn"
+                >
+                  <Check size={15} aria-hidden="true" />
+                  <span>
+                    {savingCategoryPic ? a.savingBtn : a.savePictureBtn}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="admin-ghost-btn"
+                  onClick={() => setEditingCategoryPic(false)}
+                >
+                  {a.cancelBtn}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
 
       {statusMessage && (
         <div className="admin-feedback-banner" role="status">
@@ -794,6 +986,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
           <CatalogEditorFields
             draft={draft}
             setDraft={setDraft}
+            defaultImageSrc={baseRange?.image ?? activeRange?.image ?? ""}
             isNew
             saving={savingKey !== null}
             errorMessage={errorMessage}
@@ -809,6 +1002,9 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
         {activeRange?.subcategories.map((sub) => {
           const key = buildCatalogOverrideKey(selectedCategory, sub.id);
           const override = overridesByKey[key];
+          const baseSub = baseRange?.subcategories.find((s) => s.id === sub.id);
+          const defaultSubImage =
+            baseSub?.image ?? baseRange?.image ?? activeRange.image;
           const isBuiltIn = baseSubIds.has(sub.id);
           const isEditing = editingKey === key && !creatingNew;
           const isVisible = !override || override.isActive;
@@ -895,6 +1091,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
                   <CatalogEditorFields
                     draft={draft}
                     setDraft={setDraft}
+                    defaultImageSrc={defaultSubImage}
                     isNew={false}
                     saving={savingKey === key}
                     errorMessage={errorMessage}
@@ -916,6 +1113,7 @@ function CatalogTab({ onFatalError }: { onFatalError: FatalErrorReporter }) {
 function CatalogEditorFields({
   draft,
   setDraft,
+  defaultImageSrc,
   isNew,
   saving,
   errorMessage,
@@ -926,6 +1124,7 @@ function CatalogEditorFields({
 }: {
   draft: VarietyDraft;
   setDraft: (next: VarietyDraft) => void;
+  defaultImageSrc: string;
   isNew: boolean;
   saving: boolean;
   errorMessage: string | null;
@@ -994,6 +1193,14 @@ function CatalogEditorFields({
           />
         </label>
       </div>
+
+      <AdminImagePicker
+        label={a.pictureLabel}
+        value={draft.imageUrl}
+        defaultSrc={defaultImageSrc}
+        onChange={(imageUrl) => setDraft({ ...draft, imageUrl })}
+        testIdPrefix={`admin-variety-pic-${draft.subcategoryId || "new"}`}
+      />
 
       <label className="admin-visibility-toggle">
         <input

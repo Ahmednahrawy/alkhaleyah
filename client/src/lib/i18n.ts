@@ -383,6 +383,23 @@ type CopyShape = {
       customBadge: string;
       overrideBadge: string;
       validationError: string;
+      categoryPictureTitle: string;
+      categoryPictureHint: string;
+      changePictureBtn: string;
+      savePictureBtn: string;
+      resetPictureBtn: string;
+      pictureLabel: string;
+      uploadPictureBtn: string;
+      uploadingPicture: string;
+      choosePresetBtn: string;
+      hidePresetsBtn: string;
+      useDefaultPictureBtn: string;
+      pictureCustomBadge: string;
+      pictureDefaultBadge: string;
+      uploadedPhotoLabel: string;
+      pictureUrlPlaceholder: string;
+      pictureInvalidError: string;
+      pictureTooLargeError: string;
     };
     settings: {
       sectionTitle: string;
@@ -868,6 +885,26 @@ export const translations: Record<Language, CopyShape> = {
         overrideBadge: "Edited",
         validationError:
           "Please fill English & Arabic names and at least one valid pack size with a price.",
+        categoryPictureTitle: "Category cover picture",
+        categoryPictureHint:
+          "Displayed on the homepage category card and category hero.",
+        changePictureBtn: "Change picture",
+        savePictureBtn: "Save picture",
+        resetPictureBtn: "Reset default picture",
+        pictureLabel: "Product picture",
+        uploadPictureBtn: "Upload photo",
+        uploadingPicture: "Processing photo...",
+        choosePresetBtn: "Choose from library",
+        hidePresetsBtn: "Hide library",
+        useDefaultPictureBtn: "Use default",
+        pictureCustomBadge: "Custom picture",
+        pictureDefaultBadge: "Default picture",
+        uploadedPhotoLabel: "Uploaded photo ready (paste https:// URL to replace)",
+        pictureUrlPlaceholder: "Or paste an https:// image URL...",
+        pictureInvalidError:
+          "Please upload an image file (JPG/PNG/WebP), choose from the library, or enter a valid https:// URL.",
+        pictureTooLargeError:
+          "Image is too large even after compression. Please pick a smaller photo.",
       },
       settings: {
         sectionTitle: "Storefront contact & announcement",
@@ -1352,6 +1389,26 @@ export const translations: Record<Language, CopyShape> = {
         overrideBadge: "معدّل",
         validationError:
           "يُرجى إدخال الاسم بالعربية والإنجليزية وإضافة حجم واحد بسعر صحيح على الأقل.",
+        categoryPictureTitle: "صورة الفئة الرئيسية",
+        categoryPictureHint:
+          "تظهر في بطاقة الفئة بالصفحة الرئيسية وفي صفحة تفاصيل الفئة.",
+        changePictureBtn: "تغيير الصورة",
+        savePictureBtn: "حفظ الصورة",
+        resetPictureBtn: "استعادة الصورة الافتراضية",
+        pictureLabel: "صورة الصنف",
+        uploadPictureBtn: "رفع صورة",
+        uploadingPicture: "جاري معالجة الصورة...",
+        choosePresetBtn: "اختيار من المكتبة",
+        hidePresetsBtn: "إخفاء المكتبة",
+        useDefaultPictureBtn: "استخدام الافتراضية",
+        pictureCustomBadge: "صورة مخصصة",
+        pictureDefaultBadge: "الصورة الافتراضية",
+        uploadedPhotoLabel: "تم تجهيز الصورة المرفوعة (أو ألصق رابط https:// للاستبدال)",
+        pictureUrlPlaceholder: "أو ألصق رابط صورة يبدأ بـ https:// ...",
+        pictureInvalidError:
+          "يُرجى رفع ملف صورة (JPG/PNG/WebP)، أو الاختيار من المكتبة، أو إدخال رابط https:// صحيح.",
+        pictureTooLargeError:
+          "حجم الصورة كبير جداً حتى بعد الضغط. يُرجى اختيار صورة أصغر.",
       },
       settings: {
         sectionTitle: "بيانات الواتساب والشريط العلوي",
