@@ -220,8 +220,19 @@ async function saveOrderToFirestore(
     });
     batch.set(notificationRef, notificationPayload);
 
-    await batch.commit();
-    return true;
+    const commitPromise = batch.commit();
+    commitPromise.catch((error) => {
+      console.warn("Firestore order background sync warning:", error);
+    });
+
+    const syncedWithinTimeout = await Promise.race<boolean>([
+      commitPromise.then(() => true),
+      new Promise<boolean>((resolve) => {
+        setTimeout(() => resolve(false), 6000);
+      }),
+    ]);
+
+    return syncedWithinTimeout;
   } catch (error) {
     // Graceful fallback when running offline or in test environments
     console.warn("Firestore order sync warning:", error);
