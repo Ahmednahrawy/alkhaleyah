@@ -126,6 +126,8 @@ const ALLOWED_WEBHOOK_HOSTS = new Set([
   "hooks.slack.com",
   "discord.com",
   "discordapp.com",
+  "canary.discord.com",
+  "ptb.discord.com",
   "hooks.zapier.com",
   "hook.eu1.make.com",
   "hook.us1.make.com",
@@ -1801,9 +1803,25 @@ function SettingsTab({
         config: notifDraft,
       });
       const wantsEmail = Boolean(notifDraft.notifyEmail.trim());
-      if (!dispatchRes.ok) {
+      const wantsWebhook = Boolean(notifDraft.webhookUrl.trim());
+      const wantsNtfy = Boolean(notifDraft.ntfyTopic.trim());
+      const webhookDelivered = Boolean(
+        dispatchRes.result?.webhookSent || dispatchRes.result?.envWebhookSent
+      );
+      const ntfyDelivered = Boolean(dispatchRes.result?.ntfySent);
+      const emailDelivered = Boolean(dispatchRes.result?.emailSent);
+
+      if (wantsWebhook && !webhookDelivered) {
+        setTestAlertStatus(s.testAlertWebhookFailed);
+      } else if ((wantsWebhook && webhookDelivered) || (wantsNtfy && ntfyDelivered)) {
+        if (wantsEmail && !emailDelivered) {
+          setTestAlertStatus(s.testAlertWebhookSent);
+        } else {
+          setTestAlertStatus(s.testAlertSentToast);
+        }
+      } else if (!dispatchRes.ok) {
         setTestAlertStatus(s.testAlertLocalOnly);
-      } else if (wantsEmail && !dispatchRes.result?.emailSent) {
+      } else if (wantsEmail && !emailDelivered) {
         setTestAlertStatus(s.testAlertEmailNotConfigured);
       } else {
         setTestAlertStatus(s.testAlertSentToast);
@@ -2411,10 +2429,7 @@ export default function AdminDashboard() {
             });
           }
 
-          if (
-            (item.type === "order_created" || item.type === "inquiry_created") &&
-            (cfg.ntfyTopic.trim() || cfg.webhookUrl.trim())
-          ) {
+          if (cfg.ntfyTopic.trim() || cfg.webhookUrl.trim()) {
             void dispatchExternalAdminAlert({
               title,
               body,

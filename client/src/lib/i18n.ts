@@ -471,6 +471,8 @@ type CopyShape = {
       sendTestAlertBtn: string;
       sendingTestAlertBtn: string;
       testAlertSentToast: string;
+      testAlertWebhookSent: string;
+      testAlertWebhookFailed: string;
       testAlertEmailNotConfigured: string;
       testAlertLocalOnly: string;
       testAlertError: string;
@@ -1046,6 +1048,10 @@ export const translations: Record<Language, CopyShape> = {
         sendTestAlertBtn: "Send test notification",
         sendingTestAlertBtn: "Sending...",
         testAlertSentToast: "Test notification sent!",
+        testAlertWebhookSent:
+          "Test alert delivered to your webhook/push channel! (Email skipped: RESEND_API_KEY is not configured.)",
+        testAlertWebhookFailed:
+          "Dashboard alert shown, but the webhook request failed. Please verify your Discord/Webhook URL is valid and still active.",
         testAlertEmailNotConfigured:
           "Dashboard/browser alert shown, but email was not sent because RESEND_API_KEY is not configured in server environment settings.",
         testAlertLocalOnly:
@@ -1621,6 +1627,10 @@ export const translations: Record<Language, CopyShape> = {
         sendTestAlertBtn: "إرسال تنبيه تجريبي",
         sendingTestAlertBtn: "جاري الإرسال...",
         testAlertSentToast: "تم إرسال التنبيه التجريبي بنجاح!",
+        testAlertWebhookSent:
+          "تم إرسال التنبيه التجريبي إلى Webhook / الإشعارات الفورية بنجاح! (لم يُرسل بريد لأن RESEND_API_KEY غير مضاف.)",
+        testAlertWebhookFailed:
+          "ظهر التنبيه داخل اللوحة، لكن تعذّر الإرسال إلى رابط Webhook / Discord. تأكد من صحة الرابط وأنه ما زال مفعّلاً في Discord.",
         testAlertEmailNotConfigured:
           "ظهر التنبيه داخل اللوحة فقط، ولم تُرسل رسالة البريد لأن مفتاح RESEND_API_KEY غير مضاف في إعدادات الخادم.",
         testAlertLocalOnly:

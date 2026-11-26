@@ -248,6 +248,84 @@ export function showDesktopNotification(input: {
   }
 }
 
+const DISCORD_WEBHOOK_HOSTS = new Set([
+  "discord.com",
+  "discordapp.com",
+  "canary.discord.com",
+  "ptb.discord.com",
+]);
+
+async function dispatchDirectCorsFallback(input: {
+  title: string;
+  body: string;
+  referenceId?: string;
+  ntfyTopic: string;
+  webhookUrl: string;
+}): Promise<{ ntfySent: boolean; webhookSent: boolean }> {
+  let ntfySent = false;
+  let webhookSent = false;
+
+  const cleanTitle = input.title.trim().slice(0, 140);
+  const cleanBody = input.body.trim().slice(0, 1200);
+  const cleanTopic = input.ntfyTopic.trim();
+  const cleanWebhook = input.webhookUrl.trim();
+
+  if (cleanTopic && /^[a-zA-Z0-9_-]{3,120}$/.test(cleanTopic)) {
+    try {
+      const res = await fetch(
+        `https://ntfy.sh/${encodeURIComponent(cleanTopic)}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            Title: cleanTitle.replace(/[\r\n]+/g, " "),
+          },
+          body: cleanBody || cleanTitle,
+        }
+      );
+      ntfySent = res.ok;
+    } catch {
+      ntfySent = false;
+    }
+  }
+
+  if (cleanWebhook) {
+    try {
+      const parsed = new URL(cleanWebhook);
+      const host = parsed.hostname.toLowerCase();
+      if (parsed.protocol === "https:" && !parsed.username && !parsed.password) {
+        if (DISCORD_WEBHOOK_HOSTS.has(host)) {
+          const formatted = (
+            input.referenceId
+              ? `[${input.referenceId}] ${cleanTitle}\n${cleanBody}`
+              : `${cleanTitle}\n${cleanBody}`
+          ).slice(0, 1900);
+          const res = await fetch(parsed.toString(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: formatted }),
+          });
+          webhookSent = res.ok;
+        } else if (host === "ntfy.sh") {
+          const res = await fetch(parsed.toString(), {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain; charset=utf-8",
+              Title: cleanTitle.replace(/[\r\n]+/g, " "),
+            },
+            body: cleanBody || cleanTitle,
+          });
+          webhookSent = res.ok;
+        }
+      }
+    } catch {
+      webhookSent = false;
+    }
+  }
+
+  return { ntfySent, webhookSent };
+}
+
 export async function dispatchExternalAdminAlert(input: {
   title: string;
   body: string;
@@ -256,6 +334,7 @@ export async function dispatchExternalAdminAlert(input: {
   config?: AdminNotificationConfig;
 }): Promise<{
   ok: boolean;
+  usedFallback?: boolean;
   result?: {
     ntfySent: boolean;
     webhookSent: boolean;
@@ -265,6 +344,9 @@ export async function dispatchExternalAdminAlert(input: {
 }> {
   const currentUser = auth.currentUser;
   if (!currentUser) return { ok: false };
+
+  const ntfyTopic = input.config?.ntfyTopic ?? "";
+  const webhookUrl = input.config?.webhookUrl ?? "";
 
   try {
     const token = await currentUser.getIdToken();
@@ -280,22 +362,49 @@ export async function dispatchExternalAdminAlert(input: {
         body: input.body,
         referenceId: input.referenceId,
         eventType: input.eventType,
-        ntfyTopic: input.config?.ntfyTopic ?? "",
-        webhookUrl: input.config?.webhookUrl ?? "",
+        ntfyTopic,
+        webhookUrl,
         recipientEmail: input.config?.notifyEmail ?? "",
       }),
     });
-    if (!res.ok) return { ok: false };
-    return (await res.json()) as {
-      ok: boolean;
-      result?: {
-        ntfySent: boolean;
-        webhookSent: boolean;
-        emailSent: boolean;
-        envWebhookSent: boolean;
+    if (res.ok) {
+      return (await res.json()) as {
+        ok: boolean;
+        result?: {
+          ntfySent: boolean;
+          webhookSent: boolean;
+          emailSent: boolean;
+          envWebhookSent: boolean;
+        };
       };
-    };
+    }
+    if (res.status === 401 || res.status === 403 || res.status === 400) {
+      return { ok: false };
+    }
   } catch {
-    return { ok: false };
+    // Fall through to direct browser CORS fallback for Discord / ntfy.sh on static hosting
   }
+
+  const fallback = await dispatchDirectCorsFallback({
+    title: input.title,
+    body: input.body,
+    referenceId: input.referenceId,
+    ntfyTopic,
+    webhookUrl,
+  });
+
+  if (fallback.ntfySent || fallback.webhookSent) {
+    return {
+      ok: true,
+      usedFallback: true,
+      result: {
+        ntfySent: fallback.ntfySent,
+        webhookSent: fallback.webhookSent,
+        emailSent: false,
+        envWebhookSent: false,
+      },
+    };
+  }
+
+  return { ok: false };
 }

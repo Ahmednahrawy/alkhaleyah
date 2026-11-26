@@ -1,14 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  dispatchExternalAlerts,
   sanitizeNtfyTopic,
   validateSafeWebhookUrl,
 } from "./notifications";
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("admin notification SSRF and input validators", () => {
   it("accepts verified HTTPS webhook destinations on allowlisted hosts", () => {
     expect(
       validateSafeWebhookUrl("https://discord.com/api/webhooks/123/abc")
     ).toBe("https://discord.com/api/webhooks/123/abc");
+    expect(
+      validateSafeWebhookUrl("https://canary.discord.com/api/webhooks/123/abc")
+    ).toBe("https://canary.discord.com/api/webhooks/123/abc");
+    expect(
+      validateSafeWebhookUrl("https://ptb.discord.com/api/webhooks/123/abc")
+    ).toBe("https://ptb.discord.com/api/webhooks/123/abc");
     expect(
       validateSafeWebhookUrl("https://hooks.slack.com/services/T00/B00/XXX")
     ).toBe("https://hooks.slack.com/services/T00/B00/XXX");
@@ -49,5 +60,25 @@ describe("admin notification SSRF and input validators", () => {
     expect(sanitizeNtfyTopic("foo/bar")).toBeNull();
     expect(sanitizeNtfyTopic("topic?poll=1")).toBeNull();
     expect(sanitizeNtfyTopic("my topic")).toBeNull();
+  });
+
+  it("posts Discord-compatible content payload to Discord webhooks", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const res = await dispatchExternalAlerts({
+      title: "Test Alert",
+      body: "New order received",
+      referenceId: "ALK-TEST",
+      webhookUrl: "https://discord.com/api/webhooks/123/token",
+    });
+
+    expect(res.webhookSent).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [calledUrl, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(calledUrl).toBe("https://discord.com/api/webhooks/123/token");
+    expect(JSON.parse(String(init.body))).toEqual({
+      content: "[ALK-TEST] Test Alert\nNew order received",
+    });
   });
 });

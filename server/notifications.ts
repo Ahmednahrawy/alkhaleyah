@@ -15,6 +15,8 @@ const ALLOWED_WEBHOOK_HOSTS = new Set([
   "hooks.slack.com",
   "discord.com",
   "discordapp.com",
+  "canary.discord.com",
+  "ptb.discord.com",
   "hooks.zapier.com",
   "hook.eu1.make.com",
   "hook.us1.make.com",
@@ -201,11 +203,18 @@ async function sendWebhookPost(
 ): Promise<boolean> {
   try {
     const parsed = new URL(safeUrl);
-    const formatted = referenceId
-      ? `[${referenceId}] ${title}\n${body}`
-      : `${title}\n${body}`;
+    const formatted = (
+      referenceId ? `[${referenceId}] ${title}\n${body}` : `${title}\n${body}`
+    ).slice(0, 1900);
 
-    const isNtfyUrl = parsed.hostname.toLowerCase() === "ntfy.sh";
+    const host = parsed.hostname.toLowerCase();
+    const isNtfyUrl = host === "ntfy.sh";
+    const isDiscordUrl =
+      host === "discord.com" ||
+      host === "discordapp.com" ||
+      host === "canary.discord.com" ||
+      host === "ptb.discord.com";
+
     const res = await fetch(safeUrl, {
       method: "POST",
       headers: isNtfyUrl
@@ -218,18 +227,30 @@ async function sendWebhookPost(
           },
       body: isNtfyUrl
         ? body.slice(0, 1200)
-        : JSON.stringify({
-            text: formatted,
-            content: formatted,
-            title,
-            body,
-            referenceId: referenceId ?? "",
-          }),
+        : isDiscordUrl
+          ? JSON.stringify({ content: formatted })
+          : JSON.stringify({
+              text: formatted,
+              content: formatted,
+              title,
+              body,
+              referenceId: referenceId ?? "",
+            }),
       redirect: "error",
       signal: AbortSignal.timeout(5000),
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn(
+        `[Notifications] Webhook (${host}) failed (${res.status}): ${errText.slice(0, 200)}`
+      );
+    }
     return res.ok;
-  } catch {
+  } catch (error) {
+    console.warn(
+      "[Notifications] Webhook request error:",
+      error instanceof Error ? error.message : "unknown"
+    );
     return false;
   }
 }

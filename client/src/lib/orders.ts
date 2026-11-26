@@ -312,7 +312,7 @@ export async function recordInquiryOrder(input: {
   notes: string;
 }): Promise<TrackedOrder> {
   const now = new Date().toISOString();
-  const record: TrackedOrder = {
+  let record: TrackedOrder = {
     referenceId: normalizeReferenceId(input.referenceId),
     kind: "inquiry",
     orderType: input.orderType,
@@ -325,6 +325,31 @@ export async function recordInquiryOrder(input: {
   };
 
   saveOrderLocally(record);
+
+  try {
+    const endpoint = `${import.meta.env.BASE_URL}api/inquiries`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        referenceId: record.referenceId,
+        name: input.customerName.trim(),
+        email: input.email.trim(),
+        phone: input.phone.trim(),
+        inquiryType: input.orderType,
+        products: input.itemsSummary,
+        message: input.notes.trim(),
+      }),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { order?: TrackedOrder };
+      if (data.order?.referenceId) {
+        record = saveOrderLocally(data.order);
+      }
+    }
+  } catch {
+    // Graceful fallback when running on static hosting
+  }
 
   await saveOrderToFirestore(record, {
     fullName: input.customerName,
