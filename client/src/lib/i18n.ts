@@ -471,6 +471,8 @@ type CopyShape = {
       sendTestAlertBtn: string;
       sendingTestAlertBtn: string;
       testAlertSentToast: string;
+      testAlertEmailNotConfigured: string;
+      testAlertLocalOnly: string;
       testAlertError: string;
       adminsTitle: string;
       adminsBody: string;
@@ -1044,6 +1046,10 @@ export const translations: Record<Language, CopyShape> = {
         sendTestAlertBtn: "Send test notification",
         sendingTestAlertBtn: "Sending...",
         testAlertSentToast: "Test notification sent!",
+        testAlertEmailNotConfigured:
+          "Dashboard/browser alert shown, but email was not sent because RESEND_API_KEY is not configured in server environment settings.",
+        testAlertLocalOnly:
+          "Dashboard/browser alert shown locally, but external server delivery (email/webhook) is unavailable on static hosting.",
         testAlertError: "Please check the topic format or https:// webhook URL.",
         adminsTitle: "Authorized admin accounts",
         adminsBody:
@@ -1615,6 +1621,10 @@ export const translations: Record<Language, CopyShape> = {
         sendTestAlertBtn: "إرسال تنبيه تجريبي",
         sendingTestAlertBtn: "جاري الإرسال...",
         testAlertSentToast: "تم إرسال التنبيه التجريبي بنجاح!",
+        testAlertEmailNotConfigured:
+          "ظهر التنبيه داخل اللوحة فقط، ولم تُرسل رسالة البريد لأن مفتاح RESEND_API_KEY غير مضاف في إعدادات الخادم.",
+        testAlertLocalOnly:
+          "ظهر التنبيه محلياً داخل اللوحة فقط، ولا يتوفر إرسال البريد من الخادم على الاستضافة الثابتة.",
         testAlertError: "يُرجى التحقق من صيغة اسم القناة أو رابط https:// الصحيح.",
         adminsTitle: "حسابات الإدارة المصرح لها",
         adminsBody:

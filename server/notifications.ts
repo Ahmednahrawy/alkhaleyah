@@ -265,8 +265,18 @@ async function sendResendEmail(
       redirect: "error",
       signal: AbortSignal.timeout(6000),
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn(
+        `[Notifications] Resend delivery failed (${res.status}): ${errText.slice(0, 200)}`
+      );
+    }
     return res.ok;
-  } catch {
+  } catch (error) {
+    console.warn(
+      "[Notifications] Resend request error:",
+      error instanceof Error ? error.message : "unknown"
+    );
     return false;
   }
 }

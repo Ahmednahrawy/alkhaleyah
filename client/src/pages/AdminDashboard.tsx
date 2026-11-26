@@ -1794,14 +1794,21 @@ function SettingsTab({
           tag: "alkhaleyah-test",
         });
       }
-      await dispatchExternalAdminAlert({
+      const dispatchRes = await dispatchExternalAdminAlert({
         title: testTitle,
         body: testBody,
         eventType: "test",
         config: notifDraft,
       });
-      setTestAlertStatus(s.testAlertSentToast);
-      setTimeout(() => setTestAlertStatus(null), 3500);
+      const wantsEmail = Boolean(notifDraft.notifyEmail.trim());
+      if (!dispatchRes.ok) {
+        setTestAlertStatus(s.testAlertLocalOnly);
+      } else if (wantsEmail && !dispatchRes.result?.emailSent) {
+        setTestAlertStatus(s.testAlertEmailNotConfigured);
+      } else {
+        setTestAlertStatus(s.testAlertSentToast);
+      }
+      setTimeout(() => setTestAlertStatus(null), 6000);
     } finally {
       setSendingTestAlert(false);
     }
@@ -2000,19 +2007,17 @@ function SettingsTab({
           <small className="admin-muted-note">{s.webhookUrlHint}</small>
         </label>
 
-        {serverCapabilities && (
-          <div className="admin-server-capabilities">
-            <span className="inquiry-label">{s.serverChannelsLabel}</span>
-            <p className="admin-muted-note">
-              {serverCapabilities.emailReady
-                ? s.serverEmailReady
-                : s.serverEmailNeedsKey}
-            </p>
-            {serverCapabilities.envWebhookReady && (
-              <p className="admin-muted-note">{s.serverWebhookReady}</p>
-            )}
-          </div>
-        )}
+        <div className="admin-server-capabilities">
+          <span className="inquiry-label">{s.serverChannelsLabel}</span>
+          <p className="admin-muted-note">
+            {serverCapabilities?.emailReady
+              ? s.serverEmailReady
+              : s.serverEmailNeedsKey}
+          </p>
+          {serverCapabilities?.envWebhookReady && (
+            <p className="admin-muted-note">{s.serverWebhookReady}</p>
+          )}
+        </div>
 
         {notifError && (
           <p className="inquiry-error" role="alert">
