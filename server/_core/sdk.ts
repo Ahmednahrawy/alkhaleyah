@@ -30,12 +30,17 @@ const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserI
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: MANUS_OAUTH_API_URL is not configured! Set MANUS_OAUTH_API_URL environment variable."
-      );
+    if (ENV.oAuthServerUrl) {
+      console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
     }
+  }
+
+  private getRequiredBaseUrl(): string {
+    const baseUrl = ENV.oAuthServerUrl?.trim();
+    if (!baseUrl) {
+      throw new Error("MANUS_OAUTH_API_URL is not configured");
+    }
+    return baseUrl;
   }
 
   private decodeState(state: string): string {
@@ -55,7 +60,8 @@ class OAuthService {
 
     const { data } = await this.client.post<ExchangeTokenResponse>(
       EXCHANGE_TOKEN_PATH,
-      payload
+      payload,
+      { baseURL: this.getRequiredBaseUrl() }
     );
 
     return data;
@@ -68,7 +74,8 @@ class OAuthService {
       GET_USER_INFO_PATH,
       {
         accessToken: token.accessToken,
-      }
+      },
+      { baseURL: this.getRequiredBaseUrl() }
     );
 
     return data;
@@ -77,7 +84,7 @@ class OAuthService {
 
 const createOAuthHttpClient = (): AxiosInstance =>
   axios.create({
-    baseURL: ENV.oAuthServerUrl,
+    baseURL: ENV.oAuthServerUrl || undefined,
     timeout: AXIOS_TIMEOUT_MS,
   });
 
@@ -235,6 +242,11 @@ class SDKServer {
   async getUserInfoWithJwt(
     jwtToken: string
   ): Promise<GetUserInfoWithJwtResponse> {
+    const baseURL = ENV.oAuthServerUrl?.trim();
+    if (!baseURL) {
+      throw new Error("MANUS_OAUTH_API_URL is not configured");
+    }
+
     const payload: GetUserInfoWithJwtRequest = {
       jwtToken,
       projectId: ENV.appId,
@@ -242,7 +254,8 @@ class SDKServer {
 
     const { data } = await this.client.post<GetUserInfoWithJwtResponse>(
       GET_USER_INFO_WITH_JWT_PATH,
-      payload
+      payload,
+      { baseURL }
     );
 
     const loginMethod = this.deriveLoginMethod(

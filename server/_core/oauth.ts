@@ -3,6 +3,7 @@ import { parse as parseCookieHeader } from "cookie";
 import type { Express, Request, Response } from "express";
 import * as db from "../db";
 import { getSessionCookieOptions } from "./cookies";
+import { ENV } from "./env";
 import { sdk } from "./sdk";
 
 function getQueryParam(req: Request, key: string): string | undefined {
@@ -30,6 +31,11 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
     res.clearCookie(OAUTH_STATE_COOKIE, { path: "/", secure: true, sameSite: "none" });
+
+    if (!ENV.oAuthServerUrl?.trim()) {
+      res.status(503).json({ error: "OAuth service is not configured" });
+      return;
+    }
 
     try {
       const tokenResponse = await sdk.exchangeCodeForToken(code, state);
